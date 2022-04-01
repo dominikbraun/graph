@@ -23,10 +23,18 @@ type Pair[T comparable] struct {
 	A, B T
 }
 
+// Equals checks wether the pair is equal to another unordered pair.
+func (p Pair[T]) Equals(other Pair[T]) bool {
+	return p.A == other.A && p.B == other.B ||
+		p.A == other.B && p.B == other.A
+}
+
 // Graph represents a graph according to the definition G = (V, E), where
-// V is a set of vertices and E a set of paired vertices (edges). This is
-// a general graph that can be a directed or undirected, cyclic or acyclic
-// graph, or a special graph like a rooted tree.
+// V is a set of vertices and E a set of paired vertices (edges).
+//
+// Graph is a general graph that can be a directed or undirected, cyclic
+// or acyclic graph, or a special graph like a rooted tree. This library
+// provides pre-defined structures for some of those special graph types.
 type Graph[T comparable] struct {
 	vertices Set[T]
 	edges    Set[Pair[T]]

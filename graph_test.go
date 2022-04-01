@@ -1,6 +1,8 @@
 package graph
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestSet_Values(t *testing.T) {
 	tests := map[string]struct {
@@ -93,6 +95,37 @@ func TestGraph_Edges(t *testing.T) {
 		actual := test.graph.Edges()
 
 		if !slicesAreEqual(actual, test.expected, equals) {
+			t.Fatalf("%s: expected %v, got %v", name, test.expected, actual)
+		}
+	}
+}
+
+func TestPair_Equals(t *testing.T) {
+	tests := map[string]struct {
+		a, b     Pair[int]
+		expected bool
+	}{
+		"equal unordered pairs": {
+			a:        Pair[int]{A: 100, B: 150},
+			b:        Pair[int]{A: 150, B: 100},
+			expected: true,
+		},
+		"equal ordered pairs": {
+			a:        Pair[int]{A: 100, B: 150},
+			b:        Pair[int]{A: 100, B: 150},
+			expected: true,
+		},
+		"unequal pairs": {
+			a:        Pair[int]{A: 100, B: 150},
+			b:        Pair[int]{A: 150, B: 200},
+			expected: false,
+		},
+	}
+
+	for name, test := range tests {
+		actual := test.a.Equals(test.b)
+
+		if actual != test.expected {
 			t.Fatalf("%s: expected %v, got %v", name, test.expected, actual)
 		}
 	}

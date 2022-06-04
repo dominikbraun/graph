@@ -17,9 +17,9 @@ func TestGraph_Vertex(t *testing.T) {
 		},
 	}
 
-	graph := New(IntHash)
-
 	for name, test := range tests {
+		graph := New(IntHash)
+
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
 		}
@@ -95,6 +95,7 @@ func TestGraph_WeightedEdgeByHashes(t *testing.T) {
 		vertices      []int
 		edgeHashes    [][3]int
 		expectedEdges []Edge[int]
+		shouldFail    bool
 	}{
 		"graph with 2 edges": {
 			vertices:   []int{1, 2, 3},
@@ -104,16 +105,25 @@ func TestGraph_WeightedEdgeByHashes(t *testing.T) {
 				{Source: 1, Target: 3, Weight: 20},
 			},
 		},
+		"hashes for non-existent vertices": {
+			vertices:   []int{1, 2},
+			edgeHashes: [][3]int{{1, 3, 20}},
+			shouldFail: true,
+		},
 	}
 
-	graph := New(IntHash)
-
 	for name, test := range tests {
+		graph := New(IntHash)
+
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
 		}
 		for _, edge := range test.edgeHashes {
-			graph.WeightedEdgeByHashes(edge[0], edge[1], edge[2])
+			err := graph.WeightedEdgeByHashes(edge[0], edge[1], edge[2])
+
+			if test.shouldFail != (err != nil) {
+				t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, (err != nil), err)
+			}
 		}
 		for _, expectedEdge := range test.expectedEdges {
 			sourceHash := graph.hash(expectedEdge.Source)

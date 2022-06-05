@@ -132,47 +132,41 @@ func (g *Graph[K, T]) WeightedEdgeByHashes(sourceHash, targetHash K, weight int)
 	return nil
 }
 
-// GetEdge returns the edge between two given vertices or an error if an edge doesn't exist. The
-// order of the vertices isn't relevant if the graph is undirected.
-func (g *Graph[K, T]) GetEdge(source, target T) (Edge[T], error) {
+// GetEdgeByHashes returns the edge between two vertices. The second return value indicates whether
+// the edge exists. If the graph  is undirected, an edge with swapped source and target vertices
+// does match.
+func (g *Graph[K, T]) GetEdge(source, target T) (Edge[T], bool) {
 	sourceHash := g.hash(source)
 	targetHash := g.hash(target)
 
 	return g.GetEdgeByHashes(sourceHash, targetHash)
 }
 
-// GetEdgeByHashes returns the edge between two vertices with the given hash values or an error if
-// the edge doesn't exist. The order of the vertices isn't relevant if the graph is undirected.
-func (g *Graph[K, T]) GetEdgeByHashes(sourceHash, targetHash K) (Edge[T], error) {
-	edgesOfSource, ok := g.edges[sourceHash]
+// GetEdgeByHashes returns the edge between two vertices with the given hash values. The second
+// return value indicates whether the edge exists. If the graph  is undirected, an edge with
+// swapped source and target vertices does match.
+func (g *Graph[K, T]) GetEdgeByHashes(sourceHash, targetHash K) (Edge[T], bool) {
+	sourceEdges, ok := g.edges[sourceHash]
 	if !ok && g.properties.isDirected {
-		return Edge[T]{}, fmt.Errorf("could not find edge with source %v", sourceHash)
+		return Edge[T]{}, false
 	}
 
-	edge, ok := edgesOfSource[targetHash]
-	if !ok && g.properties.isDirected {
-		return Edge[T]{}, fmt.Errorf("could not find edge with source %v and target %v", sourceHash, targetHash)
-	}
-
-	if ok {
-		return edge, nil
+	if edge, ok := sourceEdges[targetHash]; ok {
+		return edge, true
 	}
 
 	if !g.properties.isDirected {
-		edgesOftarget, ok := g.edges[targetHash]
+		targetEdges, ok := g.edges[targetHash]
 		if !ok {
-			return Edge[T]{}, fmt.Errorf("could not find edge with source %v", targetHash)
+			return Edge[T]{}, false
 		}
 
-		edge, ok := edgesOftarget[sourceHash]
-		if !ok {
-			return Edge[T]{}, fmt.Errorf("could not find edge with source %v and target %v", targetHash, sourceHash)
+		if edge, ok := targetEdges[sourceHash]; ok {
+			return edge, true
 		}
-
-		return edge, nil
 	}
 
-	return Edge[T]{}, fmt.Errorf("could not find edge with source %v and target %v", sourceHash, targetHash)
+	return Edge[T]{}, false
 }
 
 // edgesAreEqual checks two given edges for equality. Two edges are considered equal if their

@@ -112,38 +112,30 @@ func TestGraph_GetEdgeByHashes(t *testing.T) {
 	tests := map[string]struct {
 		graph         *Graph[int, int]
 		vertices      []int
-		edgeHashes    [2]int
 		getEdgeHashes [2]int
-		expectedEdge  Edge[int]
-		shouldFail    bool
+		exists        bool
 	}{
 		"get edge of undirected graph": {
 			graph:         New(IntHash),
 			vertices:      []int{1, 2, 3},
-			edgeHashes:    [2]int{1, 2},
 			getEdgeHashes: [2]int{2, 1},
-			expectedEdge:  Edge[int]{Source: 1, Target: 2},
+			exists:        true,
 		},
 		"get non-existent edge of undirected graph": {
 			graph:         New(IntHash),
 			vertices:      []int{1, 2, 3},
-			edgeHashes:    [2]int{1, 2},
 			getEdgeHashes: [2]int{1, 3},
-			shouldFail:    true,
 		},
 		"get edge of directed graph": {
 			graph:         New(IntHash, Directed()),
 			vertices:      []int{1, 2, 3},
-			edgeHashes:    [2]int{1, 2},
 			getEdgeHashes: [2]int{1, 2},
-			expectedEdge:  Edge[int]{Source: 1, Target: 2},
+			exists:        true,
 		},
 		"get non-existent edge of directed graph": {
 			graph:         New(IntHash, Directed()),
 			vertices:      []int{1, 2, 3},
-			edgeHashes:    [2]int{1, 2},
 			getEdgeHashes: [2]int{1, 3},
-			shouldFail:    true,
 		},
 	}
 
@@ -152,16 +144,15 @@ func TestGraph_GetEdgeByHashes(t *testing.T) {
 			test.graph.Vertex(vertex)
 		}
 
-		test.graph.EdgeByHashes(test.edgeHashes[0], test.edgeHashes[1])
+		sourceHash := test.graph.hash(test.vertices[0])
+		targetHash := test.graph.hash(test.vertices[1])
 
-		edge, err := test.graph.GetEdgeByHashes(test.getEdgeHashes[0], test.getEdgeHashes[1])
+		test.graph.EdgeByHashes(sourceHash, targetHash)
 
-		if test.shouldFail != (err != nil) {
-			t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, (err != nil), err)
-		}
+		_, ok := test.graph.GetEdgeByHashes(test.getEdgeHashes[0], test.getEdgeHashes[1])
 
-		if !test.graph.edgesAreEqual(edge, test.expectedEdge) {
-			t.Errorf("%s: edges don't match: expected %v, got %v", name, test.expectedEdge, edge)
+		if test.exists != ok {
+			t.Fatalf("%s: result expectancy doesn't match: expected %v, got %v", name, test.exists, ok)
 		}
 	}
 }

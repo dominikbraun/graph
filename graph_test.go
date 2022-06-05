@@ -110,17 +110,40 @@ func TestGraph_GetEdge(t *testing.T) {
 
 func TestGraph_GetEdgeByHashes(t *testing.T) {
 	tests := map[string]struct {
-		graph        *Graph[int, int]
-		vertices     []int
-		edgeHashes   [2]int
-		expectedEdge Edge[int]
-		shouldFail   bool
+		graph         *Graph[int, int]
+		vertices      []int
+		edgeHashes    [2]int
+		getEdgeHashes [2]int
+		expectedEdge  Edge[int]
+		shouldFail    bool
 	}{
 		"get edge of undirected graph": {
-			graph:        New(IntHash),
-			vertices:     []int{1, 2, 3},
-			edgeHashes:   [2]int{1, 2},
-			expectedEdge: Edge[int]{Source: 1, Target: 2},
+			graph:         New(IntHash),
+			vertices:      []int{1, 2, 3},
+			edgeHashes:    [2]int{1, 2},
+			getEdgeHashes: [2]int{2, 1},
+			expectedEdge:  Edge[int]{Source: 1, Target: 2},
+		},
+		"get non-existent edge of undirected graph": {
+			graph:         New(IntHash),
+			vertices:      []int{1, 2, 3},
+			edgeHashes:    [2]int{1, 2},
+			getEdgeHashes: [2]int{1, 3},
+			shouldFail:    true,
+		},
+		"get edge of directed graph": {
+			graph:         New(IntHash, Directed()),
+			vertices:      []int{1, 2, 3},
+			edgeHashes:    [2]int{1, 2},
+			getEdgeHashes: [2]int{1, 2},
+			expectedEdge:  Edge[int]{Source: 1, Target: 2},
+		},
+		"get non-existent edge of directed graph": {
+			graph:         New(IntHash, Directed()),
+			vertices:      []int{1, 2, 3},
+			edgeHashes:    [2]int{1, 2},
+			getEdgeHashes: [2]int{1, 3},
+			shouldFail:    true,
 		},
 	}
 
@@ -131,7 +154,7 @@ func TestGraph_GetEdgeByHashes(t *testing.T) {
 
 		test.graph.EdgeByHashes(test.edgeHashes[0], test.edgeHashes[1])
 
-		edge, err := test.graph.GetEdgeByHashes(test.edgeHashes[0], test.edgeHashes[1])
+		edge, err := test.graph.GetEdgeByHashes(test.getEdgeHashes[0], test.getEdgeHashes[1])
 
 		if test.shouldFail != (err != nil) {
 			t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, (err != nil), err)

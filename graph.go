@@ -1,6 +1,8 @@
 package graph
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Graph represents a generic graph data structure consisting of vertices and nodes. Its vertices
 // are of type T and each vertex is identified by a hash of type K.
@@ -168,5 +170,5 @@ func (g *Graph[K, T]) GetEdgeByHashes(sourceHash, targetHash K) (Edge[T], error)
 		return edge, nil
 	}
 
-	return Edge[T]{}, nil
+	return Edge[T]{}, fmt.Errorf("could not find edge with source %v and target %v", sourceHash, targetHash)
 }

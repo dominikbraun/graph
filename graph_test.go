@@ -174,6 +174,52 @@ func TestGraph_GetEdgeByHashes(t *testing.T) {
 	}
 }
 
+func TestGraph_edgesAreEqual(t *testing.T) {
+	tests := map[string]struct {
+		graph         *Graph[int, int]
+		a             Edge[int]
+		b             Edge[int]
+		edgesAreEqual bool
+	}{
+		"equal edges in undirected graph": {
+			graph:         New(IntHash),
+			a:             Edge[int]{Source: 1, Target: 2},
+			b:             Edge[int]{Source: 1, Target: 2},
+			edgesAreEqual: true,
+		},
+		"swapped equal edges in undirected graph": {
+			graph:         New(IntHash),
+			a:             Edge[int]{Source: 1, Target: 2},
+			b:             Edge[int]{Source: 2, Target: 1},
+			edgesAreEqual: true,
+		},
+		"unequal edges in undirected graph": {
+			graph: New(IntHash),
+			a:     Edge[int]{Source: 1, Target: 2},
+			b:     Edge[int]{Source: 1, Target: 3},
+		},
+		"equal edges in directed graph": {
+			graph:         New(IntHash, Directed()),
+			a:             Edge[int]{Source: 1, Target: 2},
+			b:             Edge[int]{Source: 1, Target: 2},
+			edgesAreEqual: true,
+		},
+		"swapped equal edges in directed graph": {
+			graph: New(IntHash, Directed()),
+			a:     Edge[int]{Source: 1, Target: 2},
+			b:     Edge[int]{Source: 2, Target: 1},
+		},
+	}
+
+	for name, test := range tests {
+		actual := test.graph.edgesAreEqual(test.a, test.b)
+
+		if actual != test.edgesAreEqual {
+			t.Errorf("%s: equality expectations don't match: expected %v, got %v", name, test.edgesAreEqual, actual)
+		}
+	}
+}
+
 func slicesAreEqual[T any](a []T, b []T, equals func(a, b T) bool) bool {
 	if len(a) != len(b) {
 		return false

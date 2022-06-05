@@ -174,3 +174,22 @@ func (g *Graph[K, T]) GetEdgeByHashes(sourceHash, targetHash K) (Edge[T], error)
 
 	return Edge[T]{}, fmt.Errorf("could not find edge with source %v and target %v", sourceHash, targetHash)
 }
+
+// edgesAreEqual checks two given edges for equality. Two edges are considered equal if their
+// source and target vertices are the same or, if the graph is undirected, the same but swapped.
+func (g *Graph[K, T]) edgesAreEqual(a, b Edge[T]) bool {
+	aSourceHash := g.hash(a.Source)
+	aTargetHash := g.hash(a.Target)
+	bSourceHash := g.hash(b.Source)
+	bTargetHash := g.hash(b.Target)
+
+	if aSourceHash == bSourceHash && aTargetHash == bTargetHash {
+		return true
+	}
+
+	if !g.properties.isDirected {
+		return aSourceHash == bTargetHash && aTargetHash == bSourceHash
+	}
+
+	return false
+}

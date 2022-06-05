@@ -141,6 +141,8 @@ func (g *Graph[K, T]) GetEdge(source, target T) (Edge[T], error) {
 	return g.GetEdgeByHashes(sourceHash, targetHash)
 }
 
+// GetEdgeByHashes returns the edge between two vertices with the given hash values or an error if
+// the edge doesn't exist. The order of the vertices isn't relevant if the graph is undirected.
 func (g *Graph[K, T]) GetEdgeByHashes(sourceHash, targetHash K) (Edge[T], error) {
 	edgesOfSource, ok := g.edges[sourceHash]
 	if !ok && g.properties.isDirected {

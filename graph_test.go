@@ -160,17 +160,9 @@ func TestGraph_GetEdgeByHashes(t *testing.T) {
 			t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, (err != nil), err)
 		}
 
-		if test.graph.properties.isDirected {
-			if edge.Source != test.expectedEdge.Source || edge.Target != test.expectedEdge.Target {
-				t.Errorf("%s: edges don't match: expected %v, got %v", name, test.expectedEdge, edge)
-			}
-		} else {
-			if edge.Source != test.expectedEdge.Source && edge.Source != test.expectedEdge.Target ||
-				edge.Target != test.expectedEdge.Target && edge.Target != test.expectedEdge.Source {
-				t.Errorf("%s: edges don't match: expected %v, got %v", name, test.expectedEdge, edge)
-			}
+		if !test.graph.edgesAreEqual(edge, test.expectedEdge) {
+			t.Errorf("%s: edges don't match: expected %v, got %v", name, test.expectedEdge, edge)
 		}
-
 	}
 }
 

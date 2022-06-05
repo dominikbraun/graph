@@ -104,6 +104,53 @@ func TestGraph_WeightedEdgeByHashes(t *testing.T) {
 	}
 }
 
+func TestGraph_GetEdge(t *testing.T) {
+	TestGraph_GetEdgeByHashes(t)
+}
+
+func TestGraph_GetEdgeByHashes(t *testing.T) {
+	tests := map[string]struct {
+		graph        *Graph[int, int]
+		vertices     []int
+		edgeHashes   [2]int
+		expectedEdge Edge[int]
+		shouldFail   bool
+	}{
+		"get edge of undirected graph": {
+			graph:        New(IntHash),
+			vertices:     []int{1, 2, 3},
+			edgeHashes:   [2]int{1, 2},
+			expectedEdge: Edge[int]{Source: 1, Target: 2},
+		},
+	}
+
+	for name, test := range tests {
+		for _, vertex := range test.vertices {
+			test.graph.Vertex(vertex)
+		}
+
+		test.graph.EdgeByHashes(test.edgeHashes[0], test.edgeHashes[1])
+
+		edge, err := test.graph.GetEdgeByHashes(test.edgeHashes[0], test.edgeHashes[1])
+
+		if test.shouldFail != (err != nil) {
+			t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, (err != nil), err)
+		}
+
+		if test.graph.properties.isDirected {
+			if edge.Source != test.expectedEdge.Source || edge.Target != test.expectedEdge.Target {
+				t.Errorf("%s: edges don't match: expected %v, got %v", name, test.expectedEdge, edge)
+			}
+		} else {
+			if edge.Source != test.expectedEdge.Source && edge.Source != test.expectedEdge.Target ||
+				edge.Target != test.expectedEdge.Target && edge.Target != test.expectedEdge.Source {
+				t.Errorf("%s: edges don't match: expected %v, got %v", name, test.expectedEdge, edge)
+			}
+		}
+
+	}
+}
+
 func slicesAreEqual[T any](a []T, b []T, equals func(a, b T) bool) bool {
 	if len(a) != len(b) {
 		return false

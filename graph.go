@@ -129,3 +129,44 @@ func (g *Graph[K, T]) WeightedEdgeByHashes(sourceHash, targetHash K, weight int)
 
 	return nil
 }
+
+// GetEdge returns the edge between two given vertices or an error if an edge doesn't exist. The
+// order of the vertices isn't relevant if the graph is undirected.
+func (g *Graph[K, T]) GetEdge(source, target T) (Edge[T], error) {
+	sourceHash := g.hash(source)
+	targetHash := g.hash(target)
+
+	return g.GetEdgeByHashes(sourceHash, targetHash)
+}
+
+func (g *Graph[K, T]) GetEdgeByHashes(sourceHash, targetHash K) (Edge[T], error) {
+	edgesOfSource, ok := g.edges[sourceHash]
+	if !ok && g.properties.isDirected {
+		return Edge[T]{}, fmt.Errorf("could not find edge with source %v", sourceHash)
+	}
+
+	edge, ok := edgesOfSource[targetHash]
+	if !ok && g.properties.isDirected {
+		return Edge[T]{}, fmt.Errorf("could not find edge with source %v and target %v", sourceHash, targetHash)
+	}
+
+	if ok {
+		return edge, nil
+	}
+
+	if !g.properties.isDirected {
+		edgesOftarget, ok := g.edges[targetHash]
+		if !ok {
+			return Edge[T]{}, fmt.Errorf("could not find edge with source %v", targetHash)
+		}
+
+		edge, ok := edgesOftarget[sourceHash]
+		if !ok {
+			return Edge[T]{}, fmt.Errorf("could not find edge with source %v and target %v", targetHash, sourceHash)
+		}
+
+		return edge, nil
+	}
+
+	return Edge[T]{}, nil
+}

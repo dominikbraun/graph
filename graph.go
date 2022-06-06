@@ -81,7 +81,8 @@ func (g *Graph[K, T]) Vertex(value T) {
 }
 
 // Edge creates an edge between the source and the target vertex. If the Directed option has been
-// called on the graph, this is a directed edge. Returns an error if either vertex doesn't exist.
+// called on the graph, this is a directed edge. Returns an error if either vertex doesn't exist or
+// the edge already exists.
 func (g *Graph[K, T]) Edge(source, target T) error {
 	return g.WeightedEdge(source, target, 0)
 }
@@ -97,7 +98,7 @@ func (g *Graph[K, T]) WeightedEdge(source, target T, weight int) error {
 
 // EdgeByHashes creates an edge between the source and the target vertex, but uses hash values to
 // identify the vertices. This is convenient when you don't have the full vertex objects at hand.
-// Returns an error if either vertex doesn't exist.
+// Returns an error if either vertex doesn't exist or the edge already exists.
 //
 // To obtain the hash value for a vertex, call the hashing function passed to New.
 func (g *Graph[K, T]) EdgeByHashes(sourceHash, targetHash K) error {
@@ -115,6 +116,10 @@ func (g *Graph[K, T]) WeightedEdgeByHashes(sourceHash, targetHash K, weight int)
 	target, ok := g.vertices[targetHash]
 	if !ok {
 		return fmt.Errorf("could not find target vertex with hash %v", source)
+	}
+
+	if _, ok := g.GetEdgeByHashes(sourceHash, targetHash); ok {
+		return fmt.Errorf("an edge between vertices %v and %v already exists", sourceHash, targetHash)
 	}
 
 	if _, ok := g.edges[sourceHash]; !ok {

@@ -33,7 +33,6 @@ func Rooted() func(*Properties) {
 
 func Tree() func(*Properties) {
 	return func(p *Properties) {
-		Directed()(p)
 		Acyclic()(p)
 		Rooted()(p)
 	}

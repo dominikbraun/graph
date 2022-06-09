@@ -203,6 +203,40 @@ func TestGraph_edgesAreEqual(t *testing.T) {
 	}
 }
 
+func TestGraph_addEdge(t *testing.T) {
+	tests := map[string]struct {
+		edges []Edge[int]
+	}{
+		"add 3 edges": {
+			edges: []Edge[int]{
+				{Source: 1, Target: 2, Weight: 1},
+				{Source: 2, Target: 3, Weight: 2},
+				{Source: 3, Target: 1, Weight: 3},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		graph := New(IntHash)
+
+		for _, edge := range test.edges {
+			sourceHash := graph.hash(edge.Source)
+			TargetHash := graph.hash(edge.Target)
+			graph.addEdge(sourceHash, TargetHash, edge)
+		}
+
+		if len(graph.edges) != len(test.edges) {
+			t.Errorf("%s: number of edges doesn't match: expected %v, got %v", name, len(test.edges), len(graph.edges))
+		}
+		if len(graph.outEdges) != len(test.edges) {
+			t.Errorf("%s: number of outgoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(graph.outEdges))
+		}
+		if len(graph.inEdges) != len(test.edges) {
+			t.Errorf("%s: number of ingoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(graph.inEdges))
+		}
+	}
+}
+
 func slicesAreEqual[T any](a []T, b []T, equals func(a, b T) bool) bool {
 	if len(a) != len(b) {
 		return false

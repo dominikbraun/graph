@@ -13,6 +13,8 @@ type Graph[K comparable, T any] struct {
 	properties *Properties
 	vertices   map[K]T
 	edges      map[K]map[K]Edge[T]
+	outEdges   map[K]map[K]Edge[T]
+	inEdges    map[K]map[K]Edge[T]
 }
 
 // Edge represents a graph edge with a source and target vertex as well as a weight, which has the
@@ -64,6 +66,8 @@ func New[K comparable, T any](hash Hash[K, T], options ...func(*Properties)) *Gr
 		properties: &Properties{},
 		vertices:   make(map[K]T),
 		edges:      make(map[K]map[K]Edge[T]),
+		outEdges:   make(map[K]map[K]Edge[T]),
+		inEdges:    make(map[K]map[K]Edge[T]),
 	}
 
 	for _, option := range options {
@@ -122,17 +126,13 @@ func (g *Graph[K, T]) WeightedEdgeByHashes(sourceHash, targetHash K, weight int)
 		return fmt.Errorf("an edge between vertices %v and %v already exists", sourceHash, targetHash)
 	}
 
-	if _, ok := g.edges[sourceHash]; !ok {
-		g.edges[sourceHash] = make(map[K]Edge[T])
-	}
-
 	edge := Edge[T]{
 		Source: source,
 		Target: target,
 		Weight: weight,
 	}
 
-	g.edges[sourceHash][targetHash] = edge
+	g.addEdge(sourceHash, targetHash, edge)
 
 	return nil
 }
@@ -191,4 +191,24 @@ func (g *Graph[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	}
 
 	return false
+}
+
+func (g *Graph[K, T]) addEdge(sourceHash, targetHash K, edge Edge[T]) {
+	if _, ok := g.edges[sourceHash]; !ok {
+		g.edges[sourceHash] = make(map[K]Edge[T])
+	}
+
+	g.edges[sourceHash][targetHash] = edge
+
+	if _, ok := g.outEdges[sourceHash]; !ok {
+		g.outEdges[sourceHash] = make(map[K]Edge[T])
+	}
+
+	g.outEdges[sourceHash][targetHash] = edge
+
+	if _, ok := g.inEdges[targetHash]; !ok {
+		g.inEdges[targetHash] = make(map[K]Edge[T])
+	}
+
+	g.inEdges[targetHash][sourceHash] = edge
 }

@@ -174,6 +174,74 @@ func (g *Graph[K, T]) GetEdgeByHashes(sourceHash, targetHash K) (Edge[T], bool) 
 	return Edge[T]{}, false
 }
 
+// DFS performs a Depth-First Search on the graph, starting from the given vertex. The visit
+// function will be invoked for each visited vertex. If it returns false, DFS will continue
+// traversing the path, and if it returns true, the traversal will be stopped.
+//
+// This example prints all vertices of the graph in DFS-order:
+//
+//	g := graph.New(graph.IntHash)
+//
+//	g.Vertex(1)
+//	g.Vertex(2)
+//	g.Vertex(3)
+//
+//	g.Edge(1, 2)
+//	g.Edge(2, 3)
+//	g.Edge(3, 1)
+//
+//	g.DFS(1, func(value int) bool {
+//		fmt.Println(value)
+//		return false
+//	})
+//
+// Similarily, if you have a graph of City vertices and the traversal should stop at London,
+// the visit function would look as follows:
+//
+//	func(city City) bool {
+//		return city.Name == "London"
+//	}
+//
+// DFS is non-recursive and maintains a stack instead.
+func (g *Graph[K, T]) DFS(start T, visit func(value T) bool) error {
+	startHash := g.hash(start)
+
+	return g.DFSByHash(startHash, visit)
+}
+
+// DFS does the same as DFS, but uses a hash value to identify the starting vertex.
+func (g *Graph[K, T]) DFSByHash(startHash K, visit func(value T) bool) error {
+	if _, ok := g.vertices[startHash]; !ok {
+		return fmt.Errorf("could not find start vertex with hash %v", startHash)
+	}
+
+	stack := make([]K, 0)
+	visited := make(map[K]bool)
+
+	stack = append(stack, startHash)
+
+	for len(stack) > 0 {
+		currentHash := stack[0]
+		currentVertex := g.vertices[currentHash]
+
+		stack = stack[:len(stack)-1]
+
+		if _, ok := visited[currentHash]; !ok {
+			// Stop traversing the graph if the visit function returns true.
+			if visit(currentVertex) {
+				break
+			}
+			visited[currentHash] = true
+
+			for adjacency := range g.outEdges[currentHash] {
+				stack = append(stack, adjacency)
+			}
+		}
+	}
+
+	return nil
+}
+
 // edgesAreEqual checks two given edges for equality. Two edges are considered equal if their
 // source and target vertices are the same or, if the graph is undirected, the same but swapped.
 func (g *Graph[K, T]) edgesAreEqual(a, b Edge[T]) bool {

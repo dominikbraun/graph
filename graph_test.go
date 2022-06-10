@@ -157,6 +157,80 @@ func TestGraph_GetEdgeByHashes(t *testing.T) {
 	}
 }
 
+func TestGraph_DFS(t *testing.T) {
+	TestGraph_DFSByHash(t)
+}
+
+func TestGraph_DFSByHash(t *testing.T) {
+	tests := map[string]struct {
+		vertices       []int
+		edges          []Edge[int]
+		startHash      int
+		expectedVisits []int
+		stopAtVertex   int
+	}{
+		"traverse entire graph with 3 vertices": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 2, Target: 3},
+				{Source: 3, Target: 1},
+			},
+			startHash:      1,
+			expectedVisits: []int{1, 2, 3},
+			stopAtVertex:   -1,
+		},
+		"traverse graph with 3 vertices until vertex 2": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 2, Target: 3},
+				{Source: 3, Target: 1},
+			},
+			startHash:      1,
+			expectedVisits: []int{1, 2},
+			stopAtVertex:   2,
+		},
+	}
+
+	for name, test := range tests {
+		graph := New(IntHash)
+
+		for _, vertex := range test.vertices {
+			graph.Vertex(vertex)
+		}
+
+		for _, edge := range test.edges {
+			graph.Edge(edge.Source, edge.Target)
+		}
+
+		visited := make([]int, 0, len(test.vertices))
+
+		visit := func(value int) bool {
+			visited = append(visited, value)
+
+			if test.stopAtVertex != -1 {
+				if value == test.stopAtVertex {
+					return true
+				}
+			}
+			return false
+		}
+
+		_ = graph.DFSByHash(test.startHash, visit)
+
+		if len(visited) != len(test.expectedVisits) {
+			t.Errorf("%s: numbers of visited vertices don't match: expected %v, got %v", name, len(test.expectedVisits), len(visited))
+		}
+
+		for i, expectedVisit := range test.expectedVisits {
+			if expectedVisit != visited[i] {
+				t.Fatalf("%s: visited vertices don't match: expected %v at position %d, got %v", name, expectedVisit, i, visited[i])
+			}
+		}
+	}
+}
+
 func TestGraph_edgesAreEqual(t *testing.T) {
 	tests := map[string]struct {
 		graph         *Graph[int, int]

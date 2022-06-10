@@ -186,11 +186,11 @@ func (g *Graph[K, T]) GetEdgeByHashes(sourceHash, targetHash K) (Edge[T], bool) 
 //	g.Vertex(2)
 //	g.Vertex(3)
 //
-//	g.Edge(1, 2)
-//	g.Edge(2, 3)
-//	g.Edge(3, 1)
+//	_ = g.Edge(1, 2)
+//	_ = g.Edge(2, 3)
+//	_ = g.Edge(3, 1)
 //
-//	g.DFS(1, func(value int) bool {
+//	_ = g.DFS(1, func(value int) bool {
 //		fmt.Println(value)
 //		return false
 //	})

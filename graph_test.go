@@ -218,10 +218,10 @@ func TestGraph_DFSByHash(t *testing.T) {
 			}
 		}
 
-		visited := make([]int, 0, len(test.vertices))
+		visited := make(map[int]struct{})
 
 		visit := func(value int) bool {
-			visited = append(visited, value)
+			visited[value] = struct{}{}
 
 			if test.stopAtVertex != -1 {
 				if value == test.stopAtVertex {
@@ -237,9 +237,9 @@ func TestGraph_DFSByHash(t *testing.T) {
 			t.Fatalf("%s: numbers of visited vertices don't match: expected %v, got %v", name, len(test.expectedVisits), len(visited))
 		}
 
-		for i, expectedVisit := range test.expectedVisits {
-			if expectedVisit != visited[i] {
-				t.Fatalf("%s: visited vertices don't match: expected %v at position %d, got %v", name, expectedVisit, i, visited[i])
+		for _, expectedVisit := range test.expectedVisits {
+			if _, ok := visited[expectedVisit]; !ok {
+				t.Errorf("%s: expected vertex %v to be visited, but it isn't", name, expectedVisit)
 			}
 		}
 	}
@@ -251,12 +251,9 @@ func TestGraph_BFS(t *testing.T) {
 
 func TestGraph_BFSByHash(t *testing.T) {
 	tests := map[string]struct {
-		vertices  []int
-		edges     []Edge[int]
-		startHash int
-		// Since Go doesn't guarantee any order when ranging over maps, it is not possible to
-		// expect a strict order of visited vertices like in the DFS function. This is why
-		// expectedVisits merely is a set of "minimum" expectactions and not a strict list.
+		vertices       []int
+		edges          []Edge[int]
+		startHash      int
 		expectedVisits []int
 		stopAtVertex   int
 	}{

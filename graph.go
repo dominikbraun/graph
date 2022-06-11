@@ -209,7 +209,7 @@ func (g *Graph[K, T]) DFS(start T, visit func(value T) bool) error {
 	return g.DFSByHash(startHash, visit)
 }
 
-// DFS does the same as DFS, but uses a hash value to identify the starting vertex.
+// DFSByHash does the same as DFS, but uses a hash value to identify the starting vertex.
 func (g *Graph[K, T]) DFSByHash(startHash K, visit func(value T) bool) error {
 	if _, ok := g.vertices[startHash]; !ok {
 		return fmt.Errorf("could not find start vertex with hash %v", startHash)
@@ -221,7 +221,7 @@ func (g *Graph[K, T]) DFSByHash(startHash K, visit func(value T) bool) error {
 	stack = append(stack, startHash)
 
 	for len(stack) > 0 {
-		currentHash := stack[0]
+		currentHash := stack[len(stack)-1]
 		currentVertex := g.vertices[currentHash]
 
 		stack = stack[:len(stack)-1]
@@ -237,6 +237,76 @@ func (g *Graph[K, T]) DFSByHash(startHash K, visit func(value T) bool) error {
 				stack = append(stack, adjacency)
 			}
 		}
+	}
+
+	return nil
+}
+
+// BFS performs a Breadth-First Search on the graph, starting from the given vertex. The visit
+// function will be invoked for each visited vertex. If it returns false, BFS will continue
+// traversing the path, and if it returns true, the traversal will be stopped.
+//
+// This example prints all vertices of the graph in BFS-order:
+//
+//	g := graph.New(graph.IntHash)
+//
+//	g.Vertex(1)
+//	g.Vertex(2)
+//	g.Vertex(3)
+//
+//	_ = g.Edge(1, 2)
+//	_ = g.Edge(2, 3)
+//	_ = g.Edge(3, 1)
+//
+//	_ = g.BFS(1, func(value int) bool {
+//		fmt.Println(value)
+//		return false
+//	})
+//
+// Similarily, if you have a graph of City vertices and the traversal should stop at London,
+// the visit function would look as follows:
+//
+//	func(city City) bool {
+//		return city.Name == "London"
+//	}
+//
+// BFS is non-recursive and maintains a stack instead.
+func (g *Graph[K, T]) BFS(start T, visit func(value T) bool) error {
+	startHash := g.hash(start)
+
+	return g.BFSByHash(startHash, visit)
+}
+
+// BFSByHash does the same as BFS, but uses a hash value to identify the starting vertex.
+func (g *Graph[K, T]) BFSByHash(startHash K, visit func(value T) bool) error {
+	if _, ok := g.vertices[startHash]; !ok {
+		return fmt.Errorf("could not find start vertex with hash %v", startHash)
+	}
+
+	queue := make([]K, 0)
+	visited := make(map[K]bool)
+
+	visited[startHash] = true
+	queue = append(queue, startHash)
+
+	for len(queue) > 0 {
+		currentHash := queue[0]
+		currentVertex := g.vertices[currentHash]
+
+		queue = queue[1:]
+
+		// Stop traversing the graph if the visit function returns true.
+		if visit(currentVertex) {
+			break
+		}
+
+		for adjacency := range g.outEdges[currentHash] {
+			if _, ok := visited[adjacency]; !ok {
+				visited[adjacency] = true
+				queue = append(queue, adjacency)
+			}
+		}
+
 	}
 
 	return nil

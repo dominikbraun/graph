@@ -1,6 +1,8 @@
 package graph
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestGraph_Vertex(t *testing.T) {
 	tests := map[string]struct {
@@ -173,6 +175,16 @@ func TestGraph_DFSByHash(t *testing.T) {
 			vertices: []int{1, 2, 3},
 			edges: []Edge[int]{
 				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+			},
+			startHash:      1,
+			expectedVisits: []int{1, 2, 3},
+			stopAtVertex:   -1,
+		},
+		"traverse entire triangle graph": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
 				{Source: 2, Target: 3},
 				{Source: 3, Target: 1},
 			},
@@ -201,7 +213,9 @@ func TestGraph_DFSByHash(t *testing.T) {
 		}
 
 		for _, edge := range test.edges {
-			graph.Edge(edge.Source, edge.Target)
+			if err := graph.Edge(edge.Source, edge.Target); err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
 		}
 
 		visited := make([]int, 0, len(test.vertices))
@@ -220,12 +234,88 @@ func TestGraph_DFSByHash(t *testing.T) {
 		_ = graph.DFSByHash(test.startHash, visit)
 
 		if len(visited) != len(test.expectedVisits) {
-			t.Errorf("%s: numbers of visited vertices don't match: expected %v, got %v", name, len(test.expectedVisits), len(visited))
+			t.Fatalf("%s: numbers of visited vertices don't match: expected %v, got %v", name, len(test.expectedVisits), len(visited))
 		}
 
 		for i, expectedVisit := range test.expectedVisits {
 			if expectedVisit != visited[i] {
 				t.Fatalf("%s: visited vertices don't match: expected %v at position %d, got %v", name, expectedVisit, i, visited[i])
+			}
+		}
+	}
+}
+
+func TestGraph_BFS(t *testing.T) {
+	TestGraph_BFSByHash(t)
+}
+
+func TestGraph_BFSByHash(t *testing.T) {
+	tests := map[string]struct {
+		vertices  []int
+		edges     []Edge[int]
+		startHash int
+		// Since Go doesn't guarantee any order when ranging over maps, it is not possible to
+		// expect a strict order of visited vertices like in the DFS function. This is why
+		// expectedVisits merely is a set of "minimum" expectactions and not a strict list.
+		expectedVisits []int
+		stopAtVertex   int
+	}{
+		"traverse entire graph with 3 vertices": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+			},
+			startHash:      1,
+			expectedVisits: []int{1, 2, 3},
+			stopAtVertex:   -1,
+		},
+		"traverse graph with 6 vertices until vertex 4": {
+			vertices: []int{1, 2, 3, 4, 5, 6},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 2, Target: 5},
+				{Source: 3, Target: 6},
+			},
+			startHash:      1,
+			expectedVisits: []int{1, 2, 3, 4},
+			stopAtVertex:   4,
+		},
+	}
+
+	for name, test := range tests {
+		graph := New(IntHash)
+
+		for _, vertex := range test.vertices {
+			graph.Vertex(vertex)
+		}
+
+		for _, edge := range test.edges {
+			if err := graph.Edge(edge.Source, edge.Target); err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
+		}
+
+		visited := make(map[int]struct{})
+
+		visit := func(value int) bool {
+			visited[value] = struct{}{}
+
+			if test.stopAtVertex != -1 {
+				if value == test.stopAtVertex {
+					return true
+				}
+			}
+			return false
+		}
+
+		_ = graph.BFSByHash(test.startHash, visit)
+
+		for _, expectedVisit := range test.expectedVisits {
+			if _, ok := visited[expectedVisit]; !ok {
+				t.Errorf("%s: expected vertex %v to be visited, but it isn't", name, expectedVisit)
 			}
 		}
 	}

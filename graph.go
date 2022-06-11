@@ -10,7 +10,7 @@ import (
 // At the moment, Graph is not suited for representing a multigraph.
 type Graph[K comparable, T any] struct {
 	hash       Hash[K, T]
-	properties *Properties
+	properties *properties
 	vertices   map[K]T
 	edges      map[K]map[K]Edge[T]
 	outEdges   map[K]map[K]Edge[T]
@@ -60,10 +60,10 @@ type Edge[T any] struct {
 //	g := graph.New(graph.IntHash, graph.Directed(), graph.Acyclic())
 //
 // The behavior of all graph methods is controlled by these particular options.
-func New[K comparable, T any](hash Hash[K, T], options ...func(*Properties)) *Graph[K, T] {
+func New[K comparable, T any](hash Hash[K, T], options ...func(*properties)) *Graph[K, T] {
 	g := Graph[K, T]{
 		hash:       hash,
-		properties: &Properties{},
+		properties: &properties{},
 		vertices:   make(map[K]T),
 		edges:      make(map[K]map[K]Edge[T]),
 		outEdges:   make(map[K]map[K]Edge[T]),

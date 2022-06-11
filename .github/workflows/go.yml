@@ -7,8 +7,8 @@ on:
     branches: [ main ]
 
 jobs:
-  test-linux:
-    name: Linux
+  test:
+    name: Unit Tests
     runs-on: ubuntu-latest
     steps:
       - name: Set up Go 1.18

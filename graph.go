@@ -114,12 +114,12 @@ func (g *Graph[K, T]) EdgeByHashes(sourceHash, targetHash K) error {
 func (g *Graph[K, T]) WeightedEdgeByHashes(sourceHash, targetHash K, weight int) error {
 	source, ok := g.vertices[sourceHash]
 	if !ok {
-		return fmt.Errorf("could not find source vertex with hash %v", source)
+		return fmt.Errorf("could not find source vertex with hash %v", sourceHash)
 	}
 
 	target, ok := g.vertices[targetHash]
 	if !ok {
-		return fmt.Errorf("could not find target vertex with hash %v", source)
+		return fmt.Errorf("could not find target vertex with hash %v", targetHash)
 	}
 
 	if _, ok := g.GetEdgeByHashes(sourceHash, targetHash); ok {

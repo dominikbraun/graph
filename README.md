@@ -15,7 +15,7 @@ It supports different kinds of graphs such as directed graphs, acyclic graphs, o
   * Eulerian paths and cycles
   * Dijkstra's algorithm
   * Tarjan's strongly connected components algorithm
-* Optimized algorithms due to precomputing and partial evaluation.
+* Optimized algorithms due to dynamic programming and memoization.
 
 > Status: Work in progress. Multigraphs aren't supported at the moment.
 

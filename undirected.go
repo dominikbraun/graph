@@ -76,23 +76,19 @@ func (u *undirected[K, T]) GetEdge(source, target T) (Edge[T], bool) {
 }
 
 func (u *undirected[K, T]) GetEdgeByHashes(sourceHash, targetHash K) (Edge[T], bool) {
+	// In an undirected graph, since multigraphs aren't supported, the edge AB is the same as BA.
+	// Therefore, if source[target] cannot be found, this function also looks for target[source].
 	sourceEdges, ok := u.edges[sourceHash]
-	if !ok && u.properties.isDirected {
-		return Edge[T]{}, false
-	}
-
-	if edge, ok := sourceEdges[targetHash]; ok {
-		return edge, true
-	}
-
-	if !u.properties.isDirected {
-		targetEdges, ok := u.edges[targetHash]
-		if !ok {
-			return Edge[T]{}, false
-		}
-
-		if edge, ok := targetEdges[sourceHash]; ok {
+	if ok {
+		if edge, ok := sourceEdges[targetHash]; ok {
 			return edge, true
+		}
+	}
+
+	targetEdges, ok := u.edges[targetHash]
+	if ok {
+		if edge, ok := targetEdges[sourceHash]; ok {
+			return edge, ok
 		}
 	}
 
@@ -198,18 +194,30 @@ func (u *undirected[K, T]) addEdge(sourceHash, targetHash K, edge Edge[T]) {
 	if _, ok := u.edges[sourceHash]; !ok {
 		u.edges[sourceHash] = make(map[K]Edge[T])
 	}
+	if _, ok := u.edges[targetHash]; !ok {
+		u.edges[targetHash] = make(map[K]Edge[T])
+	}
 
 	u.edges[sourceHash][targetHash] = edge
+	u.edges[targetHash][sourceHash] = edge
 
 	if _, ok := u.outEdges[sourceHash]; !ok {
 		u.outEdges[sourceHash] = make(map[K]Edge[T])
 	}
+	if _, ok := u.outEdges[targetHash]; !ok {
+		u.outEdges[targetHash] = make(map[K]Edge[T])
+	}
 
 	u.outEdges[sourceHash][targetHash] = edge
+	u.outEdges[targetHash][sourceHash] = edge
 
 	if _, ok := u.inEdges[targetHash]; !ok {
 		u.inEdges[targetHash] = make(map[K]Edge[T])
 	}
+	if _, ok := u.inEdges[sourceHash]; !ok {
+		u.inEdges[sourceHash] = make(map[K]Edge[T])
+	}
 
 	u.inEdges[targetHash][sourceHash] = edge
+	u.inEdges[sourceHash][targetHash] = edge
 }

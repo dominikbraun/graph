@@ -77,23 +77,12 @@ func (d *directed[K, T]) GetEdge(source, target T) (Edge[T], bool) {
 
 func (d *directed[K, T]) GetEdgeByHashes(sourceHash, targetHash K) (Edge[T], bool) {
 	sourceEdges, ok := d.edges[sourceHash]
-	if !ok && d.properties.isDirected {
+	if !ok {
 		return Edge[T]{}, false
 	}
 
 	if edge, ok := sourceEdges[targetHash]; ok {
 		return edge, true
-	}
-
-	if !d.properties.isDirected {
-		targetEdges, ok := d.edges[targetHash]
-		if !ok {
-			return Edge[T]{}, false
-		}
-
-		if edge, ok := targetEdges[sourceHash]; ok {
-			return edge, true
-		}
 	}
 
 	return Edge[T]{}, false

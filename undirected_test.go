@@ -206,7 +206,7 @@ func TestUndirected_DFSByHash(t *testing.T) {
 				{Source: 5, Target: 7},
 			},
 			startHash:             1,
-			expectedMinimumVisits: []int{1, 2, 4, 5},
+			expectedMinimumVisits: []int{1, 2, 4},
 			forbiddenVisits:       []int{6},
 			stopAtVertex:          4,
 		},

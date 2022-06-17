@@ -153,11 +153,13 @@ func TestUndirected_DFS(t *testing.T) {
 
 func TestUndirected_DFSByHash(t *testing.T) {
 	tests := map[string]struct {
-		vertices       []int
-		edges          []Edge[int]
-		startHash      int
-		expectedVisits []int
-		stopAtVertex   int
+		vertices  []int
+		edges     []Edge[int]
+		startHash int
+		// It is not possible to expect a strict list of vertices to be visited. If stopAtVertex is
+		// a neighbor of another vertex, that other vertex might be visited before stopAtVertex.
+		expectedMinimumVisits []int
+		stopAtVertex          int
 	}{
 		"traverse entire graph with 3 vertices": {
 			vertices: []int{1, 2, 3},
@@ -165,9 +167,9 @@ func TestUndirected_DFSByHash(t *testing.T) {
 				{Source: 1, Target: 2},
 				{Source: 1, Target: 3},
 			},
-			startHash:      1,
-			expectedVisits: []int{1, 2, 3},
-			stopAtVertex:   -1,
+			startHash:             1,
+			expectedMinimumVisits: []int{1, 2, 3},
+			stopAtVertex:          -1,
 		},
 		"traverse entire triangle graph": {
 			vertices: []int{1, 2, 3},
@@ -176,9 +178,9 @@ func TestUndirected_DFSByHash(t *testing.T) {
 				{Source: 2, Target: 3},
 				{Source: 3, Target: 1},
 			},
-			startHash:      1,
-			expectedVisits: []int{1, 2, 3},
-			stopAtVertex:   -1,
+			startHash:             1,
+			expectedMinimumVisits: []int{1, 2, 3},
+			stopAtVertex:          -1,
 		},
 		"traverse graph with 3 vertices until vertex 2": {
 			vertices: []int{1, 2, 3},
@@ -187,9 +189,9 @@ func TestUndirected_DFSByHash(t *testing.T) {
 				{Source: 2, Target: 3},
 				{Source: 3, Target: 1},
 			},
-			startHash:      1,
-			expectedVisits: []int{1, 2},
-			stopAtVertex:   2,
+			startHash:             1,
+			expectedMinimumVisits: []int{1, 2},
+			stopAtVertex:          2,
 		},
 	}
 
@@ -221,11 +223,11 @@ func TestUndirected_DFSByHash(t *testing.T) {
 
 		_ = graph.DFSByHash(test.startHash, visit)
 
-		if len(visited) != len(test.expectedVisits) {
-			t.Fatalf("%s: numbers of visited vertices don't match: expected %v, got %v", name, len(test.expectedVisits), len(visited))
+		if len(visited) < len(test.expectedMinimumVisits) {
+			t.Fatalf("%s: expected number of minimum visits doesn't match: expected %v, got %v", name, len(test.expectedMinimumVisits), len(visited))
 		}
 
-		for _, expectedVisit := range test.expectedVisits {
+		for _, expectedVisit := range test.expectedMinimumVisits {
 			if _, ok := visited[expectedVisit]; !ok {
 				t.Errorf("%s: expected vertex %v to be visited, but it isn't", name, expectedVisit)
 			}

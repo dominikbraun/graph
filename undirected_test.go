@@ -159,7 +159,9 @@ func TestUndirected_DFSByHash(t *testing.T) {
 		// It is not possible to expect a strict list of vertices to be visited. If stopAtVertex is
 		// a neighbor of another vertex, that other vertex might be visited before stopAtVertex.
 		expectedMinimumVisits []int
-		stopAtVertex          int
+		// In case stopAtVertex has downstream neighbours, those neighbours musn't be visited.
+		forbiddenVisits []int
+		stopAtVertex    int
 	}{
 		"traverse entire graph with 3 vertices": {
 			vertices: []int{1, 2, 3},
@@ -193,6 +195,21 @@ func TestUndirected_DFSByHash(t *testing.T) {
 			expectedMinimumVisits: []int{1, 2},
 			stopAtVertex:          2,
 		},
+		"traverse graph with 7 vertices until vertex 4": {
+			vertices: []int{1, 2, 3, 4, 5, 6, 7},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 2, Target: 5},
+				{Source: 4, Target: 6},
+				{Source: 5, Target: 7},
+			},
+			startHash:             1,
+			expectedMinimumVisits: []int{1, 2, 4, 5},
+			forbiddenVisits:       []int{6},
+			stopAtVertex:          4,
+		},
 	}
 
 	for name, test := range tests {
@@ -225,6 +242,14 @@ func TestUndirected_DFSByHash(t *testing.T) {
 
 		if len(visited) < len(test.expectedMinimumVisits) {
 			t.Fatalf("%s: expected number of minimum visits doesn't match: expected %v, got %v", name, len(test.expectedMinimumVisits), len(visited))
+		}
+
+		if test.forbiddenVisits != nil {
+			for _, forbiddenVisit := range test.forbiddenVisits {
+				if _, ok := visited[forbiddenVisit]; ok {
+					t.Errorf("%s: expected vertex %v to not be visited, but it is", name, forbiddenVisit)
+				}
+			}
 		}
 
 		for _, expectedVisit := range test.expectedMinimumVisits {

@@ -210,6 +210,31 @@ func TestUndirected_DFSByHash(t *testing.T) {
 			forbiddenVisits:       []int{6},
 			stopAtVertex:          4,
 		},
+		"traverse graph with 15 vertices until vertex 11": {
+			vertices: []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 3, Target: 4},
+				{Source: 3, Target: 5},
+				{Source: 3, Target: 6},
+				{Source: 4, Target: 7},
+				{Source: 5, Target: 13},
+				{Source: 5, Target: 14},
+				{Source: 6, Target: 7},
+				{Source: 7, Target: 8},
+				{Source: 7, Target: 9},
+				{Source: 8, Target: 10},
+				{Source: 9, Target: 11},
+				{Source: 9, Target: 12},
+				{Source: 10, Target: 14},
+				{Source: 11, Target: 15},
+			},
+			startHash:             1,
+			expectedMinimumVisits: []int{1, 3, 7, 9, 11},
+			forbiddenVisits:       []int{15},
+			stopAtVertex:          11,
+		},
 	}
 
 	for name, test := range tests {

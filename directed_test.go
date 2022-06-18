@@ -305,6 +305,87 @@ func TestDirected_BFSByHash(t *testing.T) {
 	}
 }
 
+func TestDirected_CreatesCycle(t *testing.T) {
+	TestDirected(t)
+}
+
+func TestDirected_CreatesCycleByHashes(t *testing.T) {
+	tests := map[string]struct {
+		vertices     []int
+		edges        []Edge[int]
+		sourceHash   int
+		targetHash   int
+		createsCycle bool
+	}{
+		"directed 2-4-7-5 cycle": {
+			vertices: []int{1, 2, 3, 4, 5, 6, 7},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 3, Target: 6},
+				{Source: 4, Target: 7},
+				{Source: 5, Target: 2},
+			},
+			sourceHash:   7,
+			targetHash:   5,
+			createsCycle: true,
+		},
+		"undirected 2-4-7-5 'cycle'": {
+			vertices: []int{1, 2, 3, 4, 5, 6, 7},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 3, Target: 6},
+				{Source: 4, Target: 7},
+				{Source: 5, Target: 2},
+			},
+			sourceHash: 5,
+			targetHash: 7,
+			// The direction of the edge (57 instead of 75) doesn't create a directed cycle.
+			createsCycle: false,
+		},
+		"no cycle": {
+			vertices: []int{1, 2, 3, 4, 5, 6, 7},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 3, Target: 6},
+				{Source: 4, Target: 7},
+				{Source: 5, Target: 2},
+			},
+			sourceHash:   5,
+			targetHash:   6,
+			createsCycle: false,
+		},
+	}
+
+	for name, test := range tests {
+		graph := newDirected(IntHash, &properties{})
+
+		for _, vertex := range test.vertices {
+			graph.Vertex(vertex)
+		}
+
+		for _, edge := range test.edges {
+			if err := graph.Edge(edge.Source, edge.Target); err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
+		}
+
+		createsCycle, err := graph.CreatesCycle(test.sourceHash, test.targetHash)
+		if err != nil {
+			t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+		}
+
+		if createsCycle != test.createsCycle {
+			t.Errorf("%s: cycle expectancy doesn't match: expected %v, got %v", name, test.createsCycle, createsCycle)
+		}
+	}
+}
+
 func TestDirected_edgesAreEqual(t *testing.T) {
 	tests := map[string]struct {
 		a             Edge[int]
@@ -366,7 +447,68 @@ func TestDirected_addEdge(t *testing.T) {
 	}
 }
 
-func slicesAreEqual[T any](a []T, b []T, equals func(a, b T) bool) bool {
+func TestDirected_predecessors(t *testing.T) {
+	tests := map[string]struct {
+		vertices             []int
+		edges                []Edge[int]
+		vertex               int
+		expectedPredecessors []int
+	}{
+		"graph with 3 vertices": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+			},
+			vertex:               2,
+			expectedPredecessors: []int{1},
+		},
+		"graph with 6 vertices": {
+			vertices: []int{1, 2, 3, 4, 5, 6},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 2, Target: 5},
+				{Source: 3, Target: 6},
+			},
+			vertex:               5,
+			expectedPredecessors: []int{2},
+		},
+		"graph with 4 vertices and 3 predecessors": {
+			vertices: []int{1, 2, 3, 4},
+			edges: []Edge[int]{
+				{Source: 1, Target: 4},
+				{Source: 2, Target: 4},
+				{Source: 3, Target: 4},
+			},
+			vertex:               4,
+			expectedPredecessors: []int{1, 2, 3},
+		},
+	}
+
+	for name, test := range tests {
+		graph := newDirected(IntHash, &properties{})
+
+		for _, vertex := range test.vertices {
+			graph.Vertex(vertex)
+		}
+
+		for _, edge := range test.edges {
+			if err := graph.Edge(edge.Source, edge.Target); err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
+		}
+
+		predecessors := graph.predecessors(graph.hash(test.vertex))
+
+		if !slicesAreEqual(predecessors, test.expectedPredecessors) {
+			t.Errorf("%s: predecessors don't match: expected %v, got %v", name, test.expectedPredecessors, predecessors)
+		}
+	}
+}
+
+func slicesAreEqual[T comparable](a []T, b []T) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -374,7 +516,7 @@ func slicesAreEqual[T any](a []T, b []T, equals func(a, b T) bool) bool {
 	for _, aValue := range a {
 		found := false
 		for _, bValue := range b {
-			if equals(aValue, bValue) {
+			if aValue == bValue {
 				found = true
 			}
 		}

@@ -85,6 +85,31 @@ _ = g.DFS(1, func(value int) bool {
 })
 ```
 
+## Cycle checks for acyclic graphs
+
+```go
+g := graph.New(graph.IntHash, graph.Acyclic())
+
+g.Vertex(1)
+g.Vertex(2)
+g.Vertex(3)
+
+
+if err := g.Edge(1, 2); err != nil {
+    panic(err)
+}
+if err := g.Edge(2, 3); err != nil {
+    panic(err)
+}
+if err := g.Edge(3, 1); err != nil {
+    panic(err)
+}
+```
+
+```
+panic: an edge between 3 and 1 would introduce a cycle
+```
+
 # Concepts
 
 ## Hashes

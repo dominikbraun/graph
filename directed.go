@@ -166,6 +166,54 @@ func (d *directed[K, T]) BFSByHash(startHash K, visit func(value T) bool) error 
 	return nil
 }
 
+func (d *directed[K, T]) CreatesCycle(source, target T) (bool, error) {
+	sourceHash := d.hash(source)
+	targetHash := d.hash(target)
+
+	return d.CreatesCycleByHashes(sourceHash, targetHash)
+}
+
+func (d *directed[K, T]) CreatesCycleByHashes(sourceHash, targetHash K) (bool, error) {
+	source, ok := d.vertices[sourceHash]
+	if !ok {
+		return false, fmt.Errorf("could not find source vertex with hash %v", source)
+	}
+
+	_, ok = d.vertices[targetHash]
+	if !ok {
+		return false, fmt.Errorf("could not find target vertex with hash %v", source)
+	}
+
+	if sourceHash == targetHash {
+		return true, nil
+	}
+
+	stack := make([]K, 0)
+	visited := make(map[K]bool)
+
+	stack = append(stack, sourceHash)
+
+	for len(stack) > 0 {
+		currentHash := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+
+		if _, ok := visited[currentHash]; !ok {
+			// If the current vertex, e.g. a predecessor of the source vertex, is also the target
+			// vertex, an edge between these two would create a cycle.
+			if currentHash == targetHash {
+				return true, nil
+			}
+			visited[currentHash] = true
+
+			for _, predecessor := range d.predecessors(currentHash) {
+				stack = append(stack, predecessor)
+			}
+		}
+	}
+
+	return false, nil
+}
+
 func (d *directed[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	aSourceHash := d.hash(a.Source)
 	aTargetHash := d.hash(a.Target)
@@ -193,4 +241,19 @@ func (d *directed[K, T]) addEdge(sourceHash, targetHash K, edge Edge[T]) {
 	}
 
 	d.inEdges[targetHash][sourceHash] = edge
+}
+
+func (d *directed[K, T]) predecessors(vertexHash K) []K {
+	var predecessorHashes []K
+
+	inEdges, ok := d.inEdges[vertexHash]
+	if !ok {
+		return predecessorHashes
+	}
+
+	for hash := range inEdges {
+		predecessorHashes = append(predecessorHashes, hash)
+	}
+
+	return predecessorHashes
 }

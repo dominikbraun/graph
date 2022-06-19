@@ -105,6 +105,27 @@ type Graph[K comparable, T any] interface {
 
 	// BFSByHash does the same as BFS, but uses a hash value to identify the starting vertex.
 	BFSByHash(startHash K, visit func(value T) bool) error
+
+	// CreatesCycle determines whether an edge between the given source and target vertices would
+	// introduce a cycle. It won't create that edge in any case.
+	//
+	// A potential edge would create a cycle if the target vertex is also a parent of the source
+	// vertex. Given a graoh A-B-C-D, adding an edge DA would introduce a cycle:
+	//
+	//	A -
+	//	|  |
+	//	B  |
+	//	|  |
+	//	C  |
+	//	|  |
+	//	D -
+	//
+	// CreatesCycle backtracks the ingoing edges of D, resulting in a reverse walk C-B-A.
+	CreatesCycle(source, target T) (bool, error)
+
+	// CreatesCycleByHashes does the same as CreatesCycle, but uses a hash value to identify the
+	// starting vertex.
+	CreatesCycleByHashes(sourceHash, targetHash K) (bool, error)
 }
 
 // Edge represents a graph edge with a source and target vertex as well as a weight, which has the

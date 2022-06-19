@@ -173,6 +173,54 @@ func (u *undirected[K, T]) BFSByHash(startHash K, visit func(value T) bool) erro
 	return nil
 }
 
+func (u *undirected[K, T]) CreatesCycle(source, target T) (bool, error) {
+	sourceHash := u.hash(source)
+	targetHash := u.hash(target)
+
+	return u.CreatesCycleByHashes(sourceHash, targetHash)
+}
+
+func (u *undirected[K, T]) CreatesCycleByHashes(sourceHash, targetHash K) (bool, error) {
+	source, ok := u.vertices[sourceHash]
+	if !ok {
+		return false, fmt.Errorf("could not find source vertex with hash %v", source)
+	}
+
+	_, ok = u.vertices[targetHash]
+	if !ok {
+		return false, fmt.Errorf("could not find target vertex with hash %v", source)
+	}
+
+	if sourceHash == targetHash {
+		return true, nil
+	}
+
+	stack := make([]K, 0)
+	visited := make(map[K]bool)
+
+	stack = append(stack, sourceHash)
+
+	for len(stack) > 0 {
+		currentHash := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+
+		if _, ok := visited[currentHash]; !ok {
+			// If the current vertex, e.g. a predecessor of the source vertex, is also the target
+			// vertex, an edge between these two would create a cycle.
+			if currentHash == targetHash {
+				return true, nil
+			}
+			visited[currentHash] = true
+
+			for _, adjacency := range u.adjacencies(currentHash) {
+				stack = append(stack, adjacency)
+			}
+		}
+	}
+
+	return false, nil
+}
+
 func (u *undirected[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	aSourceHash := u.hash(a.Source)
 	aTargetHash := u.hash(a.Target)
@@ -220,4 +268,21 @@ func (u *undirected[K, T]) addEdge(sourceHash, targetHash K, edge Edge[T]) {
 
 	u.inEdges[targetHash][sourceHash] = edge
 	u.inEdges[sourceHash][targetHash] = edge
+}
+
+func (u *undirected[K, T]) adjacencies(vertexHash K) []K {
+	var adjacencyHashes []K
+
+	// An undirected graph creates an undirected edge as two directed edges in the opposite
+	// direction, so both the in-edges and the out-edges work here.
+	inEdges, ok := u.inEdges[vertexHash]
+	if !ok {
+		return adjacencyHashes
+	}
+
+	for hash := range inEdges {
+		adjacencyHashes = append(adjacencyHashes, hash)
+	}
+
+	return adjacencyHashes
 }

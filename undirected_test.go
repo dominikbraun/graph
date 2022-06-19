@@ -358,6 +358,85 @@ func TestUndirected_BFSByHash(t *testing.T) {
 	}
 }
 
+func TestUndirected_CreatesCycle(t *testing.T) {
+	TestUndirected_CreatesCycleByHashes(t)
+}
+
+func TestUndirected_CreatesCycleByHashes(t *testing.T) {
+	tests := map[string]struct {
+		vertices     []int
+		edges        []Edge[int]
+		sourceHash   int
+		targetHash   int
+		createsCycle bool
+	}{
+		"undirected 2-4-7-5 cycle": {
+			vertices: []int{1, 2, 3, 4, 5, 6, 7},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 3, Target: 6},
+				{Source: 4, Target: 7},
+				{Source: 5, Target: 7},
+			},
+			sourceHash:   2,
+			targetHash:   5,
+			createsCycle: true,
+		},
+		"undirected 5-6-3-1-2-7 cycle": {
+			vertices: []int{1, 2, 3, 4, 5, 6, 7},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 3, Target: 6},
+				{Source: 4, Target: 7},
+				{Source: 5, Target: 7},
+			},
+			sourceHash:   5,
+			targetHash:   6,
+			createsCycle: true,
+		},
+		"no cycle": {
+			vertices: []int{1, 2, 3, 4, 5, 6, 7},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 3, Target: 6},
+				{Source: 4, Target: 7},
+			},
+			sourceHash:   5,
+			targetHash:   7,
+			createsCycle: false,
+		},
+	}
+
+	for name, test := range tests {
+		graph := newUndirected(IntHash, &properties{})
+
+		for _, vertex := range test.vertices {
+			graph.Vertex(vertex)
+		}
+
+		for _, edge := range test.edges {
+			if err := graph.Edge(edge.Source, edge.Target); err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
+		}
+
+		createsCycle, err := graph.CreatesCycle(test.sourceHash, test.targetHash)
+		if err != nil {
+			t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+		}
+
+		if createsCycle != test.createsCycle {
+			t.Errorf("%s: cycle expectancy doesn't match: expected %v, got %v", name, test.createsCycle, createsCycle)
+		}
+	}
+}
+
 func TestUndirected_edgesAreEqual(t *testing.T) {
 	tests := map[string]struct {
 		a             Edge[int]
@@ -420,6 +499,99 @@ func TestUndirected_addEdge(t *testing.T) {
 		}
 		if len(graph.inEdges) != len(test.edges) {
 			t.Errorf("%s: number of ingoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(graph.inEdges))
+		}
+	}
+}
+
+func TestUndirected_adjacencies(t *testing.T) {
+	tests := map[string]struct {
+		vertices             []int
+		edges                []Edge[int]
+		vertex               int
+		expectedAdjancencies []int
+	}{
+		"graph with 3 vertices": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+			},
+			vertex:               2,
+			expectedAdjancencies: []int{1},
+		},
+		"graph with 6 vertices": {
+			vertices: []int{1, 2, 3, 4, 5, 6},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 2, Target: 5},
+				{Source: 3, Target: 6},
+			},
+			vertex:               2,
+			expectedAdjancencies: []int{1, 4, 5},
+		},
+		"graph with 7 vertices and a diamond cycle (#1)": {
+			vertices: []int{1, 2, 3, 4, 5, 6, 7},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 2, Target: 5},
+				{Source: 3, Target: 6},
+				{Source: 4, Target: 7},
+				{Source: 5, Target: 7},
+			},
+			vertex:               5,
+			expectedAdjancencies: []int{2, 7},
+		},
+		"graph with 7 vertices and a diamond cycle (#2)": {
+			vertices: []int{1, 2, 3, 4, 5, 6, 7},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 2, Target: 5},
+				{Source: 3, Target: 6},
+				{Source: 4, Target: 7},
+				{Source: 5, Target: 7},
+			},
+			vertex:               7,
+			expectedAdjancencies: []int{4, 5},
+		},
+		"graph with 7 vertices and a diamond cycle (#3)": {
+			vertices: []int{1, 2, 3, 4, 5, 6, 7},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 2, Target: 5},
+				{Source: 3, Target: 6},
+				{Source: 4, Target: 7},
+				{Source: 5, Target: 7},
+			},
+			vertex:               2,
+			expectedAdjancencies: []int{1, 4, 5},
+		},
+	}
+
+	for name, test := range tests {
+		graph := newUndirected(IntHash, &properties{})
+
+		for _, vertex := range test.vertices {
+			graph.Vertex(vertex)
+		}
+
+		for _, edge := range test.edges {
+			if err := graph.Edge(edge.Source, edge.Target); err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
+		}
+
+		adjacencies := graph.adjacencies(graph.hash(test.vertex))
+
+		if !slicesAreEqual(adjacencies, test.expectedAdjancencies) {
+			t.Errorf("%s: adjacencies don't match: expected %v, got %v", name, test.expectedAdjancencies, adjacencies)
 		}
 	}
 }

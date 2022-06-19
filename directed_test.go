@@ -306,7 +306,7 @@ func TestDirected_BFSByHash(t *testing.T) {
 }
 
 func TestDirected_CreatesCycle(t *testing.T) {
-	TestDirected(t)
+	TestDirected_CreatesCycleByHashes(t)
 }
 
 func TestDirected_CreatesCycleByHashes(t *testing.T) {

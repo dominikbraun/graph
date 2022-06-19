@@ -273,6 +273,8 @@ func (u *undirected[K, T]) addEdge(sourceHash, targetHash K, edge Edge[T]) {
 func (u *undirected[K, T]) adjacencies(vertexHash K) []K {
 	var adjacencyHashes []K
 
+	// An undirected graph creates an undirected edge as two directed edges in the opposite
+	// direction, so both the in-edges and the out-edges work here.
 	inEdges, ok := u.inEdges[vertexHash]
 	if !ok {
 		return adjacencyHashes

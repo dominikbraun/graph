@@ -57,6 +57,17 @@ func (d *directed[K, T]) WeightedEdgeByHashes(sourceHash, targetHash K, weight i
 		return fmt.Errorf("an edge between vertices %v and %v already exists", sourceHash, targetHash)
 	}
 
+	// If the graph was declared to be acyclic, permit the creation of a cycle.
+	if d.properties.isAcyclic {
+		createsCycle, err := d.CreatesCycleByHashes(sourceHash, targetHash)
+		if err != nil {
+			return fmt.Errorf("failed to check for cycles: %w", err)
+		}
+		if createsCycle {
+			return fmt.Errorf("an edge between %v and %v would introduce a cycle", sourceHash, targetHash)
+		}
+	}
+
 	edge := Edge[T]{
 		Source: source,
 		Target: target,

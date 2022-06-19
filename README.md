@@ -94,7 +94,6 @@ g.Vertex(1)
 g.Vertex(2)
 g.Vertex(3)
 
-
 if err := g.Edge(1, 2); err != nil {
     panic(err)
 }

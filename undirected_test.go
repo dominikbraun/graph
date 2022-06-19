@@ -51,37 +51,56 @@ func TestUndirected_WeightedEdgeByHashes(t *testing.T) {
 	tests := map[string]struct {
 		vertices      []int
 		edgeHashes    [][3]int
+		properties    *properties
 		expectedEdges []Edge[int]
-		shouldFail    bool
+		// Even though some of the WeightedEdgeByHashes calls might work, at least one of them
+		// could fail - for example if the last call would introduce a cycle.
+		shouldFinallyFail bool
 	}{
 		"graph with 2 edges": {
 			vertices:   []int{1, 2, 3},
 			edgeHashes: [][3]int{{1, 2, 10}, {1, 3, 20}},
+			properties: &properties{},
 			expectedEdges: []Edge[int]{
 				{Source: 1, Target: 2, Weight: 10},
 				{Source: 1, Target: 3, Weight: 20},
 			},
 		},
 		"hashes for non-existent vertices": {
-			vertices:   []int{1, 2},
-			edgeHashes: [][3]int{{1, 3, 20}},
-			shouldFail: true,
+			vertices:          []int{1, 2},
+			edgeHashes:        [][3]int{{1, 3, 20}},
+			properties:        &properties{},
+			shouldFinallyFail: true,
+		},
+		"edge introducing a cycle in an acyclic graph": {
+			vertices:   []int{1, 2, 3},
+			edgeHashes: [][3]int{{1, 2, 0}, {2, 3, 0}, {3, 1, 0}},
+			properties: &properties{
+				isAcyclic: true,
+			},
+			shouldFinallyFail: true,
 		},
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &properties{})
+		graph := newUndirected(IntHash, test.properties)
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
 		}
-		for _, edge := range test.edgeHashes {
-			err := graph.WeightedEdgeByHashes(edge[0], edge[1], edge[2])
 
-			if test.shouldFail != (err != nil) {
-				t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, (err != nil), err)
+		var err error
+
+		for _, edge := range test.edgeHashes {
+			if err = graph.WeightedEdgeByHashes(edge[0], edge[1], edge[2]); err != nil {
+				break
 			}
 		}
+
+		if test.shouldFinallyFail != (err != nil) {
+			t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFinallyFail, (err != nil), err)
+		}
+
 		for _, expectedEdge := range test.expectedEdges {
 			sourceHash := graph.hash(expectedEdge.Source)
 			targetHash := graph.hash(expectedEdge.Target)

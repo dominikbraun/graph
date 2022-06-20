@@ -456,6 +456,44 @@ func TestUndirected_CreatesCycleByHashes(t *testing.T) {
 	}
 }
 
+func TestUndirected_Degree(t *testing.T) {
+	TestDirected_Degree(t)
+}
+
+func TestUndirected_DegreeByHash(t *testing.T) {
+	tests := map[string]struct {
+		vertices       []int
+		edges          []Edge[int]
+		vertexHash     int
+		expectedDegree int
+		shouldFail     bool
+	}{}
+
+	for name, test := range tests {
+		graph := newUndirected(IntHash, &properties{})
+
+		for _, vertex := range test.vertices {
+			graph.Vertex(vertex)
+		}
+
+		for _, edge := range test.edges {
+			if err := graph.Edge(edge.Source, edge.Target); err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
+		}
+
+		degree, err := graph.DegreeByHash(test.vertexHash)
+
+		if test.shouldFail != (err != nil) {
+			t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, (err != nil), err)
+		}
+
+		if degree != test.expectedDegree {
+			t.Errorf("%s: degree expectancy doesn't match: expcted %v, got %v", name, test.expectedDegree, degree)
+		}
+	}
+}
+
 func TestUndirected_edgesAreEqual(t *testing.T) {
 	tests := map[string]struct {
 		a             Edge[int]

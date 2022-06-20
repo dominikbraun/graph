@@ -126,6 +126,12 @@ type Graph[K comparable, T any] interface {
 	// CreatesCycleByHashes does the same as CreatesCycle, but uses a hash value to identify the
 	// starting vertex.
 	CreatesCycleByHashes(sourceHash, targetHash K) (bool, error)
+
+	// Degree determines and returns the degree of a given vertex.
+	Degree(vertex T) (int, error)
+
+	// DegreeByHash does the same as Degree, but uses a hash value to identify the vertex.
+	DegreeByHash(vertexHash K) (int, error)
 }
 
 // Edge represents a graph edge with a source and target vertex as well as a weight, which has the

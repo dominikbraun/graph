@@ -225,6 +225,29 @@ func (d *directed[K, T]) CreatesCycleByHashes(sourceHash, targetHash K) (bool, e
 	return false, nil
 }
 
+func (d *directed[K, T]) Degree(vertex T) (int, error) {
+	sourceHash := d.hash(vertex)
+
+	return d.DegreeByHash(sourceHash)
+}
+
+func (d *directed[K, T]) DegreeByHash(vertexHash K) (int, error) {
+	if _, ok := d.vertices[vertexHash]; !ok {
+		return 0, fmt.Errorf("could not find vertex with hash %v", vertexHash)
+	}
+
+	degree := 0
+
+	if inEdges, ok := d.inEdges[vertexHash]; ok {
+		degree += len(inEdges)
+	}
+	if outEdges, ok := d.outEdges[vertexHash]; ok {
+		degree += len(outEdges)
+	}
+
+	return degree, nil
+}
+
 func (d *directed[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	aSourceHash := d.hash(a.Source)
 	aTargetHash := d.hash(a.Target)

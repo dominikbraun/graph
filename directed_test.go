@@ -406,7 +406,7 @@ func TestDirected_CreatesCycleByHashes(t *testing.T) {
 }
 
 func TestDirected_Degree(t *testing.T) {
-	TestDirected_Degree(t)
+	TestDirected_DegreeByHash(t)
 }
 
 func TestDirected_DegreeByHash(t *testing.T) {

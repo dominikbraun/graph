@@ -143,6 +143,20 @@ type Edge[T any] struct {
 	Weight int
 }
 
+// Hash is a hashing function that takes a vertex of type T and returns a hash value of type K.
+//
+// Every graph has a hashing function and uses that function to retrieve the hash values of its
+// vertices. You can either use one of the predefined hashing functions, or, if you want to store a
+// custom data type, provide your own function:
+//
+//	cityHash := func(c City) string {
+//		return c.Name
+//	}
+//
+// The cityHash function returns the city name as a hash value. The types of T and K, in this case
+// City and string, also define the types T and K of the graph.
+type Hash[K comparable, T any] func(T) K
+
 // New creates a new graph with vertices of type T, identified by hash values of type K. These hash
 // values will be obtained using the provided hash function (see Hash).
 //
@@ -189,4 +203,16 @@ func New[K comparable, T any](hash Hash[K, T], options ...func(*properties)) Gra
 	}
 
 	return newUndirected(hash, &p)
+}
+
+// StringHash is a hashing function that accepts a string and uses that exact string as a hash
+// value. Using it as Hash will yield a Graph[string, string].
+func StringHash(v string) string {
+	return v
+}
+
+// IntHash is a hashing function that accepts an integer and uses that exact integer as a hash
+// value. Using it as Hash will yield a Graph[int, int].
+func IntHash(v int) int {
+	return v
 }

@@ -32,3 +32,43 @@ func TestNew(t *testing.T) {
 		}
 	}
 }
+
+func TestStringHash(t *testing.T) {
+	tests := map[string]struct {
+		value        string
+		expectedHash string
+	}{
+		"string value": {
+			value:        "London",
+			expectedHash: "London",
+		},
+	}
+
+	for name, test := range tests {
+		hash := StringHash(test.value)
+
+		if hash != test.expectedHash {
+			t.Errorf("%s: hash expectancy doesn't match: expected %v, got %v", name, test.expectedHash, hash)
+		}
+	}
+}
+
+func TestIntHash(t *testing.T) {
+	tests := map[string]struct {
+		value        int
+		expectedHash int
+	}{
+		"int value": {
+			value:        3,
+			expectedHash: 3,
+		},
+	}
+
+	for name, test := range tests {
+		hash := IntHash(test.value)
+
+		if hash != test.expectedHash {
+			t.Errorf("%s: hash expectancy doesn't match: expected %v, got %v", name, test.expectedHash, hash)
+		}
+	}
+}

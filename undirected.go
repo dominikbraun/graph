@@ -232,6 +232,29 @@ func (u *undirected[K, T]) CreatesCycleByHashes(sourceHash, targetHash K) (bool,
 	return false, nil
 }
 
+func (u *undirected[K, T]) Degree(vertex T) (int, error) {
+	sourceHash := u.hash(vertex)
+
+	return u.DegreeByHash(sourceHash)
+}
+
+func (u *undirected[K, T]) DegreeByHash(vertexHash K) (int, error) {
+	if _, ok := u.vertices[vertexHash]; !ok {
+		return 0, fmt.Errorf("could not find vertex with hash %v", vertexHash)
+	}
+
+	degree := 0
+
+	// Adding the number of ingoing edges is sufficient for undirected graphs, because all edges
+	// exist twice (as two directed edges in opposite directions). Either dividing the number of
+	// ingoing + outgoing edges by 2 or just using the number of ingoing edges is appropriate.
+	if inEdges, ok := u.inEdges[vertexHash]; ok {
+		degree += len(inEdges)
+	}
+
+	return degree, nil
+}
+
 func (u *undirected[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	aSourceHash := u.hash(a.Source)
 	aTargetHash := u.hash(a.Target)

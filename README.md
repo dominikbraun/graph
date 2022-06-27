@@ -11,11 +11,10 @@ It supports different kinds of graphs such as directed graphs, acyclic graphs, o
 * Determination of graph and vertex properties, such as degree or tree-depth.
 * Non-recursive walks, DFS, and BFS.
 * Pathfinding algorithms, considering edge weights where appropriate:
-  * Hamiltonian paths and cycles
-  * Eulerian paths and cycles
-  * Dijkstra's algorithm
-  * Tarjan's strongly connected components algorithm
-* Optimized algorithms due to dynamic programming and memoization.
+  * [ ] Hamiltonian paths and cycles
+  * [ ] Eulerian paths and cycles
+  * [ ] Dijkstra's algorithm
+  * [x] Tarjan's SCC algorithm
 
 > Status: Work in progress. Multigraphs aren't supported at the moment.
 

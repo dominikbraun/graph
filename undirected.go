@@ -1,6 +1,9 @@
 package graph
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type undirected[K comparable, T any] struct {
 	hash       Hash[K, T]
@@ -253,6 +256,10 @@ func (u *undirected[K, T]) DegreeByHash(vertexHash K) (int, error) {
 	}
 
 	return degree, nil
+}
+
+func (u *undirected[K, T]) StronglyConnectedComponents() ([][]K, error) {
+	return nil, errors.New("strongly connected components may only be detected in directed graphs")
 }
 
 func (u *undirected[K, T]) edgesAreEqual(a, b Edge[T]) bool {

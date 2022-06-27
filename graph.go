@@ -132,6 +132,13 @@ type Graph[K comparable, T any] interface {
 
 	// DegreeByHash does the same as Degree, but uses a hash value to identify the vertex.
 	DegreeByHash(vertexHash K) (int, error)
+
+	// StronglyConnectedComponents detects all strongly connected components within the graph and
+	// returns the hash values of the respective vertices for each component. This only works for
+	// directed graphs.
+	//
+	// Note that the current implementation uses recursive function calls.
+	StronglyConnectedComponents() ([][]K, error)
 }
 
 // Edge represents a graph edge with a source and target vertex as well as a weight, which has the

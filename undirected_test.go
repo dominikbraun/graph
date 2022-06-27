@@ -494,6 +494,32 @@ func TestUndirected_DegreeByHash(t *testing.T) {
 	}
 }
 
+func TestUndirected_StronglyConnectedComponents(t *testing.T) {
+	tests := map[string]struct {
+		expectedSCCs [][]int
+		shouldFail   bool
+	}{
+		"return error": {
+			expectedSCCs: nil,
+			shouldFail:   true,
+		},
+	}
+
+	for name, test := range tests {
+		graph := newUndirected(IntHash, &properties{})
+
+		sccs, err := graph.StronglyConnectedComponents()
+
+		if test.shouldFail != (err != nil) {
+			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, (err != nil), err)
+		}
+
+		if test.expectedSCCs == nil && sccs != nil {
+			t.Errorf("%s: SCC expectancy doesn't match: expcted %v, got %v", name, test.expectedSCCs, sccs)
+		}
+	}
+}
+
 func TestUndirected_edgesAreEqual(t *testing.T) {
 	tests := map[string]struct {
 		a             Edge[int]

@@ -107,7 +107,9 @@ _ = g.WeightedEdge(paris, madrid, 4)
 
 ## Perform a Depth-First Search
 
-This example traverses and prints all vertices in the graph.
+This example traverses and prints all vertices in the graph in DFS order.
+
+![depth-first search](img/dfs.svg)
 
 ```go
 g := graph.New(graph.IntHash)
@@ -121,9 +123,13 @@ _ = g.Edge(2, 3)
 _ = g.Edge(3, 1)
 
 _ = g.DFS(1, func(value int) bool {
-    fmt.Println(value)
+    fmt.Printf(value)
     return false
 })
+```
+
+```
+1 3 4 2
 ```
 
 ## Find strongly connected components

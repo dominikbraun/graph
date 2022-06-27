@@ -1,4 +1,4 @@
-# ![dominikbraun/graph](logo.svg)
+# ![dominikbraun/graph](img/logo.svg)
 
 `graph` is a generic library for creating graph data structures and performing operations on them.
 It supports different kinds of graphs such as directed graphs, acyclic graphs, or trees.
@@ -29,21 +29,42 @@ go get github.com/dominikbraun/graph
 
 ## Create a graph of integers
 
+![graph of integers](img/simple.svg)
+
 ```go
 g := graph.New(graph.IntHash)
 
 g.Vertex(1)
 g.Vertex(2)
 g.Vertex(3)
+g.Vertex(4)
+g.Vertex(5)
 
 _ = g.Edge(1, 2)
-_ = g.Edge(1, 3)
+_ = g.Edge(1, 4)
+_ = g.Edge(2, 3)
+_ = g.Edge(2, 4)
+_ = g.Edge(2, 5)
+_ = g.Edge(3, 5)
 ```
 
 ## Create a directed acyclic graph of integers
 
+![directed acyclic graph](img/dag.svg)
+
 ```go
 g := graph.New(graph.IntHash, graph.Directed(), graph.Acyclic())
+
+g.Vertex(1)
+g.Vertex(2)
+g.Vertex(3)
+g.Vertex(4)
+
+_ = g.Edge(1, 2)
+_ = g.Edge(1, 3)
+_ = g.Edge(2, 3)
+_ = g.Edge(2, 4)
+_ = g.Edge(3, 4)
 ```
 
 ## Create a graph of a custom type
@@ -62,6 +83,26 @@ cityHash := func(c City) string {
 g := graph.New(cityHash)
 
 g.Vertex(london)
+```
+
+## Create a weighted graph
+
+![weighted graph](img/cities.svg)
+
+```go
+g := graph.New(cityHash, graph.Weighted())
+
+g.Vertex(london)
+g.Vertex(munich)
+g.Vertex(paris)
+g.Vertex(madrid)
+
+_ = g.WeightedEdge(london, munich, 3)
+_ = g.WeightedEdge(london, paris, 2)
+_ = g.WeightedEdge(london, madrid, 5)
+_ = g.WeightedEdge(munich, madrid, 6)
+_ = g.WeightedEdge(munich, paris, 2)
+_ = g.WeightedEdge(paris, madrid, 4)
 ```
 
 ## Perform a Depth-First Search
@@ -85,7 +126,27 @@ _ = g.DFS(1, func(value int) bool {
 })
 ```
 
+## Find strongly connected components
+
+![strongly connected components](img/scc.svg)
+
+```go
+g := graph.New(graph.IntHash)
+
+// Add vertices and edges ...
+
+scc, _ := g.StronglyConnectedComponents()
+
+fmt.Println(scc)
+```
+
+```
+[[1 2 5] [3 4 8] [6 7]]
+```
+
 ## Cycle checks for acyclic graphs
+
+![cycle checks](img/cycles.svg)
 
 ```go
 g := graph.New(graph.IntHash, graph.Acyclic())
@@ -94,19 +155,16 @@ g.Vertex(1)
 g.Vertex(2)
 g.Vertex(3)
 
-if err := g.Edge(1, 2); err != nil {
-    panic(err)
-}
+_ _= g.Edge(1, 2)
+_ _= g.Edge(1, 3)
+
 if err := g.Edge(2, 3); err != nil {
-    panic(err)
-}
-if err := g.Edge(3, 1); err != nil {
     panic(err)
 }
 ```
 
 ```
-panic: an edge between 3 and 1 would introduce a cycle
+panic: an edge between 2 and 3 would introduce a cycle
 ```
 
 # Concepts

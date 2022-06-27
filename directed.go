@@ -287,13 +287,11 @@ func (d *directed[K, T]) StronglyConnectedComponents() ([][]K, error) {
 func (d *directed[K, T]) findSCC(vertexHash K, state *sccState[K]) {
 	state.stack = append(state.stack, vertexHash)
 	state.onStack[vertexHash] = true
+	state.visited[vertexHash] = true
 	state.index[vertexHash] = state.time
 	state.lowlink[vertexHash] = state.time
 
 	state.time++
-
-	// The current vertex also is its own predecessor.
-	predecessors := []K{vertexHash}
 
 	for adjancency := range d.outEdges[vertexHash] {
 		if ok, _ := state.visited[adjancency]; !ok {

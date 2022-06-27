@@ -112,7 +112,7 @@ This example traverses and prints all vertices in the graph in DFS order.
 ![depth-first search](img/dfs.svg)
 
 ```go
-g := graph.New(graph.IntHash)
+g := graph.New(graph.IntHash, graph.Directed())
 
 g.Vertex(1)
 g.Vertex(2)

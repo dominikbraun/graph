@@ -145,7 +145,7 @@ type Graph[K comparable, T any] interface {
 
 // Edge represents a graph edge with a source and target vertex as well as a weight, which has the
 // same value for all edges in an unweighted graph. Even though the vertices are referred to as
-// source and target, whether the graph is directed or not is determined by its properties.
+// source and target, whether the graph is directed or not is determined by its traits.
 type Edge[T any] struct {
 	Source T
 	Target T
@@ -194,14 +194,14 @@ type Hash[K comparable, T any] func(T) K
 // This graph will store vertices of type City, identified by hashes of type string. Both type
 // parameters can be inferred from the hashing function.
 //
-// All properties of the graph can be set using the predefined functional options. They can be
-// combined arbitrarily. This example creates a directed acyclic graph:
+// All traits of the graph can be set using the predefined functional options. They can be combined
+// arbitrarily. This example creates a directed acyclic graph:
 //
 //	g := graph.New(graph.IntHash, graph.Directed(), graph.Acyclic())
 //
-// The obtained Graph implementation is depends on these properties.
-func New[K comparable, T any](hash Hash[K, T], options ...func(*properties)) Graph[K, T] {
-	var p properties
+// The obtained Graph implementation is depends on these traits.
+func New[K comparable, T any](hash Hash[K, T], options ...func(*traits)) Graph[K, T] {
+	var p traits
 
 	for _, option := range options {
 		option(&p)

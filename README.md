@@ -6,7 +6,7 @@ It supports different kinds of graphs such as directed graphs, acyclic graphs, o
 # Features
 
 * Vertices of any data type, such as `int` or `City`.
-* Optionally combinable graph types and properties.
+* Optionally combinable graph types and traits.
 * Validations considering the graph type, such as cycle detection in acyclic graphs.
 * Determination of graph and vertex properties, such as degree or tree-depth.
 * Non-recursive walks, DFS, and BFS.
@@ -209,10 +209,10 @@ identified by hash values of type `string`.
 g := graph.New(cityHash)
 ```
 
-## Properties
+## Traits
 
-The behavior of a graph, for example when adding or retrieving edges, depends on its properties.
-You can set the graph's properties using the functional options provided by this library:
+The behavior of a graph, for example when adding or retrieving edges, depends on its traits. You
+can set the graph's traits using the functional options provided by this library:
 
 ```go
 g := graph.New(graph.IntHash, graph.Directed(), graph.Weighted())

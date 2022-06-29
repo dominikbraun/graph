@@ -40,7 +40,8 @@ type Graph[K comparable, T any] interface {
 
 	// DFS performs a Depth-First Search on the graph, starting from the given vertex. The visit
 	// function will be invoked for each visited vertex. If it returns false, DFS will continue
-	// traversing the path, and if it returns true, the traversal will be stopped.
+	// traversing the path, and if it returns true, the traversal will be stopped. In case the
+	// graph is diconnected, only the vertices joined with the starting vertex will be traversed.
 	//
 	// This example prints all vertices of the graph in DFS-order:
 	//
@@ -74,7 +75,8 @@ type Graph[K comparable, T any] interface {
 
 	// BFS performs a Breadth-First Search on the graph, starting from the given vertex. The visit
 	// function will be invoked for each visited vertex. If it returns false, BFS will continue
-	// traversing the path, and if it returns true, the traversal will be stopped.
+	// traversing the path, and if it returns true, the traversal will be stopped. In case the
+	// graph is diconnected, only the vertices joined with the starting vertex will be traversed.
 	//
 	// This example prints all vertices of the graph in BFS-order:
 	//

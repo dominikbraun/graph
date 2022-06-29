@@ -209,6 +209,16 @@ func TestDirected_DFSByHash(t *testing.T) {
 			expectedVisits: []int{1, 2},
 			stopAtVertex:   2,
 		},
+		"traverse a disconnected graph": {
+			vertices: []int{1, 2, 3, 4},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 3, Target: 4},
+			},
+			startHash:      1,
+			expectedVisits: []int{1, 2},
+			stopAtVertex:   -1,
+		},
 	}
 
 	for name, test := range tests {
@@ -285,6 +295,16 @@ func TestDirected_BFSByHash(t *testing.T) {
 			startHash:      1,
 			expectedVisits: []int{1, 2, 3, 4},
 			stopAtVertex:   4,
+		},
+		"traverse a disconnected graph": {
+			vertices: []int{1, 2, 3, 4},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 3, Target: 4},
+			},
+			startHash:      1,
+			expectedVisits: []int{1, 2},
+			stopAtVertex:   -1,
 		},
 	}
 

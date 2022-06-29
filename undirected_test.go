@@ -178,7 +178,7 @@ func TestUndirected_DFSByHash(t *testing.T) {
 		// It is not possible to expect a strict list of vertices to be visited. If stopAtVertex is
 		// a neighbor of another vertex, that other vertex might be visited before stopAtVertex.
 		expectedMinimumVisits []int
-		// In case stopAtVertex has downstream neighbours, those neighbours musn't be visited.
+		// In case stopAtVertex has downstream neighbors, those neighbors musn't be visited.
 		forbiddenVisits []int
 		stopAtVertex    int
 	}{
@@ -253,6 +253,16 @@ func TestUndirected_DFSByHash(t *testing.T) {
 			expectedMinimumVisits: []int{1, 3, 7, 9, 11},
 			forbiddenVisits:       []int{15},
 			stopAtVertex:          11,
+		},
+		"traverse a disconnected graph": {
+			vertices: []int{1, 2, 3, 4},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 3, Target: 4},
+			},
+			startHash:             1,
+			expectedMinimumVisits: []int{1, 2},
+			stopAtVertex:          -1,
 		},
 	}
 
@@ -338,6 +348,16 @@ func TestUndirected_BFSByHash(t *testing.T) {
 			startHash:      1,
 			expectedVisits: []int{1, 2, 3, 4},
 			stopAtVertex:   4,
+		},
+		"traverse a disconnected graph": {
+			vertices: []int{1, 2, 3, 4},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 3, Target: 4},
+			},
+			startHash:      1,
+			expectedVisits: []int{1, 2},
+			stopAtVertex:   -1,
 		},
 	}
 

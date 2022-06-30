@@ -2,18 +2,13 @@ package graph
 
 import (
 	"errors"
+	"sort"
 )
 
-// priorityQueue is a priority queue implementation for minimum priorities. It maintains a list of
-// items and a list of their corresponding priorities. Both are descendently ordered.
+// priorityQueue is a priority queue implementation for minimum priorities, meaning that smaller
+// values will be prioritized. It maintains an descendently ordered list of priority items.
 //
-// For example, a priorityQueue that stores the items and priorities ("A", 5), ("B", 2), ("C", 3)
-// looks as follows:
-//
-//	items: []string{"A", "C", "B"}
-//	priorities: []int{5, 3, 2}
-//
-// Pulling an item from the queue will remove the least-priotized item, i.e. the last one.
+// This is still a naive implementation, which is to be replaced with a binary heap implementation.
 type priorityQueue[T comparable] struct {
 	items []priorityItem[T]
 }
@@ -59,6 +54,22 @@ func (p *priorityQueue[T]) Pop() (T, error) {
 	p.items = p.items[:p.Len()-1]
 
 	return priorityItem.value, nil
+}
+
+// DecreasePriority decreases the priority of a given item to the given priority. The item must be
+// pushed into the queue first. If the item doesn't exist, nothing happens.
+//
+// With the current implementation, DecreasePriority causes the items in the queue to be re-sorted.
+func (p *priorityQueue[T]) DecreasePriority(item T, priority int) {
+	for i, currentItem := range p.items {
+		if currentItem.value == item {
+			p.items[i].priority = priority
+		}
+	}
+
+	sort.Slice(p.items, func(i, j int) bool {
+		return p.items[i].priority > p.items[j].priority
+	})
 }
 
 // Len returns the current length of the priority queue, i.e. the number of items in the queue.

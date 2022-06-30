@@ -69,6 +69,66 @@ func TestPriorityQueue_Pop(t *testing.T) {
 	}
 }
 
+func TestPriorityQueue_DecreasePriority(t *testing.T) {
+	tests := map[string]struct {
+		items                 []priorityItem[int]
+		decreaseItem          int
+		decreasePriority      int
+		expectedPriorityItems []priorityItem[int]
+	}{
+		"decrease 30 to priority 5": {
+			items: []priorityItem[int]{
+				{value: 40, priority: 40},
+				{value: 30, priority: 30},
+				{value: 20, priority: 20},
+				{value: 10, priority: 10},
+			},
+			decreaseItem:     30,
+			decreasePriority: 5,
+			expectedPriorityItems: []priorityItem[int]{
+				{value: 40, priority: 40},
+				{value: 20, priority: 20},
+				{value: 10, priority: 10},
+				{value: 30, priority: 5},
+			},
+		},
+		"decrease a non-existent item": {
+			items: []priorityItem[int]{
+				{value: 40, priority: 40},
+				{value: 30, priority: 30},
+				{value: 20, priority: 20},
+				{value: 10, priority: 10},
+			},
+			decreaseItem:     50,
+			decreasePriority: 10,
+			expectedPriorityItems: []priorityItem[int]{
+				{value: 40, priority: 40},
+				{value: 30, priority: 30},
+				{value: 20, priority: 20},
+				{value: 10, priority: 10},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		queue := &priorityQueue[int]{
+			items: test.items,
+		}
+
+		queue.DecreasePriority(test.decreaseItem, test.decreasePriority)
+
+		if len(queue.items) != len(test.expectedPriorityItems) {
+			t.Fatalf("%s: item length expectancy doesn't match: expected %v, got %v", name, len(test.expectedPriorityItems), len(queue.items))
+		}
+
+		for i, expectedPriorityItem := range test.expectedPriorityItems {
+			if queue.items[i] != expectedPriorityItem {
+				t.Errorf("%s: item doesn't match: expected %v at index %d, got %v", name, expectedPriorityItem, i, queue.items[i])
+			}
+		}
+	}
+}
+
 func TestPriorityQueue_Len(t *testing.T) {
 	tests := map[string]struct {
 		items       []int

@@ -3,9 +3,11 @@ package graph
 import (
 	"errors"
 	"fmt"
+
+	"golang.org/x/exp/constraints"
 )
 
-type undirected[K comparable, T any] struct {
+type undirected[K constraints.Ordered, T any] struct {
 	hash     Hash[K, T]
 	traits   *traits
 	vertices map[K]T
@@ -14,7 +16,7 @@ type undirected[K comparable, T any] struct {
 	inEdges  map[K]map[K]Edge[T]
 }
 
-func newUndirected[K comparable, T any](hash Hash[K, T], traits *traits) *undirected[K, T] {
+func newUndirected[K constraints.Ordered, T any](hash Hash[K, T], traits *traits) *undirected[K, T] {
 	return &undirected[K, T]{
 		hash:     hash,
 		traits:   traits,

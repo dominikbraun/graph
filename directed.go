@@ -334,6 +334,67 @@ func (d *directed[K, T]) findSCC(vertexHash K, state *sccState[K]) {
 	}
 }
 
+// ShortestPath computes the shortest path between two vertices and returns the hashes of the
+// vertices forming that path. The current implementation uses Dijkstra with a priority queue.
+func (d *directed[K, T]) ShortestPath(source, target T) ([]K, error) {
+	sourceHash := d.hash(source)
+	targetHash := d.hash(target)
+
+	return d.ShortestPathByHashes(sourceHash, targetHash)
+}
+
+func (d *directed[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, error) {
+	weights := make(map[K]int)
+	visited := make(map[K]bool)
+	predecessors := make(map[K]K)
+
+	queue := newPriorityQueue[K]()
+
+	for hash := range d.vertices {
+		weights[hash] = int(math.Inf(1))
+		visited[hash] = false
+		queue.Push(hash, weights[hash])
+	}
+
+	weights[sourceHash] = 0
+	visited[sourceHash] = true
+
+	for queue.Len() > 0 {
+		hash, _ := queue.Pop()
+		hasInfiniteWeight := math.IsInf(float64(weights[hash]), 1)
+
+		if hash == targetHash {
+			break
+		}
+
+		outEdges, ok := d.outEdges[hash]
+		if !ok {
+			continue
+		}
+
+		for successor, edge := range outEdges {
+			weight := weights[hash] + edge.Weight
+
+			if weight < weights[successor] && !hasInfiniteWeight {
+				weights[successor] = weight
+				predecessors[successor] = hash
+				queue.DecreasePriority(successor, weight)
+			}
+		}
+	}
+
+	// Backtrack the predecessors from target to source. These are the least-weighted edges.
+	path := []K{targetHash}
+	hash := targetHash
+
+	for hash != sourceHash {
+		hash = predecessors[hash]
+		path = append([]K{hash}, path...)
+	}
+
+	return path, nil
+}
+
 func (d *directed[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	aSourceHash := d.hash(a.Source)
 	aTargetHash := d.hash(a.Target)

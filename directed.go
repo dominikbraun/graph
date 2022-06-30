@@ -348,16 +348,19 @@ func (d *directed[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, er
 	visited := make(map[K]bool)
 	predecessors := make(map[K]K)
 
+	weights[sourceHash] = 0
+	visited[sourceHash] = true
+
 	queue := newPriorityQueue[K]()
 
 	for hash := range d.vertices {
-		weights[hash] = math.Inf(1)
-		visited[hash] = false
+		if hash != sourceHash {
+			weights[hash] = math.Inf(1)
+			visited[hash] = false
+		}
+
 		queue.Push(hash, weights[hash])
 	}
-
-	weights[sourceHash] = 0
-	visited[sourceHash] = true
 
 	for queue.Len() > 0 {
 		vertex, _ := queue.Pop()
@@ -391,6 +394,8 @@ func (d *directed[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, er
 		hashCursor = predecessors[hashCursor]
 		path = append([]K{hashCursor}, path...)
 	}
+
+	fmt.Println(path)
 
 	return path, nil
 }

@@ -15,14 +15,18 @@ import (
 //
 // Pulling an item from the queue will remove the least-priotized item, i.e. the last one.
 type priorityQueue[T comparable] struct {
-	items      []T
-	priorities []int
+	items []priorityItem[T]
+}
+
+// priorityItem is an item in the priority queue, consiting of a priority and an actual value.
+type priorityItem[T comparable] struct {
+	value    T
+	priority int
 }
 
 func newPriorityQueue[T comparable]() *priorityQueue[T] {
 	return &priorityQueue[T]{
-		items:      make([]T, 0),
-		priorities: make([]int, 0),
+		items: make([]priorityItem[T], 0),
 	}
 }
 
@@ -32,8 +36,8 @@ func (p *priorityQueue[T]) Push(item T, priority int) {
 	index := p.Len() - 1
 
 	for i := p.Len(); i > 0; i-- {
-		currentPriority := p.priorities[i-1]
-		if currentPriority > priority {
+		currentItem := p.items[i-1]
+		if currentItem.priority > priority {
 			index = i
 			break
 		}
@@ -45,18 +49,16 @@ func (p *priorityQueue[T]) Push(item T, priority int) {
 // Pop returns the item with the smallest priority from the queue and removes that item. Returns an
 // error if the priority queue is empty, which can be tested using Len first.s
 func (p *priorityQueue[T]) Pop() (T, error) {
-	var leastPriorityItem T
+	var priorityItem priorityItem[T]
 
 	if p.Len() == 0 {
-		return leastPriorityItem, errors.New("priority queue is empty")
+		return priorityItem.value, errors.New("priority queue is empty")
 	}
 
-	leastPriorityItem = p.items[p.Len()-1]
-
+	priorityItem = p.items[p.Len()-1]
 	p.items = p.items[:p.Len()-1]
-	p.priorities = p.priorities[:p.Len()-1]
 
-	return leastPriorityItem, nil
+	return priorityItem.value, nil
 }
 
 // Len returns the current length of the priority queue, i.e. the number of items in the queue.
@@ -65,15 +67,17 @@ func (p *priorityQueue[T]) Len() int {
 }
 
 func (p *priorityQueue[T]) insertItemAt(item T, priority, index int) {
+	priorityItem := priorityItem[T]{
+		value:    item,
+		priority: priority,
+	}
+
 	if p.Len() == 0 || p.Len() == index {
-		p.items = append(p.items, item)
-		p.priorities = append(p.priorities, priority)
+		p.items = append(p.items, priorityItem)
 		return
 	}
 
 	p.items = append(p.items[:index+1], p.items[index:]...)
-	p.priorities = append(p.priorities[:index+1], p.priorities[index:]...)
 
-	p.items[index] = item
-	p.priorities[index] = priority
+	p.items[index] = priorityItem
 }

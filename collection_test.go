@@ -48,7 +48,25 @@ func TestPriorityQueue_Pop(t *testing.T) {
 		priorities   []int
 		expectedItem int
 		shouldFail   bool
-	}{}
+	}{
+		"queue with 5 item": {
+			items:        []int{10, 20, 30, 40, 50},
+			priorities:   []int{6, 8, 2, 7, 5},
+			expectedItem: 30,
+			shouldFail:   false,
+		},
+		"queue with 1 item": {
+			items:        []int{10},
+			priorities:   []int{6},
+			expectedItem: 10,
+			shouldFail:   false,
+		},
+		"empty queue": {
+			items:      []int{},
+			priorities: []int{},
+			shouldFail: true,
+		},
+	}
 
 	for name, test := range tests {
 		queue := newPriorityQueue[int]()
@@ -134,7 +152,23 @@ func TestPriorityQueue_Len(t *testing.T) {
 		items       []int
 		priorities  []int
 		expectedLen int
-	}{}
+	}{
+		"queue with 5 item": {
+			items:       []int{10, 20, 30, 40, 50},
+			priorities:  []int{6, 8, 2, 7, 5},
+			expectedLen: 5,
+		},
+		"queue with 1 item": {
+			items:       []int{10},
+			priorities:  []int{6},
+			expectedLen: 1,
+		},
+		"empty queue": {
+			items:       []int{},
+			priorities:  []int{},
+			expectedLen: 0,
+		},
+	}
 
 	for name, test := range tests {
 		queue := newPriorityQueue[int]()

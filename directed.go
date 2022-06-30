@@ -3,9 +3,11 @@ package graph
 import (
 	"fmt"
 	"math"
+
+	"golang.org/x/exp/constraints"
 )
 
-type directed[K comparable, T any] struct {
+type directed[K constraints.Ordered, T any] struct {
 	hash     Hash[K, T]
 	traits   *traits
 	vertices map[K]T
@@ -14,7 +16,7 @@ type directed[K comparable, T any] struct {
 	inEdges  map[K]map[K]Edge[T]
 }
 
-func newDirected[K comparable, T any](hash Hash[K, T], traits *traits) *directed[K, T] {
+func newDirected[K constraints.Ordered, T any](hash Hash[K, T], traits *traits) *directed[K, T] {
 	return &directed[K, T]{
 		hash:     hash,
 		traits:   traits,
@@ -251,7 +253,7 @@ func (d *directed[K, T]) DegreeByHash(vertexHash K) (int, error) {
 	return degree, nil
 }
 
-type sccState[K comparable] struct {
+type sccState[K constraints.Ordered] struct {
 	components [][]K
 	stack      []K
 	onStack    map[K]bool

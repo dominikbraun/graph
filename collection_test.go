@@ -7,12 +7,12 @@ import (
 func TestPriorityQueue_Push(t *testing.T) {
 	tests := map[string]struct {
 		items                 []int
-		priorities            []int
+		priorities            []float64
 		expectedPriorityItems []priorityItem[int]
 	}{
 		"queue with 5 elements": {
 			items:      []int{10, 20, 30, 40, 50},
-			priorities: []int{6, 8, 2, 7, 5},
+			priorities: []float64{6, 8, 2, 7, 5},
 			expectedPriorityItems: []priorityItem[int]{
 				{value: 20, priority: 8},
 				{value: 40, priority: 7},
@@ -45,25 +45,25 @@ func TestPriorityQueue_Push(t *testing.T) {
 func TestPriorityQueue_Pop(t *testing.T) {
 	tests := map[string]struct {
 		items        []int
-		priorities   []int
+		priorities   []float64
 		expectedItem int
 		shouldFail   bool
 	}{
 		"queue with 5 item": {
 			items:        []int{10, 20, 30, 40, 50},
-			priorities:   []int{6, 8, 2, 7, 5},
+			priorities:   []float64{6, 8, 2, 7, 5},
 			expectedItem: 30,
 			shouldFail:   false,
 		},
 		"queue with 1 item": {
 			items:        []int{10},
-			priorities:   []int{6},
+			priorities:   []float64{6},
 			expectedItem: 10,
 			shouldFail:   false,
 		},
 		"empty queue": {
 			items:      []int{},
-			priorities: []int{},
+			priorities: []float64{},
 			shouldFail: true,
 		},
 	}
@@ -91,7 +91,7 @@ func TestPriorityQueue_DecreasePriority(t *testing.T) {
 	tests := map[string]struct {
 		items                 []priorityItem[int]
 		decreaseItem          int
-		decreasePriority      int
+		decreasePriority      float64
 		expectedPriorityItems []priorityItem[int]
 	}{
 		"decrease 30 to priority 5": {
@@ -150,22 +150,22 @@ func TestPriorityQueue_DecreasePriority(t *testing.T) {
 func TestPriorityQueue_Len(t *testing.T) {
 	tests := map[string]struct {
 		items       []int
-		priorities  []int
+		priorities  []float64
 		expectedLen int
 	}{
 		"queue with 5 item": {
 			items:       []int{10, 20, 30, 40, 50},
-			priorities:  []int{6, 8, 2, 7, 5},
+			priorities:  []float64{6, 8, 2, 7, 5},
 			expectedLen: 5,
 		},
 		"queue with 1 item": {
 			items:       []int{10},
-			priorities:  []int{6},
+			priorities:  []float64{6},
 			expectedLen: 1,
 		},
 		"empty queue": {
 			items:       []int{},
-			priorities:  []int{},
+			priorities:  []float64{},
 			expectedLen: 0,
 		},
 	}
@@ -189,7 +189,7 @@ func TestPriorityQueue_insertItemAt(t *testing.T) {
 	tests := map[string]struct {
 		items                 []priorityItem[int]
 		insertItem            int
-		insertPriority        int
+		insertPriority        float64
 		insertIndex           int
 		expectedPriorityItems []priorityItem[int]
 	}{

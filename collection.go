@@ -16,7 +16,7 @@ type priorityQueue[T comparable] struct {
 // priorityItem is an item in the priority queue, consiting of a priority and an actual value.
 type priorityItem[T comparable] struct {
 	value    T
-	priority int
+	priority float64
 }
 
 func newPriorityQueue[T comparable]() *priorityQueue[T] {
@@ -27,7 +27,7 @@ func newPriorityQueue[T comparable]() *priorityQueue[T] {
 
 // Push pushes a new item with the given priority into the queue. Because Push keeps track of the
 // descendant order of items and priorities, it has O(n) insertion time.
-func (p *priorityQueue[T]) Push(item T, priority int) {
+func (p *priorityQueue[T]) Push(item T, priority float64) {
 	index := p.Len() - 1
 
 	for i := p.Len(); i > 0; i-- {
@@ -60,7 +60,7 @@ func (p *priorityQueue[T]) Pop() (T, error) {
 // pushed into the queue first. If the item doesn't exist, nothing happens.
 //
 // With the current implementation, DecreasePriority causes the items in the queue to be re-sorted.
-func (p *priorityQueue[T]) DecreasePriority(item T, priority int) {
+func (p *priorityQueue[T]) DecreasePriority(item T, priority float64) {
 	for i, currentItem := range p.items {
 		if currentItem.value == item {
 			p.items[i].priority = priority
@@ -77,7 +77,7 @@ func (p *priorityQueue[T]) Len() int {
 	return len(p.items)
 }
 
-func (p *priorityQueue[T]) insertItemAt(item T, priority, index int) {
+func (p *priorityQueue[T]) insertItemAt(item T, priority float64, index int) {
 	priorityItem := priorityItem[T]{
 		value:    item,
 		priority: priority,

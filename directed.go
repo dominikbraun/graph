@@ -344,14 +344,14 @@ func (d *directed[K, T]) ShortestPath(source, target T) ([]K, error) {
 }
 
 func (d *directed[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, error) {
-	weights := make(map[K]int)
+	weights := make(map[K]float64)
 	visited := make(map[K]bool)
 	predecessors := make(map[K]K)
 
 	queue := newPriorityQueue[K]()
 
 	for hash := range d.vertices {
-		weights[hash] = int(math.Inf(1))
+		weights[hash] = math.Inf(1)
 		visited[hash] = false
 		queue.Push(hash, weights[hash])
 	}
@@ -360,24 +360,24 @@ func (d *directed[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, er
 	visited[sourceHash] = true
 
 	for queue.Len() > 0 {
-		hash, _ := queue.Pop()
-		hasInfiniteWeight := math.IsInf(float64(weights[hash]), 1)
+		vertex, _ := queue.Pop()
+		hasInfiniteWeight := math.IsInf(float64(weights[vertex]), 1)
 
-		if hash == targetHash {
+		if vertex == targetHash {
 			break
 		}
 
-		outEdges, ok := d.outEdges[hash]
+		outEdges, ok := d.outEdges[vertex]
 		if !ok {
 			continue
 		}
 
 		for successor, edge := range outEdges {
-			weight := weights[hash] + edge.Weight
+			weight := weights[vertex] + float64(edge.Weight)
 
 			if weight < weights[successor] && !hasInfiniteWeight {
 				weights[successor] = weight
-				predecessors[successor] = hash
+				predecessors[successor] = vertex
 				queue.DecreasePriority(successor, weight)
 			}
 		}
@@ -385,11 +385,11 @@ func (d *directed[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, er
 
 	// Backtrack the predecessors from target to source. These are the least-weighted edges.
 	path := []K{targetHash}
-	hash := targetHash
+	hashCursor := targetHash
 
-	for hash != sourceHash {
-		hash = predecessors[hash]
-		path = append([]K{hash}, path...)
+	for hashCursor != sourceHash {
+		hashCursor = predecessors[hashCursor]
+		path = append([]K{hashCursor}, path...)
 	}
 
 	return path, nil

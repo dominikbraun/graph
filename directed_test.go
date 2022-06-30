@@ -569,7 +569,7 @@ func TestDirected_ShortestPathByHashes(t *testing.T) {
 		shortestPath, _ := graph.ShortestPathByHashes(test.sourceHash, test.targetHash)
 
 		if len(shortestPath) != len(test.expectedShortestPath) {
-			t.Errorf("%s: path length expectancy doesn't match: expected %v, got %v", name, len(test.expectedShortestPath), len(shortestPath))
+			t.Fatalf("%s: path length expectancy doesn't match: expected %v, got %v", name, len(test.expectedShortestPath), len(shortestPath))
 		}
 
 		for i, expectedVertex := range test.expectedShortestPath {

@@ -532,6 +532,7 @@ func TestDirected_ShortestPathByHashes(t *testing.T) {
 		sourceHash           string
 		targetHash           string
 		expectedShortestPath []string
+		shouldFail           bool
 	}{
 		"graph as on img/dijkstra.svg": {
 			vertices: []string{"A", "B", "C", "D", "E", "F", "G"},
@@ -551,6 +552,41 @@ func TestDirected_ShortestPathByHashes(t *testing.T) {
 			targetHash:           "B",
 			expectedShortestPath: []string{"A", "C", "E", "B"},
 		},
+		"diamond-shaped graph": {
+			vertices: []string{"A", "B", "C", "D"},
+			edges: []Edge[string]{
+				{Source: "A", Target: "B", Weight: 2},
+				{Source: "A", Target: "C", Weight: 4},
+				{Source: "B", Target: "D", Weight: 2},
+				{Source: "C", Target: "D", Weight: 2},
+			},
+			sourceHash:           "A",
+			targetHash:           "D",
+			expectedShortestPath: []string{"A", "B", "D"},
+		},
+		"source equal to target": {
+			vertices: []string{"A", "B", "C", "D"},
+			edges: []Edge[string]{
+				{Source: "A", Target: "B", Weight: 2},
+				{Source: "A", Target: "C", Weight: 4},
+				{Source: "B", Target: "D", Weight: 2},
+				{Source: "C", Target: "D", Weight: 2},
+			},
+			sourceHash:           "B",
+			targetHash:           "B",
+			expectedShortestPath: []string{"B"},
+		},
+		"target not reachable": {
+			vertices: []string{"A", "B", "C", "D"},
+			edges: []Edge[string]{
+				{Source: "A", Target: "B", Weight: 2},
+				{Source: "A", Target: "C", Weight: 4},
+			},
+			sourceHash:           "A",
+			targetHash:           "D",
+			expectedShortestPath: []string{},
+			shouldFail:           true,
+		},
 	}
 
 	for name, test := range tests {
@@ -566,7 +602,11 @@ func TestDirected_ShortestPathByHashes(t *testing.T) {
 			}
 		}
 
-		shortestPath, _ := graph.ShortestPathByHashes(test.sourceHash, test.targetHash)
+		shortestPath, err := graph.ShortestPathByHashes(test.sourceHash, test.targetHash)
+
+		if test.shouldFail != (err != nil) {
+			t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, (err != nil), err)
+		}
 
 		if len(shortestPath) != len(test.expectedShortestPath) {
 			t.Fatalf("%s: path length expectancy doesn't match: expected %v, got %v", name, len(test.expectedShortestPath), len(shortestPath))

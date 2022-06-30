@@ -372,7 +372,7 @@ func (d *directed[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, er
 
 		outEdges, ok := d.outEdges[vertex]
 		if !ok {
-			continue
+			return nil, fmt.Errorf("vertex %v is not reachable from vertex %v", targetHash, sourceHash)
 		}
 
 		for successor, edge := range outEdges {
@@ -394,8 +394,6 @@ func (d *directed[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, er
 		hashCursor = predecessors[hashCursor]
 		path = append([]K{hashCursor}, path...)
 	}
-
-	fmt.Println(path)
 
 	return path, nil
 }

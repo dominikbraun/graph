@@ -1,8 +1,12 @@
 package graph
 
+import (
+	"golang.org/x/exp/constraints"
+)
+
 // Graph represents a generic graph data structure consisting of vertices and edges. Its vertices
 // are of type T, and each vertex is identified by a hash of type K.
-type Graph[K comparable, T any] interface {
+type Graph[K constraints.Ordered, T any] interface {
 
 	// Vertex creates a new vertex in the graph, which won't be connected to another vertex yet.
 	// This function is idempotent, but overwrites an existing vertex if the hash already exists.
@@ -145,7 +149,7 @@ type Graph[K comparable, T any] interface {
 
 // Edge represents a graph edge with a source and target vertex as well as a weight, which has the
 // same value for all edges in an unweighted graph. Even though the vertices are referred to as
-// source and target, whether the graph is directed or not is determined by its properties.
+// source and target, whether the graph is directed or not is determined by its traits.
 type Edge[T any] struct {
 	Source T
 	Target T
@@ -164,7 +168,7 @@ type Edge[T any] struct {
 //
 // The cityHash function returns the city name as a hash value. The types of T and K, in this case
 // City and string, also define the types T and K of the graph.
-type Hash[K comparable, T any] func(T) K
+type Hash[K constraints.Ordered, T any] func(T) K
 
 // New creates a new graph with vertices of type T, identified by hash values of type K. These hash
 // values will be obtained using the provided hash function (see Hash).
@@ -194,14 +198,14 @@ type Hash[K comparable, T any] func(T) K
 // This graph will store vertices of type City, identified by hashes of type string. Both type
 // parameters can be inferred from the hashing function.
 //
-// All properties of the graph can be set using the predefined functional options. They can be
-// combined arbitrarily. This example creates a directed acyclic graph:
+// All traits of the graph can be set using the predefined functional options. They can be combined
+// arbitrarily. This example creates a directed acyclic graph:
 //
 //	g := graph.New(graph.IntHash, graph.Directed(), graph.Acyclic())
 //
-// The obtained Graph implementation is depends on these properties.
-func New[K comparable, T any](hash Hash[K, T], options ...func(*properties)) Graph[K, T] {
-	var p properties
+// The obtained Graph implementation is depends on these traits.
+func New[K constraints.Ordered, T any](hash Hash[K, T], options ...func(*traits)) Graph[K, T] {
+	var p traits
 
 	for _, option := range options {
 		option(&p)

@@ -3,25 +3,27 @@ package graph
 import (
 	"fmt"
 	"math"
+
+	"golang.org/x/exp/constraints"
 )
 
-type directed[K comparable, T any] struct {
-	hash       Hash[K, T]
-	properties *properties
-	vertices   map[K]T
-	edges      map[K]map[K]Edge[T]
-	outEdges   map[K]map[K]Edge[T]
-	inEdges    map[K]map[K]Edge[T]
+type directed[K constraints.Ordered, T any] struct {
+	hash     Hash[K, T]
+	traits   *traits
+	vertices map[K]T
+	edges    map[K]map[K]Edge[T]
+	outEdges map[K]map[K]Edge[T]
+	inEdges  map[K]map[K]Edge[T]
 }
 
-func newDirected[K comparable, T any](hash Hash[K, T], properties *properties) *directed[K, T] {
+func newDirected[K constraints.Ordered, T any](hash Hash[K, T], traits *traits) *directed[K, T] {
 	return &directed[K, T]{
-		hash:       hash,
-		properties: properties,
-		vertices:   make(map[K]T),
-		edges:      make(map[K]map[K]Edge[T]),
-		outEdges:   make(map[K]map[K]Edge[T]),
-		inEdges:    make(map[K]map[K]Edge[T]),
+		hash:     hash,
+		traits:   traits,
+		vertices: make(map[K]T),
+		edges:    make(map[K]map[K]Edge[T]),
+		outEdges: make(map[K]map[K]Edge[T]),
+		inEdges:  make(map[K]map[K]Edge[T]),
 	}
 }
 
@@ -61,7 +63,7 @@ func (d *directed[K, T]) WeightedEdgeByHashes(sourceHash, targetHash K, weight i
 	}
 
 	// If the graph was declared to be acyclic, permit the creation of a cycle.
-	if d.properties.isAcyclic {
+	if d.traits.isAcyclic {
 		createsCycle, err := d.CreatesCycleByHashes(sourceHash, targetHash)
 		if err != nil {
 			return fmt.Errorf("failed to check for cycles: %w", err)
@@ -251,7 +253,7 @@ func (d *directed[K, T]) DegreeByHash(vertexHash K) (int, error) {
 	return degree, nil
 }
 
-type sccState[K comparable] struct {
+type sccState[K constraints.Ordered] struct {
 	components [][]K
 	stack      []K
 	onStack    map[K]bool

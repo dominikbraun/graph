@@ -141,6 +141,19 @@ type Graph[K comparable, T any] interface {
 	//
 	// Note that the current implementation uses recursive function calls.
 	StronglyConnectedComponents() ([][]K, error)
+
+	// ShortestPath computes the shortest path between a source and a target vertex using the edge
+	// weights and returns the hash values of the vertices forming that path. This search runs in
+	// O(|V|+|E|log(|V|)) time.
+	//
+	// The returned path includes the source and target vertices. If the target cannot be reached
+	// from the source vertex, ShortestPath returns an error. If there are multiple shortest paths,
+	// an arbitrary one will be returned.
+	ShortestPath(source, target T) ([]K, error)
+
+	// ShortestPathByHashes does the same as ShortestPath, but uses hash values to identify the
+	// vertices.
+	ShortestPathByHashes(sourceHash, targetHash K) ([]K, error)
 }
 
 // Edge represents a graph edge with a source and target vertex as well as a weight, which has the

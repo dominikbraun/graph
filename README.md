@@ -154,7 +154,7 @@ fmt.Println(scc)
 ![shortest path algorithm](img/dijkstra.svg)
 
 ```go
-g := graph.New(graph.StringHash)
+g := graph.New(graph.StringHash, graph.Weighted())
 
 // Add vertices and weighted edges ...
 

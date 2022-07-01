@@ -540,6 +540,105 @@ func TestUndirected_StronglyConnectedComponents(t *testing.T) {
 	}
 }
 
+func TestUndirected_ShortesPath(t *testing.T) {
+	TestUndirected_ShortestPathByHashes(t)
+}
+
+func TestUndirected_ShortestPathByHashes(t *testing.T) {
+	tests := map[string]struct {
+		vertices             []string
+		edges                []Edge[string]
+		sourceHash           string
+		targetHash           string
+		expectedShortestPath []string
+		shouldFail           bool
+	}{
+		"graph as on img/dijkstra.svg": {
+			vertices: []string{"A", "B", "C", "D", "E", "F", "G"},
+			edges: []Edge[string]{
+				{Source: "A", Target: "C", Weight: 3},
+				{Source: "A", Target: "F", Weight: 2},
+				{Source: "C", Target: "D", Weight: 4},
+				{Source: "C", Target: "E", Weight: 1},
+				{Source: "C", Target: "F", Weight: 2},
+				{Source: "D", Target: "B", Weight: 1},
+				{Source: "E", Target: "B", Weight: 2},
+				{Source: "E", Target: "F", Weight: 3},
+				{Source: "F", Target: "G", Weight: 5},
+				{Source: "G", Target: "B", Weight: 2},
+			},
+			sourceHash:           "A",
+			targetHash:           "B",
+			expectedShortestPath: []string{"A", "C", "E", "B"},
+		},
+		"diamond-shaped graph": {
+			vertices: []string{"A", "B", "C", "D"},
+			edges: []Edge[string]{
+				{Source: "A", Target: "B", Weight: 2},
+				{Source: "A", Target: "C", Weight: 4},
+				{Source: "B", Target: "D", Weight: 2},
+				{Source: "C", Target: "D", Weight: 2},
+			},
+			sourceHash:           "A",
+			targetHash:           "D",
+			expectedShortestPath: []string{"A", "B", "D"},
+		},
+		"source equal to target": {
+			vertices: []string{"A", "B", "C", "D"},
+			edges: []Edge[string]{
+				{Source: "A", Target: "B", Weight: 2},
+				{Source: "A", Target: "C", Weight: 4},
+				{Source: "B", Target: "D", Weight: 2},
+				{Source: "C", Target: "D", Weight: 2},
+			},
+			sourceHash:           "B",
+			targetHash:           "B",
+			expectedShortestPath: []string{"B"},
+		},
+		"target not reachable": {
+			vertices: []string{"A", "B", "C", "D"},
+			edges: []Edge[string]{
+				{Source: "A", Target: "B", Weight: 2},
+				{Source: "A", Target: "C", Weight: 4},
+			},
+			sourceHash:           "A",
+			targetHash:           "D",
+			expectedShortestPath: []string{},
+			shouldFail:           true,
+		},
+	}
+
+	for name, test := range tests {
+		graph := newUndirected(StringHash, &traits{})
+
+		for _, vertex := range test.vertices {
+			graph.Vertex(vertex)
+		}
+
+		for _, edge := range test.edges {
+			if err := graph.WeightedEdge(edge.Source, edge.Target, edge.Weight); err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
+		}
+
+		shortestPath, err := graph.ShortestPathByHashes(test.sourceHash, test.targetHash)
+
+		if test.shouldFail != (err != nil) {
+			t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, (err != nil), err)
+		}
+
+		if len(shortestPath) != len(test.expectedShortestPath) {
+			t.Fatalf("%s: path length expectancy doesn't match: expected %v, got %v", name, len(test.expectedShortestPath), len(shortestPath))
+		}
+
+		for i, expectedVertex := range test.expectedShortestPath {
+			if shortestPath[i] != expectedVertex {
+				t.Errorf("%s: path vertex expectancy doesn't match: expected %v at index %d, got %v", name, expectedVertex, i, shortestPath[i])
+			}
+		}
+	}
+}
+
 func TestUndirected_edgesAreEqual(t *testing.T) {
 	tests := map[string]struct {
 		a             Edge[int]

@@ -3,6 +3,7 @@ package graph
 import (
 	"errors"
 	"fmt"
+	"math"
 )
 
 type undirected[K comparable, T any] struct {
@@ -260,6 +261,72 @@ func (u *undirected[K, T]) DegreeByHash(vertexHash K) (int, error) {
 
 func (u *undirected[K, T]) StronglyConnectedComponents() ([][]K, error) {
 	return nil, errors.New("strongly connected components may only be detected in directed graphs")
+}
+
+// ShortestPath computes the shortest path between two vertices and returns the hashes of the
+// vertices forming that path. The current implementation uses Dijkstra with a priority queue.
+func (u *undirected[K, T]) ShortestPath(source, target T) ([]K, error) {
+	sourceHash := u.hash(source)
+	targetHash := u.hash(target)
+
+	return u.ShortestPathByHashes(sourceHash, targetHash)
+}
+
+func (u *undirected[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, error) {
+	weights := make(map[K]float64)
+	visited := make(map[K]bool)
+	predecessors := make(map[K]K)
+
+	weights[sourceHash] = 0
+	visited[sourceHash] = true
+
+	queue := newPriorityQueue[K]()
+
+	for hash := range u.vertices {
+		if hash != sourceHash {
+			weights[hash] = math.Inf(1)
+			visited[hash] = false
+		}
+
+		queue.Push(hash, weights[hash])
+	}
+
+	for queue.Len() > 0 {
+		vertex, _ := queue.Pop()
+		hasInfiniteWeight := math.IsInf(float64(weights[vertex]), 1)
+
+		if vertex == targetHash {
+			if _, ok := u.inEdges[vertex]; !ok {
+				return nil, fmt.Errorf("vertex %v is not reachable from vertex %v", targetHash, sourceHash)
+			}
+		}
+
+		inEdges, ok := u.inEdges[vertex]
+		if !ok {
+			continue
+		}
+
+		for successor, edge := range inEdges {
+			weight := weights[vertex] + float64(edge.Weight)
+
+			if weight < weights[successor] && !hasInfiniteWeight {
+				weights[successor] = weight
+				predecessors[successor] = vertex
+				queue.DecreasePriority(successor, weight)
+			}
+		}
+	}
+
+	// Backtrack the predecessors from target to source. These are the least-weighted edges.
+	path := []K{targetHash}
+	hashCursor := targetHash
+
+	for hashCursor != sourceHash {
+		hashCursor = predecessors[hashCursor]
+		path = append([]K{hashCursor}, path...)
+	}
+
+	return path, nil
 }
 
 func (u *undirected[K, T]) edgesAreEqual(a, b Edge[T]) bool {

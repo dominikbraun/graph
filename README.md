@@ -13,10 +13,10 @@ It supports different kinds of graphs such as directed graphs, acyclic graphs, o
 * Pathfinding algorithms, considering edge weights where appropriate:
   * [ ] Hamiltonian paths and cycles
   * [ ] Eulerian paths and cycles
-  * [ ] Dijkstra's algorithm
-  * [x] Tarjan's SCC algorithm
+  * [x] Shortest path (Dijkstra)
+  * [x] Strongly connected components (Tarjan)
 
-> Status: Work in progress. Multigraphs aren't supported at the moment.
+> Status: Work in progress. Multigraphs aren't supported.
 
 # Getting started
 
@@ -149,6 +149,24 @@ fmt.Println(scc)
 [[1 2 5] [3 4 8] [6 7]]
 ```
 
+## Find the shortest path
+
+![shortest path algorithm](img/dijkstra.svg)
+
+```go
+g := graph.New(graph.StringHash, graph.Weighted())
+
+// Add vertices and weighted edges ...
+
+path, _ := g.ShortestPath()
+
+fmt.Println(path)
+```
+
+```
+[A C E B]
+```
+
 ## Cycle checks for acyclic graphs
 
 ![cycle checks](img/cycles.svg)
@@ -160,8 +178,8 @@ g.Vertex(1)
 g.Vertex(2)
 g.Vertex(3)
 
-_ _= g.Edge(1, 2)
-_ _= g.Edge(1, 3)
+_ = g.Edge(1, 2)
+_ = g.Edge(1, 3)
 
 if err := g.Edge(2, 3); err != nil {
     panic(err)

@@ -367,12 +367,14 @@ func (d *directed[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, er
 		hasInfiniteWeight := math.IsInf(float64(weights[vertex]), 1)
 
 		if vertex == targetHash {
-			break
+			if _, ok := d.inEdges[vertex]; !ok {
+				return nil, fmt.Errorf("vertex %v is not reachable from vertex %v", targetHash, sourceHash)
+			}
 		}
 
 		outEdges, ok := d.outEdges[vertex]
 		if !ok {
-			return nil, fmt.Errorf("vertex %v is not reachable from vertex %v", targetHash, sourceHash)
+			continue
 		}
 
 		for successor, edge := range outEdges {

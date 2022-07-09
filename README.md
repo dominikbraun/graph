@@ -159,7 +159,7 @@ g := graph.New(graph.StringHash, graph.Weighted())
 
 // Add vertices and weighted edges ...
 
-path, _ := g.ShortestPath()
+path, _ := g.ShortestPath("A", "B")
 
 fmt.Println(path)
 ```

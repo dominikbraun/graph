@@ -116,13 +116,14 @@ g := graph.New(graph.IntHash, graph.Directed())
 g.Vertex(1)
 g.Vertex(2)
 g.Vertex(3)
+g.Vertex(4)
 
 _ = g.Edge(1, 2)
-_ = g.Edge(2, 3)
-_ = g.Edge(3, 1)
+_ = g.Edge(1, 3)
+_ = g.Edge(3, 4)
 
 _ = g.DFS(1, func(value int) bool {
-    fmt.Printf(value)
+    fmt.Println(value)
     return false
 })
 ```

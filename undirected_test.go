@@ -541,7 +541,7 @@ func TestUndirected_StronglyConnectedComponents(t *testing.T) {
 	}
 }
 
-func TestUndirected_ShortesPath(t *testing.T) {
+func TestUndirected_ShortestPath(t *testing.T) {
 	TestUndirected_ShortestPathByHashes(t)
 }
 

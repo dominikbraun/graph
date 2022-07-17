@@ -297,7 +297,8 @@ func (u *undirected[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, 
 			continue
 		}
 
-		for successor, edge := range inEdges {
+		for _, edge := range inEdges {
+			successor := edge.Target
 			weight := weights[vertex] + float64(edge.Weight)
 
 			if weight < weights[successor] && !hasInfiniteWeight {

@@ -367,7 +367,8 @@ func (d *directed[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, er
 			continue
 		}
 
-		for successor, edge := range outEdges {
+		for _, edge := range outEdges {
+			successor := edge.Target
 			weight := weights[vertex] + float64(edge.Weight)
 
 			if weight < weights[successor] && !hasInfiniteWeight {

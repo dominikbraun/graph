@@ -20,7 +20,7 @@ func TestDirected_Vertex(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -28,8 +28,9 @@ func TestDirected_Vertex(t *testing.T) {
 
 		for _, vertex := range test.vertices {
 			hash := graph.hash(vertex)
-			if _, ok := graph.vertices[hash]; !ok {
-				t.Errorf("%s: vertex %v not found in graph: %v", name, vertex, graph.vertices)
+			if _, ok := graph.store.GetVertex(hash); !ok {
+				vertices, _ := graph.store.GetAllVertexHashes()
+				t.Errorf("%s: vertex %v not found in graph: %v", name, vertex, vertices)
 			}
 		}
 	}
@@ -83,7 +84,7 @@ func TestDirected_WeightedEdgeByHashes(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, test.traits)
+		graph := newDirected(IntHash, newMemoryStore(IntHash), test.traits)
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -105,7 +106,7 @@ func TestDirected_WeightedEdgeByHashes(t *testing.T) {
 			sourceHash := graph.hash(expectedEdge.Source)
 			targetHash := graph.hash(expectedEdge.Target)
 
-			edge, ok := graph.edges[sourceHash][targetHash]
+			edge, ok := graph.store.GetEdge(sourceHash, targetHash)
 			if !ok {
 				t.Fatalf("%s: edge with source %v and target %v not found", name, expectedEdge.Source, expectedEdge.Target)
 			}
@@ -147,7 +148,7 @@ func TestDirected_GetEdgeByHashes(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
 		}
@@ -222,7 +223,7 @@ func TestDirected_DFSByHash(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -309,7 +310,7 @@ func TestDirected_BFSByHash(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -402,7 +403,7 @@ func TestDirected_CreatesCycleByHashes(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -439,7 +440,7 @@ func TestDirected_DegreeByHash(t *testing.T) {
 	}{}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -492,7 +493,7 @@ func TestDirected_StronglyConnectedComponents(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -590,7 +591,7 @@ func TestDirected_ShortestPathByHashes(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(StringHash, &traits{})
+		graph := newDirected(StringHash, newMemoryStore(StringHash), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -638,7 +639,7 @@ func TestDirected_edgesAreEqual(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
 		actual := graph.edgesAreEqual(test.a, test.b)
 
 		if actual != test.edgesAreEqual {
@@ -647,39 +648,38 @@ func TestDirected_edgesAreEqual(t *testing.T) {
 	}
 }
 
-func TestDirected_addEdge(t *testing.T) {
-	tests := map[string]struct {
-		edges []Edge[int]
-	}{
-		"add 3 edges": {
-			edges: []Edge[int]{
-				{Source: 1, Target: 2, Weight: 1},
-				{Source: 2, Target: 3, Weight: 2},
-				{Source: 3, Target: 1, Weight: 3},
-			},
-		},
-	}
+// TODO(geoah): move test to store
+// func TestDirected_addEdge(t *testing.T) {
+// 	tests := map[string]struct {
+// 		edges []Edge[int]
+// 	}{
+// 		"add 3 edges": {
+// 			edges: []Edge[int]{
+// 				{Source: 1, Target: 2, Weight: 1},
+// 				{Source: 2, Target: 3, Weight: 2},
+// 				{Source: 3, Target: 1, Weight: 3},
+// 			},
+// 		},
+// 	}
 
-	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+// 	for name, test := range tests {
+// 		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
 
-		for _, edge := range test.edges {
-			sourceHash := graph.hash(edge.Source)
-			TargetHash := graph.hash(edge.Target)
-			graph.addEdge(sourceHash, TargetHash, edge)
-		}
+// 		for _, edge := range test.edges {
+// 			graph.store.AddEdge(edge)
+// 		}
 
-		if len(graph.edges) != len(test.edges) {
-			t.Errorf("%s: number of edges doesn't match: expected %v, got %v", name, len(test.edges), len(graph.edges))
-		}
-		if len(graph.outEdges) != len(test.edges) {
-			t.Errorf("%s: number of outgoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(graph.outEdges))
-		}
-		if len(graph.inEdges) != len(test.edges) {
-			t.Errorf("%s: number of ingoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(graph.inEdges))
-		}
-	}
-}
+// 		if len(graph.edges) != len(test.edges) {
+// 			t.Errorf("%s: number of edges doesn't match: expected %v, got %v", name, len(test.edges), len(graph.edges))
+// 		}
+// 		if len(graph.outEdges) != len(test.edges) {
+// 			t.Errorf("%s: number of outgoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(graph.outEdges))
+// 		}
+// 		if len(graph.inEdges) != len(test.edges) {
+// 			t.Errorf("%s: number of ingoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(graph.inEdges))
+// 		}
+// 	}
+// }
 
 func TestDirected_predecessors(t *testing.T) {
 	tests := map[string]struct {
@@ -722,7 +722,7 @@ func TestDirected_predecessors(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)

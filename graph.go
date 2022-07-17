@@ -3,7 +3,6 @@ package graph
 // Graph represents a generic graph data structure consisting of vertices and edges. Its vertices
 // are of type T, and each vertex is identified by a hash of type K.
 type Graph[K comparable, T any] interface {
-
 	// Vertex creates a new vertex in the graph, which won't be connected to another vertex yet.
 	// This function is idempotent, but overwrites an existing vertex if the hash already exists.
 	Vertex(value T)
@@ -31,12 +30,12 @@ type Graph[K comparable, T any] interface {
 	// GetEdgeByHashes returns the edge between two vertices. The second return value indicates
 	// whether the edge exists. If the graph  is undirected, an edge with swapped source and target
 	// vertices does match.
-	GetEdge(source, target T) (Edge[T], bool)
+	GetEdge(source, target T) (Edge[K], bool)
 
 	// GetEdgeByHashes returns the edge between two vertices with the given hash values. The second
 	// return value indicates whether the edge exists. If the graph  is undirected, an edge with
 	// swapped source and target vertices does match.
-	GetEdgeByHashes(sourceHash, targetHash K) (Edge[T], bool)
+	GetEdgeByHashes(sourceHash, targetHash K) (Edge[K], bool)
 
 	// DFS performs a Depth-First Search on the graph, starting from the given vertex. The visit
 	// function will be invoked for each visited vertex. If it returns false, DFS will continue
@@ -159,9 +158,9 @@ type Graph[K comparable, T any] interface {
 // Edge represents a graph edge with a source and target vertex as well as a weight, which has the
 // same value for all edges in an unweighted graph. Even though the vertices are referred to as
 // source and target, whether the graph is directed or not is determined by its traits.
-type Edge[T any] struct {
-	Source T
-	Target T
+type Edge[K comparable] struct {
+	Source K
+	Target K
 	Weight int
 }
 
@@ -214,6 +213,14 @@ type Hash[K comparable, T any] func(T) K
 //
 // The obtained Graph implementation is depends on these traits.
 func New[K comparable, T any](hash Hash[K, T], options ...func(*traits)) Graph[K, T] {
+	return NewWithStore(hash, newMemoryStore(hash), options...)
+}
+
+func NewWithStore[K comparable, T any](
+	hash Hash[K, T],
+	store Store[K, T],
+	options ...func(*traits),
+) Graph[K, T] {
 	var p traits
 
 	for _, option := range options {
@@ -221,10 +228,10 @@ func New[K comparable, T any](hash Hash[K, T], options ...func(*traits)) Graph[K
 	}
 
 	if p.isDirected {
-		return newDirected(hash, &p)
+		return newDirected(hash, store, &p)
 	}
 
-	return newUndirected(hash, &p)
+	return newUndirected(hash, store, &p)
 }
 
 // StringHash is a hashing function that accepts a string and uses that exact string as a hash

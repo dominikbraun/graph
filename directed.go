@@ -119,8 +119,10 @@ func (d *directed[K, T]) DFSByHash(startHash K, visit func(value T) bool) error 
 			}
 			visited[currentHash] = true
 
-			targetHashes, _ := d.store.GetEdgeTargetHashes(currentHash) // TODO: error
-			stack = append(stack, targetHashes...)
+			edges, _ := d.store.GetEdgesBySource(currentHash) // TODO: error
+			for _, edge := range edges {
+				stack = append(stack, edge.Target)
+			}
 		}
 	}
 
@@ -155,11 +157,11 @@ func (d *directed[K, T]) BFSByHash(startHash K, visit func(value T) bool) error 
 			break
 		}
 
-		targetHashes, _ := d.store.GetEdgeTargetHashes(currentHash) // TODO: error
-		for _, adjacency := range targetHashes {
-			if _, ok := visited[adjacency]; !ok {
-				visited[adjacency] = true
-				queue = append(queue, adjacency)
+		edges, _ := d.store.GetEdgesBySource(currentHash) // TODO: error
+		for _, edge := range edges {
+			if _, ok := visited[edge.Target]; !ok {
+				visited[edge.Target] = true
+				queue = append(queue, edge.Target)
 			}
 		}
 
@@ -229,10 +231,10 @@ func (d *directed[K, T]) DegreeByHash(vertexHash K) (int, error) {
 
 	degree := 0
 
-	if inEdges, ok := d.store.GetEdgeSourceHashes(vertexHash); ok {
+	if inEdges, ok := d.store.GetEdgesByTarget(vertexHash); ok {
 		degree += len(inEdges)
 	}
-	if outEdges, ok := d.store.GetEdgeTargetHashes(vertexHash); ok {
+	if outEdges, ok := d.store.GetEdgesBySource(vertexHash); ok {
 		degree += len(outEdges)
 	}
 
@@ -281,8 +283,9 @@ func (d *directed[K, T]) findSCC(vertexHash K, state *sccState[K]) {
 
 	state.time++
 
-	targetHashes, _ := d.store.GetEdgeTargetHashes(vertexHash) // TODO: error
-	for _, adjancency := range targetHashes {
+	edges, _ := d.store.GetEdgesBySource(vertexHash) // TODO: error
+	for _, edge := range edges {
+		adjancency := edge.Target
 		if ok, _ := state.visited[adjancency]; !ok {
 			d.findSCC(adjancency, state)
 
@@ -357,12 +360,12 @@ func (d *directed[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, er
 		hasInfiniteWeight := math.IsInf(float64(weights[vertex]), 1)
 
 		if vertex == targetHash {
-			if _, ok := d.store.GetEdgeSourceHashes(vertex); !ok {
+			if _, ok := d.store.GetEdgesByTarget(vertex); !ok {
 				return nil, fmt.Errorf("vertex %v is not reachable from vertex %v", targetHash, sourceHash)
 			}
 		}
 
-		outEdges, ok := d.store.GetEdgeTargets(vertex)
+		outEdges, ok := d.store.GetEdgesBySource(vertex)
 		if !ok {
 			continue
 		}
@@ -398,13 +401,13 @@ func (d *directed[K, T]) edgesAreEqual(a, b Edge[K]) bool {
 func (d *directed[K, T]) predecessors(vertexHash K) []K {
 	var predecessorHashes []K
 
-	inEdges, ok := d.store.GetEdgeSourceHashes(vertexHash)
+	inEdges, ok := d.store.GetEdgesByTarget(vertexHash)
 	if !ok {
 		return predecessorHashes
 	}
 
-	for _, hash := range inEdges {
-		predecessorHashes = append(predecessorHashes, hash)
+	for _, edge := range inEdges {
+		predecessorHashes = append(predecessorHashes, edge.Source)
 	}
 
 	return predecessorHashes

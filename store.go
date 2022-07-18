@@ -10,8 +10,6 @@ type Store[K comparable, T any] interface {
 	GetAllVertexHashes() ([]K, bool)
 	AddEdge(sourceHash, targetHash K, edge Edge[K]) error
 	GetEdge(source, target K) (Edge[K], bool)
-	GetEdgeTargetHashes(source K) ([]K, bool)
-	GetEdgeSourceHashes(target K) ([]K, bool)
-	GetEdgeTargets(source K) ([]Edge[K], bool)
-	GetEdgeSources(target K) ([]Edge[K], bool)
+	GetEdgesBySource(source K) ([]Edge[K], bool)
+	GetEdgesByTarget(target K) ([]Edge[K], bool)
 }

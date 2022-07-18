@@ -94,41 +94,7 @@ func (s *memoryStore[K, T]) GetEdge(sourceHash, targetHash K) (Edge[K], bool) { 
 	return Edge[K]{}, false
 }
 
-func (s *memoryStore[K, T]) GetEdgeTargetHashes(sourceHash K) ([]K, bool) {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-
-	sourceEdges, ok := s.outEdges[sourceHash]
-	if !ok {
-		return nil, false
-	}
-
-	targetHashes := make([]K, 0, len(sourceEdges))
-	for targetHash := range sourceEdges {
-		targetHashes = append(targetHashes, targetHash)
-	}
-
-	return targetHashes, true
-}
-
-func (s *memoryStore[K, T]) GetEdgeSourceHashes(targetHash K) ([]K, bool) {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-
-	targetEdges, ok := s.inEdges[targetHash]
-	if !ok {
-		return nil, false
-	}
-
-	sourceHashes := make([]K, 0, len(targetEdges))
-	for sourceHash := range targetEdges {
-		sourceHashes = append(sourceHashes, sourceHash)
-	}
-
-	return sourceHashes, true
-}
-
-func (s *memoryStore[K, T]) GetEdgeTargets(sourceHash K) ([]Edge[K], bool) {
+func (s *memoryStore[K, T]) GetEdgesBySource(sourceHash K) ([]Edge[K], bool) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
@@ -145,7 +111,7 @@ func (s *memoryStore[K, T]) GetEdgeTargets(sourceHash K) ([]Edge[K], bool) {
 	return sourceEdgesArray, true
 }
 
-func (s *memoryStore[K, T]) GetEdgeSources(targetHash K) ([]Edge[K], bool) {
+func (s *memoryStore[K, T]) GetEdgesByTarget(targetHash K) ([]Edge[K], bool) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 

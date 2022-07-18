@@ -213,7 +213,7 @@ type Hash[K comparable, T any] func(T) K
 //
 // The obtained Graph implementation is depends on these traits.
 func New[K comparable, T any](hash Hash[K, T], options ...func(*traits)) Graph[K, T] {
-	return NewWithStore(hash, newMemoryStore(hash), options...)
+	return NewWithStore(hash, newMemoryStore[K, T](), options...)
 }
 
 func NewWithStore[K comparable, T any](

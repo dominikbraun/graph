@@ -3,29 +3,25 @@ package graph
 import "sync"
 
 type memoryStore[K comparable, T any] struct {
-	hash     Hash[K, T]
 	lock     sync.RWMutex
 	vertices map[K]T
-	// edges    map[K]map[K]Edge[K]
 	outEdges map[K]map[K]Edge[K] // source -> target
 	inEdges  map[K]map[K]Edge[K] // target -> source
 }
 
-func newMemoryStore[K comparable, T any](hash Hash[K, T]) Store[K, T] {
+func newMemoryStore[K comparable, T any]() Store[K, T] {
 	return &memoryStore[K, T]{
-		hash:     hash,
 		vertices: make(map[K]T),
-		// edges:    make(map[K]map[K]Edge[K]),
 		outEdges: make(map[K]map[K]Edge[K]),
 		inEdges:  make(map[K]map[K]Edge[K]),
 	}
 }
 
-func (s *memoryStore[K, T]) AddVertex(t T) error {
+func (s *memoryStore[K, T]) AddVertex(k K, t T) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	s.vertices[s.hash(t)] = t
+	s.vertices[k] = t
 
 	return nil
 }
@@ -56,12 +52,6 @@ func (s *memoryStore[K, T]) GetVertex(k K) (*T, bool) { // TODO: error
 func (s *memoryStore[K, T]) AddEdge(sourceHash, targetHash K, edge Edge[K]) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-
-	// if _, ok := s.edges[sourceHash]; !ok {
-	// 	s.edges[sourceHash] = make(map[K]Edge[K])
-	// }
-
-	// s.edges[sourceHash][targetHash] = edge
 
 	if _, ok := s.outEdges[sourceHash]; !ok {
 		s.outEdges[sourceHash] = make(map[K]Edge[K])

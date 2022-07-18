@@ -25,7 +25,7 @@ func newUndirected[K comparable, T any](
 }
 
 func (u *undirected[K, T]) Vertex(value T) {
-	u.store.AddVertex(value) // TODO: error
+	u.store.AddVertex(u.hash(value), value) // TODO: error
 }
 
 func (u *undirected[K, T]) Edge(source, target T) error {

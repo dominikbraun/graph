@@ -20,7 +20,7 @@ func TestDirected_Vertex(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newDirected(IntHash, newMemoryStore[int, int](), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -84,7 +84,7 @@ func TestDirected_WeightedEdgeByHashes(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, newMemoryStore(IntHash), test.traits)
+		graph := newDirected(IntHash, newMemoryStore[int, int](), test.traits)
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -148,7 +148,7 @@ func TestDirected_GetEdgeByHashes(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newDirected(IntHash, newMemoryStore[int, int](), &traits{})
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
 		}
@@ -223,7 +223,7 @@ func TestDirected_DFSByHash(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newDirected(IntHash, newMemoryStore[int, int](), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -310,7 +310,7 @@ func TestDirected_BFSByHash(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newDirected(IntHash, newMemoryStore[int, int](), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -403,7 +403,7 @@ func TestDirected_CreatesCycleByHashes(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newDirected(IntHash, newMemoryStore[int, int](), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -440,7 +440,7 @@ func TestDirected_DegreeByHash(t *testing.T) {
 	}{}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newDirected(IntHash, newMemoryStore[int, int](), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -493,7 +493,7 @@ func TestDirected_StronglyConnectedComponents(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newDirected(IntHash, newMemoryStore[int, int](), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -591,7 +591,7 @@ func TestDirected_ShortestPathByHashes(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(StringHash, newMemoryStore(StringHash), &traits{})
+		graph := newDirected(StringHash, newMemoryStore[string, string](), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -639,7 +639,7 @@ func TestDirected_edgesAreEqual(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newDirected(IntHash, newMemoryStore[int, int](), &traits{})
 		actual := graph.edgesAreEqual(test.a, test.b)
 
 		if actual != test.edgesAreEqual {
@@ -663,7 +663,7 @@ func TestDirected_edgesAreEqual(t *testing.T) {
 // 	}
 
 // 	for name, test := range tests {
-// 		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
+// 		graph := newDirected(IntHash, newMemoryStore[int, int](), &traits{})
 
 // 		for _, edge := range test.edges {
 // 			graph.store.AddEdge(edge)
@@ -722,7 +722,7 @@ func TestDirected_predecessors(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newDirected(IntHash, newMemoryStore[int, int](), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)

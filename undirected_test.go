@@ -20,7 +20,7 @@ func TestUndirected_Vertex(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newUndirected(IntHash, newMemoryStore[int, int](), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -84,7 +84,7 @@ func TestUndirected_WeightedEdgeByHashes(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, newMemoryStore(IntHash), test.traits)
+		graph := newUndirected(IntHash, newMemoryStore[int, int](), test.traits)
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -148,7 +148,7 @@ func TestUndirected_GetEdgeByHashes(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newUndirected(IntHash, newMemoryStore[int, int](), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -268,7 +268,7 @@ func TestUndirected_DFSByHash(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newUndirected(IntHash, newMemoryStore[int, int](), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -363,7 +363,7 @@ func TestUndirected_BFSByHash(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newUndirected(IntHash, newMemoryStore[int, int](), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -454,7 +454,7 @@ func TestUndirected_CreatesCycleByHashes(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newUndirected(IntHash, newMemoryStore[int, int](), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -491,7 +491,7 @@ func TestUndirected_DegreeByHash(t *testing.T) {
 	}{}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newUndirected(IntHash, newMemoryStore[int, int](), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -527,7 +527,7 @@ func TestUndirected_StronglyConnectedComponents(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newUndirected(IntHash, newMemoryStore[int, int](), &traits{})
 
 		sccs, err := graph.StronglyConnectedComponents()
 
@@ -610,7 +610,7 @@ func TestUndirected_ShortestPathByHashes(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(StringHash, newMemoryStore(StringHash), &traits{})
+		graph := newUndirected(StringHash, newMemoryStore[string, string](), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -663,7 +663,7 @@ func TestUndirected_edgesAreEqual(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newUndirected(IntHash, newMemoryStore[int, int](), &traits{})
 		actual := graph.edgesAreEqual(test.a, test.b)
 
 		if actual != test.edgesAreEqual {
@@ -687,7 +687,7 @@ func TestUndirected_edgesAreEqual(t *testing.T) {
 // 	}
 
 // 	for name, test := range tests {
-// 		graph := newUndirected(IntHash, newMemoryStore(IntHash), &traits{})
+// 		graph := newUndirected(IntHash, newMemoryStore[int, int](), &traits{})
 
 // 		for _, edge := range test.edges {
 // 			sourceHash := graph.hash(edge.Source)
@@ -780,7 +780,7 @@ func TestUndirected_adjacencies(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, newMemoryStore(IntHash), &traits{})
+		graph := newUndirected(IntHash, newMemoryStore[int, int](), &traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)

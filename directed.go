@@ -24,7 +24,7 @@ func newDirected[K comparable, T any](
 }
 
 func (d *directed[K, T]) Vertex(value T) {
-	d.store.AddVertex(value)
+	d.store.AddVertex(d.hash(value), value)
 }
 
 func (d *directed[K, T]) Edge(source, target T) error {

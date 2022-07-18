@@ -5,7 +5,7 @@ import "fmt"
 var errNotFound = fmt.Errorf("not found")
 
 type Store[K comparable, T any] interface {
-	AddVertex(t T) error
+	AddVertex(k K, t T) error
 	GetVertex(k K) (*T, bool)
 	GetAllVertexHashes() ([]K, bool)
 	AddEdge(sourceHash, targetHash K, edge Edge[K]) error

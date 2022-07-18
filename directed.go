@@ -264,7 +264,7 @@ func (d *directed[K, T]) StronglyConnectedComponents() ([][]K, error) {
 		index:      make(map[K]int),
 	}
 
-	hashes, _ := d.store.GetAllVertexHashes() // TODO: error
+	hashes, _ := d.store.ListVertices() // TODO: error
 	for _, hash := range hashes {
 		if ok, _ := state.visited[hash]; !ok {
 			d.findSCC(hash, state)
@@ -345,7 +345,7 @@ func (d *directed[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, er
 
 	queue := newPriorityQueue[K]()
 
-	hashes, _ := d.store.GetAllVertexHashes() // TODO: error
+	hashes, _ := d.store.ListVertices() // TODO: error
 	for _, hash := range hashes {
 		if hash != sourceHash {
 			weights[hash] = math.Inf(1)

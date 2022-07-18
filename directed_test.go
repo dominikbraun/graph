@@ -29,7 +29,7 @@ func TestDirected_Vertex(t *testing.T) {
 		for _, vertex := range test.vertices {
 			hash := graph.hash(vertex)
 			if _, ok := graph.store.GetVertex(hash); !ok {
-				vertices, _ := graph.store.GetAllVertexHashes()
+				vertices, _ := graph.store.ListVertices()
 				t.Errorf("%s: vertex %v not found in graph: %v", name, vertex, vertices)
 			}
 		}

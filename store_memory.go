@@ -26,7 +26,7 @@ func (s *memoryStore[K, T]) AddVertex(k K, t T) error {
 	return nil
 }
 
-func (s *memoryStore[K, T]) GetAllVertexHashes() ([]K, bool) {
+func (s *memoryStore[K, T]) ListVertices() ([]K, bool) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 

@@ -280,7 +280,7 @@ func (u *undirected[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, 
 
 	queue := newPriorityQueue[K]()
 
-	hashes, _ := u.store.GetAllVertexHashes() // TODO: error
+	hashes, _ := u.store.ListVertices() // TODO: error
 	for _, hash := range hashes {
 		if hash != sourceHash {
 			weights[hash] = math.Inf(1)

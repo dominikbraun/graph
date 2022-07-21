@@ -620,7 +620,7 @@ func TestDirected_ShortestPathByHashes(t *testing.T) {
 	}
 }
 
-func TestAdjacencyList(t *testing.T) {
+func TestDirected_AdjacencyList(t *testing.T) {
 	tests := map[string]struct {
 		vertices []int
 		edges    []Edge[int]

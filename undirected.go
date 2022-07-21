@@ -24,8 +24,13 @@ func newUndirected[K comparable, T any](
 	}
 }
 
-func (u *undirected[K, T]) Vertex(value T) {
-	u.store.AddVertex(u.hash(value), value) // TODO: error
+func (u *undirected[K, T]) Vertex(value T) error {
+	hash := u.hash(value)
+	err := u.store.AddVertex(hash, value)
+	if err != nil {
+		return fmt.Errorf("could not get vertex with hash %v, %w", hash, err)
+	}
+	return nil
 }
 
 func (u *undirected[K, T]) Edge(source, target T) error {
@@ -44,18 +49,16 @@ func (u *undirected[K, T]) EdgeByHashes(sourceHash, targetHash K) error {
 }
 
 func (u *undirected[K, T]) WeightedEdgeByHashes(sourceHash, targetHash K, weight int) error {
-	_, ok := u.store.GetVertex(sourceHash)
-	if !ok {
-		return fmt.Errorf("could not find source vertex with hash %v", sourceHash)
+	if _, err := u.store.GetVertex(sourceHash); err != nil {
+		return fmt.Errorf("could not find source vertex with hash %v, %w", sourceHash, err)
 	}
 
-	_, ok = u.store.GetVertex(targetHash)
-	if !ok {
-		return fmt.Errorf("could not find target vertex with hash %v", targetHash)
+	if _, err := u.store.GetVertex(targetHash); err != nil {
+		return fmt.Errorf("could not find target vertex with hash %v, %w", targetHash, err)
 	}
 
-	if _, ok := u.GetEdgeByHashes(sourceHash, targetHash); ok {
-		return fmt.Errorf("an edge between vertices %v and %v already exists", sourceHash, targetHash)
+	if _, err := u.GetEdgeByHashes(sourceHash, targetHash); err == nil {
+		return fmt.Errorf("an edge between vertices %v and %v already exists, %w", sourceHash, targetHash, err)
 	}
 
 	// If the graph was declared to be acyclic, permit the creation of a cycle.
@@ -90,20 +93,20 @@ func (u *undirected[K, T]) WeightedEdgeByHashes(sourceHash, targetHash K, weight
 	return nil
 }
 
-func (u *undirected[K, T]) GetEdge(source, target T) (Edge[K], bool) {
+func (u *undirected[K, T]) GetEdge(source, target T) (*Edge[K], error) {
 	sourceHash := u.hash(source)
 	targetHash := u.hash(target)
 
 	return u.GetEdgeByHashes(sourceHash, targetHash)
 }
 
-func (u *undirected[K, T]) GetEdgeByHashes(sourceHash, targetHash K) (Edge[K], bool) {
-	edge, ok := u.store.GetEdge(sourceHash, targetHash)
-	if !ok {
-		return Edge[K]{}, false
+func (u *undirected[K, T]) GetEdgeByHashes(sourceHash, targetHash K) (*Edge[K], error) {
+	edge, err := u.store.GetEdge(sourceHash, targetHash)
+	if err != nil {
+		return nil, fmt.Errorf("could not find edge with hashes %v %v, %w", sourceHash, targetHash, err)
 	}
 
-	return edge, ok
+	return edge, nil
 }
 
 func (u *undirected[K, T]) DFS(start T, visit func(value T) bool) error {
@@ -113,8 +116,8 @@ func (u *undirected[K, T]) DFS(start T, visit func(value T) bool) error {
 }
 
 func (u *undirected[K, T]) DFSByHash(startHash K, visit func(value T) bool) error {
-	if _, ok := u.store.GetVertex(startHash); !ok {
-		return fmt.Errorf("could not find start vertex with hash %v", startHash)
+	if _, err := u.store.GetVertex(startHash); err != nil {
+		return fmt.Errorf("could not find start vertex with hash %v, %w", startHash, err)
 	}
 
 	stack := make([]K, 0)
@@ -135,7 +138,10 @@ func (u *undirected[K, T]) DFSByHash(startHash K, visit func(value T) bool) erro
 			}
 			visited[currentHash] = true
 
-			edges, _ := u.store.GetEdgesBySource(currentHash) // TODO: error
+			edges, err := u.store.GetEdgesBySource(currentHash)
+			if err != nil && !errors.Is(err, ErrNotFound) {
+				return fmt.Errorf("could not get edges by source with hash %v, %w", currentHash, err)
+			}
 			for _, edge := range edges {
 				stack = append(stack, edge.Target)
 			}
@@ -152,8 +158,8 @@ func (u *undirected[K, T]) BFS(start T, visit func(value T) bool) error {
 }
 
 func (u *undirected[K, T]) BFSByHash(startHash K, visit func(value T) bool) error {
-	if _, ok := u.store.GetVertex(startHash); !ok {
-		return fmt.Errorf("could not find start vertex with hash %v", startHash)
+	if _, err := u.store.GetVertex(startHash); err != nil {
+		return fmt.Errorf("could not find start vertex with hash %v, %w", startHash, err)
 	}
 
 	queue := make([]K, 0)
@@ -194,14 +200,12 @@ func (u *undirected[K, T]) CreatesCycle(source, target T) (bool, error) {
 }
 
 func (u *undirected[K, T]) CreatesCycleByHashes(sourceHash, targetHash K) (bool, error) {
-	_, ok := u.store.GetVertex(sourceHash)
-	if !ok {
-		return false, fmt.Errorf("could not find source vertex with hash %v", sourceHash)
+	if _, err := u.store.GetVertex(sourceHash); err != nil {
+		return false, fmt.Errorf("could not find source vertex with hash %v, %w", sourceHash, err)
 	}
 
-	_, ok = u.store.GetVertex(targetHash)
-	if !ok {
-		return false, fmt.Errorf("could not find target vertex with hash %v", targetHash)
+	if _, err := u.store.GetVertex(targetHash); err != nil {
+		return false, fmt.Errorf("could not find target vertex with hash %v, %w", targetHash, err)
 	}
 
 	if sourceHash == targetHash {
@@ -225,7 +229,11 @@ func (u *undirected[K, T]) CreatesCycleByHashes(sourceHash, targetHash K) (bool,
 			}
 			visited[currentHash] = true
 
-			for _, adjacency := range u.adjacencies(currentHash) {
+			adjacencies, err := u.adjacencies(currentHash)
+			if err != nil {
+				return false, fmt.Errorf("could not get adjacencies with hash %v, %w", currentHash, err)
+			}
+			for _, adjacency := range adjacencies {
 				stack = append(stack, adjacency)
 			}
 		}
@@ -241,8 +249,8 @@ func (u *undirected[K, T]) Degree(vertex T) (int, error) {
 }
 
 func (u *undirected[K, T]) DegreeByHash(vertexHash K) (int, error) {
-	if _, ok := u.store.GetVertex(vertexHash); !ok {
-		return 0, fmt.Errorf("could not find vertex with hash %v", vertexHash)
+	if _, err := u.store.GetVertex(vertexHash); err != nil {
+		return 0, fmt.Errorf("could not find vertex with hash %v, %w", vertexHash, err)
 	}
 
 	degree := 0
@@ -250,9 +258,11 @@ func (u *undirected[K, T]) DegreeByHash(vertexHash K) (int, error) {
 	// Adding the number of ingoing edges is sufficient for undirected graphs, because all edges
 	// exist twice (as two directed edges in opposite directions). Either dividing the number of
 	// ingoing + outgoing edges by 2 or just using the number of ingoing edges is appropriate.
-	if inEdges, ok := u.store.GetEdgesByTarget(vertexHash); ok {
-		degree += len(inEdges)
+	inEdges, err := u.store.GetEdgesByTarget(vertexHash)
+	if err != nil && !errors.Is(err, ErrNotFound) {
+		return 0, fmt.Errorf("could not find edges with hash %v, %w", vertexHash, err)
 	}
+	degree += len(inEdges)
 
 	return degree, nil
 }
@@ -295,13 +305,16 @@ func (u *undirected[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, 
 		hasInfiniteWeight := math.IsInf(float64(weights[vertex]), 1)
 
 		if vertex == targetHash {
-			if _, ok := u.store.GetEdgesByTarget(vertex); !ok {
-				return nil, fmt.Errorf("vertex %v is not reachable from vertex %v", targetHash, sourceHash)
+			if _, err := u.store.GetEdgesByTarget(vertex); err != nil {
+				return nil, fmt.Errorf("vertex %v is not reachable from vertex %v, %w", targetHash, sourceHash, err)
 			}
 		}
 
-		inEdges, ok := u.store.GetEdgesByTarget(vertex)
-		if !ok {
+		inEdges, err := u.store.GetEdgesByTarget(vertex)
+		if err != nil {
+			if !errors.Is(err, ErrNotFound) {
+				return nil, fmt.Errorf("could not find edges by target with hash %v, %w", vertex, err)
+			}
 			continue
 		}
 
@@ -341,19 +354,22 @@ func (u *undirected[K, T]) edgesAreEqual(a, b Edge[K]) bool {
 	return false
 }
 
-func (u *undirected[K, T]) adjacencies(vertexHash K) []K {
+func (u *undirected[K, T]) adjacencies(vertexHash K) ([]K, error) {
 	var adjacencyHashes []K
 
 	// An undirected graph creates an undirected edge as two directed edges in the opposite
 	// direction, so both the in-edges and the out-edges work here.
-	inEdges, ok := u.store.GetEdgesByTarget(vertexHash)
-	if !ok {
-		return adjacencyHashes
+	inEdges, err := u.store.GetEdgesByTarget(vertexHash)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return adjacencyHashes, nil
+		}
+		return nil, fmt.Errorf("could not get edges by target with hash %v, %w", vertexHash, err)
 	}
 
 	for _, edge := range inEdges {
 		adjacencyHashes = append(adjacencyHashes, edge.Source)
 	}
 
-	return adjacencyHashes
+	return adjacencyHashes, nil
 }

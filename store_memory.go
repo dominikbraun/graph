@@ -26,7 +26,7 @@ func (s *memoryStore[K, T]) AddVertex(k K, t T) error {
 	return nil
 }
 
-func (s *memoryStore[K, T]) ListVertices() ([]K, bool) {
+func (s *memoryStore[K, T]) ListVertices() ([]K, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
@@ -34,19 +34,20 @@ func (s *memoryStore[K, T]) ListVertices() ([]K, bool) {
 	for k := range s.vertices {
 		hashes = append(hashes, k)
 	}
-	return hashes, true
+
+	return hashes, nil
 }
 
-func (s *memoryStore[K, T]) GetVertex(k K) (*T, bool) { // TODO: error
+func (s *memoryStore[K, T]) GetVertex(k K) (*T, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
 	v, ok := s.vertices[k]
 	if !ok {
-		return nil, false
+		return nil, ErrNotFound
 	}
 
-	return &v, true
+	return &v, nil
 }
 
 func (s *memoryStore[K, T]) AddEdge(sourceHash, targetHash K, edge Edge[K]) error {
@@ -68,29 +69,30 @@ func (s *memoryStore[K, T]) AddEdge(sourceHash, targetHash K, edge Edge[K]) erro
 	return nil
 }
 
-func (s *memoryStore[K, T]) GetEdge(sourceHash, targetHash K) (Edge[K], bool) { // TODO: error
+func (s *memoryStore[K, T]) GetEdge(sourceHash, targetHash K) (*Edge[K], error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
 	sourceEdges, ok := s.outEdges[sourceHash]
 	if !ok {
-		return Edge[K]{}, false
+		return nil, ErrNotFound
 	}
 
-	if edge, ok := sourceEdges[targetHash]; ok {
-		return edge, true
+	edge, ok := sourceEdges[targetHash]
+	if !ok {
+		return nil, ErrNotFound
 	}
 
-	return Edge[K]{}, false
+	return &edge, nil
 }
 
-func (s *memoryStore[K, T]) GetEdgesBySource(sourceHash K) ([]Edge[K], bool) {
+func (s *memoryStore[K, T]) GetEdgesBySource(sourceHash K) ([]Edge[K], error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
 	sourceEdges, ok := s.outEdges[sourceHash]
 	if !ok {
-		return nil, false
+		return nil, ErrNotFound
 	}
 
 	sourceEdgesArray := make([]Edge[K], 0, len(sourceEdges))
@@ -98,16 +100,16 @@ func (s *memoryStore[K, T]) GetEdgesBySource(sourceHash K) ([]Edge[K], bool) {
 		sourceEdgesArray = append(sourceEdgesArray, edge)
 	}
 
-	return sourceEdgesArray, true
+	return sourceEdgesArray, nil
 }
 
-func (s *memoryStore[K, T]) GetEdgesByTarget(targetHash K) ([]Edge[K], bool) {
+func (s *memoryStore[K, T]) GetEdgesByTarget(targetHash K) ([]Edge[K], error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
 	targetEdges, ok := s.inEdges[targetHash]
 	if !ok {
-		return nil, false
+		return nil, ErrNotFound
 	}
 
 	targetEdgesArray := make([]Edge[K], 0, len(targetEdges))
@@ -115,5 +117,5 @@ func (s *memoryStore[K, T]) GetEdgesByTarget(targetHash K) ([]Edge[K], bool) {
 		targetEdgesArray = append(targetEdgesArray, edge)
 	}
 
-	return targetEdgesArray, true
+	return targetEdgesArray, nil
 }

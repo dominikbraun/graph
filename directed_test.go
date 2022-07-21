@@ -28,7 +28,7 @@ func TestDirected_Vertex(t *testing.T) {
 
 		for _, vertex := range test.vertices {
 			hash := graph.hash(vertex)
-			if _, ok := graph.store.GetVertex(hash); !ok {
+			if _, err := graph.store.GetVertex(hash); err != nil {
 				vertices, _ := graph.store.ListVertices()
 				t.Errorf("%s: vertex %v not found in graph: %v", name, vertex, vertices)
 			}
@@ -106,8 +106,8 @@ func TestDirected_WeightedEdgeByHashes(t *testing.T) {
 			sourceHash := graph.hash(expectedEdge.Source)
 			targetHash := graph.hash(expectedEdge.Target)
 
-			edge, ok := graph.store.GetEdge(sourceHash, targetHash)
-			if !ok {
+			edge, err := graph.store.GetEdge(sourceHash, targetHash)
+			if err != nil {
 				t.Fatalf("%s: edge with source %v and target %v not found", name, expectedEdge.Source, expectedEdge.Target)
 			}
 
@@ -158,10 +158,10 @@ func TestDirected_GetEdgeByHashes(t *testing.T) {
 
 		graph.EdgeByHashes(sourceHash, targetHash)
 
-		_, ok := graph.GetEdgeByHashes(test.getEdgeHashes[0], test.getEdgeHashes[1])
+		_, err := graph.GetEdgeByHashes(test.getEdgeHashes[0], test.getEdgeHashes[1])
 
-		if test.exists != ok {
-			t.Fatalf("%s: result expectancy doesn't match: expected %v, got %v", name, test.exists, ok)
+		if test.exists != (err == nil) {
+			t.Fatalf("%s: result expectancy doesn't match: expected %v, got %v", name, test.exists, (err == nil))
 		}
 	}
 }
@@ -734,7 +734,7 @@ func TestDirected_predecessors(t *testing.T) {
 			}
 		}
 
-		predecessors := graph.predecessors(graph.hash(test.vertex))
+		predecessors, _ := graph.predecessors(graph.hash(test.vertex))
 
 		if !slicesAreEqual(predecessors, test.expectedPredecessors) {
 			t.Errorf("%s: predecessors don't match: expected %v, got %v", name, test.expectedPredecessors, predecessors)

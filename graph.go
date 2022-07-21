@@ -5,7 +5,7 @@ package graph
 type Graph[K comparable, T any] interface {
 	// Vertex creates a new vertex in the graph, which won't be connected to another vertex yet.
 	// This function is idempotent, but overwrites an existing vertex if the hash already exists.
-	Vertex(value T)
+	Vertex(value T) error
 
 	// Edge creates an edge between the source and the target vertex. If the Directed option has
 	// been called on the graph, this is a directed edge. Returns an error if either vertex doesn't
@@ -30,12 +30,12 @@ type Graph[K comparable, T any] interface {
 	// GetEdgeByHashes returns the edge between two vertices. The second return value indicates
 	// whether the edge exists. If the graph  is undirected, an edge with swapped source and target
 	// vertices does match.
-	GetEdge(source, target T) (Edge[K], bool)
+	GetEdge(source, target T) (*Edge[K], error)
 
 	// GetEdgeByHashes returns the edge between two vertices with the given hash values. The second
 	// return value indicates whether the edge exists. If the graph  is undirected, an edge with
 	// swapped source and target vertices does match.
-	GetEdgeByHashes(sourceHash, targetHash K) (Edge[K], bool)
+	GetEdgeByHashes(sourceHash, targetHash K) (*Edge[K], error)
 
 	// DFS performs a Depth-First Search on the graph, starting from the given vertex. The visit
 	// function will be invoked for each visited vertex. If it returns false, DFS will continue

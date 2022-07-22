@@ -4,6 +4,9 @@ package graph
 // are of type T, and each vertex is identified by a hash of type K.
 type Graph[K comparable, T any] interface {
 
+	// Traits returns the graph's traits. Those traits must be set when creating a graph using New.
+	Traits() *Traits
+
 	// Vertex creates a new vertex in the graph, which won't be connected to another vertex yet.
 	// This function is idempotent, but overwrites an existing vertex if the hash already exists.
 	Vertex(value T)
@@ -231,14 +234,14 @@ type Hash[K comparable, T any] func(T) K
 //	g := graph.New(graph.IntHash, graph.Directed(), graph.Acyclic())
 //
 // The obtained Graph implementation is depends on these traits.
-func New[K comparable, T any](hash Hash[K, T], options ...func(*traits)) Graph[K, T] {
-	var p traits
+func New[K comparable, T any](hash Hash[K, T], options ...func(*Traits)) Graph[K, T] {
+	var p Traits
 
 	for _, option := range options {
 		option(&p)
 	}
 
-	if p.isDirected {
+	if p.IsDirected {
 		return newDirected(hash, &p)
 	}
 

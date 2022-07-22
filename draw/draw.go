@@ -56,15 +56,21 @@ type statement struct {
 //
 //	go run main.go | dot -Tsvg > output.svg
 func Graph[K comparable, T any](g graph.Graph[K, T], w io.Writer) error {
-	desc := description{
+	description := generateDOT(g)
+
+	return renderDOT(w, description)
+}
+
+func generateDOT[K comparable, T any](g graph.Graph[K, T]) description {
+	description := description{
 		GraphType:    "graph",
 		EdgeOperator: "--",
 		Statements:   make([]statement, 0),
 	}
 
 	if g.Traits().IsDirected {
-		desc.GraphType = "digraph"
-		desc.EdgeOperator = "->"
+		description.GraphType = "digraph"
+		description.EdgeOperator = "->"
 	}
 
 	for vertex, adjacencies := range g.AdjacencyMap() {
@@ -72,7 +78,7 @@ func Graph[K comparable, T any](g graph.Graph[K, T], w io.Writer) error {
 			statement := statement{
 				Source: vertex,
 			}
-			desc.Statements = append(desc.Statements, statement)
+			description.Statements = append(description.Statements, statement)
 			continue
 		}
 
@@ -83,11 +89,11 @@ func Graph[K comparable, T any](g graph.Graph[K, T], w io.Writer) error {
 				Weight: edge.Weight,
 				Label:  edge.Label,
 			}
-			desc.Statements = append(desc.Statements, statement)
+			description.Statements = append(description.Statements, statement)
 		}
 	}
 
-	return renderDOT(w, desc)
+	return description
 }
 
 func renderDOT(w io.Writer, d description) error {

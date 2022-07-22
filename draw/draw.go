@@ -2,82 +2,87 @@ package draw
 
 import (
 	"os"
+	"path/filepath"
 	"text/template"
 
 	"github.com/dominikbraun/graph"
 )
 
-const graphTemplate = `
-graph {
+const dotTemplate = `
+strict {{.GraphType}} {
 {{range $s := .Statements}}
-	{{.Source}} {{if .Target}}-- {{.Target}} [ weight={{.Weight}}, label="{{.Label}}" ]{{end}};
+	{{.Source}} {{if .Target}}{{$.EdgeOperator}} {{.Target}} [ weight={{.Weight}}, label="{{.Label}}" ]{{end}};
 {{end}}
 }
 `
 
-const digraphTemplate = `
-digraph {
-{{range $s := .Statements}}
-	{{.Source}} {{if .Target}}-> {{.Target}} [ weight={{.Weight}}, label="{{.Label}}" ]{{end}};
-{{end}}
-}
-`
-
-type dot struct {
-	GraphType  string
-	Statements []dotStatement
-}
-
-type dotStatement struct {
-	Source       interface{}
-	Target       interface{}
+type description struct {
+	GraphType    string
 	EdgeOperator string
-	Weight       int
-	Label        string
+	Statements   []statement
 }
 
-func Graph[K comparable, T any](g graph.Graph[K, T], options ...func(*config)) {
+type statement struct {
+	Source interface{}
+	Target interface{}
+	Weight int
+	Label  string
+}
+
+func Graph[K comparable, T any](g graph.Graph[K, T], options ...func(*config)) error {
 	c := defaultConfig()
 
 	for _, option := range options {
 		option(&c)
 	}
 
-	data := dot{
-		Statements: make([]dotStatement, 0),
+	desc := description{
+		GraphType:    "graph",
+		EdgeOperator: "--",
+		Statements:   make([]statement, 0),
 	}
 
-	isUndirected := false
+	if g.Traits().IsDirected {
+		desc.GraphType = "digraph"
+		desc.EdgeOperator = "->"
+	}
 
 	for vertex, adjacencies := range g.AdjacencyMap() {
 		if len(adjacencies) == 0 {
-			statement := dotStatement{
+			statement := statement{
 				Source: vertex,
 			}
-			data.Statements = append(data.Statements, statement)
+			desc.Statements = append(desc.Statements, statement)
 			continue
 		}
 
 		for adjacency, edge := range adjacencies {
-			statement := dotStatement{
+			statement := statement{
 				Source: vertex,
 				Target: adjacency,
 				Weight: edge.Weight,
 				Label:  edge.Label,
 			}
-			data.Statements = append(data.Statements, statement)
+			desc.Statements = append(desc.Statements, statement)
 		}
 	}
 
-	textTemplate := digraphTemplate
+	return renderDOT(desc, &c)
+}
 
-	if isUndirected {
-		textTemplate = graphTemplate
+func renderDOT(data description, c *config) error {
+	tpl, _ := template.New("dotTemplate").Parse(dotTemplate)
+
+	if c.writer != nil {
+		return tpl.Execute(c.writer, data)
 	}
 
-	tpl, _ := template.New("dot").Parse(textTemplate)
+	name := filepath.Join(c.directory, c.filename)
 
-	if err := tpl.Execute(os.Stdout, data); err != nil {
-		panic(err)
+	file, err := os.Create(name)
+	if err != nil {
+		return err
 	}
+
+	return tpl.Execute(file, data)
 }

@@ -1,6 +1,10 @@
 package draw
 
-import "testing"
+import (
+	"bytes"
+	"io"
+	"testing"
+)
 
 func TestDefaultConfig(t *testing.T) {
 	tests := map[string]struct {
@@ -76,6 +80,38 @@ func TestFilename(t *testing.T) {
 		c := &config{}
 
 		Filename(test.filename)(c)
+
+		if !configsAreEqual(test.expected, c) {
+			t.Errorf("%s: config expectation doesn't match: expected %v, got %v", name, test.expected, c)
+		}
+	}
+}
+
+func TestWriter(t *testing.T) {
+	buffer := bytes.NewBuffer([]byte{})
+
+	tests := map[string]struct {
+		writer   io.Writer
+		expected *config
+	}{
+		"default writer": {
+			writer: nil,
+			expected: &config{
+				writer: nil,
+			},
+		},
+		"custom filename": {
+			writer: buffer,
+			expected: &config{
+				writer: buffer,
+			},
+		},
+	}
+
+	for name, test := range tests {
+		c := &config{}
+
+		Writer(test.writer)(c)
 
 		if !configsAreEqual(test.expected, c) {
 			t.Errorf("%s: config expectation doesn't match: expected %v, got %v", name, test.expected, c)

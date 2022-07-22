@@ -766,7 +766,7 @@ func TestDirected_EdgesWithHashes(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)

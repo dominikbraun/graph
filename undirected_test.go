@@ -794,7 +794,7 @@ func TestUndirected_EdgesWithHashes(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &traits{})
+		graph := newUndirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)

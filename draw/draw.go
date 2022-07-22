@@ -10,8 +10,7 @@ import (
 	"github.com/dominikbraun/graph"
 )
 
-const dotTemplate = `
-strict {{.GraphType}} {
+const dotTemplate = `strict {{.GraphType}} {
 {{range $s := .Statements}}
 	{{.Source}} {{if .Target}}{{$.EdgeOperator}} {{.Target}} [ weight={{.Weight}}, label="{{.Label}}" ]{{end}};
 {{end}}
@@ -50,7 +49,7 @@ type statement struct {
 //
 // To generate an SVG from the created file using Graphviz, use a command such as the following:
 //
-//	dot -Tsvg mygraph.gv
+//	dot -Tsvg -O mygraph.gv
 //
 // Another possibility is to use os.Stdin as an io.Writer, print the DOT output to stdin, and pipe
 // it as follows:

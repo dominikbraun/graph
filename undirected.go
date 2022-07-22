@@ -355,10 +355,6 @@ func (u *undirected[K, T]) AdjacencyMap() map[K]map[K]Edge[K] {
 	return adjacencyMap
 }
 
-func (u *undirected[K, T]) EdgesWithHashes() []Edge[K] {
-	return u.edges
-}
-
 func (u *undirected[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	aSourceHash := u.hash(a.Source)
 	aTargetHash := u.hash(a.Target)

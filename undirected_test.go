@@ -757,63 +757,6 @@ func TestUndirected_AdjacencyList(t *testing.T) {
 	}
 }
 
-func TestUndirected_EdgesWithHashes(t *testing.T) {
-	tests := map[string]struct {
-		vertices []int
-		edges    []Edge[int]
-		expected []Edge[int]
-	}{
-		"Y-shaped graph": {
-			vertices: []int{1, 2, 3, 4},
-			edges: []Edge[int]{
-				{Source: 1, Target: 3},
-				{Source: 2, Target: 3},
-				{Source: 3, Target: 4},
-			},
-			expected: []Edge[int]{
-				{Source: 1, Target: 3},
-				{Source: 2, Target: 3},
-				{Source: 3, Target: 4},
-			},
-		},
-		"diamond-shaped graph": {
-			vertices: []int{1, 2, 3, 4},
-			edges: []Edge[int]{
-				{Source: 1, Target: 2},
-				{Source: 1, Target: 3},
-				{Source: 2, Target: 4},
-				{Source: 3, Target: 4},
-			},
-			expected: []Edge[int]{
-				{Source: 1, Target: 2},
-				{Source: 1, Target: 3},
-				{Source: 2, Target: 4},
-				{Source: 3, Target: 4},
-			},
-		},
-	}
-
-	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{})
-
-		for _, vertex := range test.vertices {
-			graph.Vertex(vertex)
-		}
-
-		for _, edge := range test.edges {
-			if err := graph.WeightedEdge(edge.Source, edge.Target, edge.Weight); err != nil {
-				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
-			}
-		}
-
-		edges := graph.EdgesWithHashes()
-
-		if !slicesAreEqual(test.expected, edges) {
-			t.Errorf("%s: edges expectancy doesn't match: expected %v, got %v", name, test.expected, edges)
-		}
-	}
-}
-
 func TestUndirected_edgesAreEqual(t *testing.T) {
 	tests := map[string]struct {
 		a             Edge[int]

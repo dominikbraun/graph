@@ -1,6 +1,7 @@
 package draw
 
 import (
+	"os"
 	"testing"
 
 	"github.com/dominikbraun/graph"
@@ -17,5 +18,6 @@ func TestGraph(t *testing.T) {
 	g.Edge(2, 3)
 	g.Edge(2, 4)
 
-	Graph(g)
+	file, _ := os.Create("./mygraph.gv")
+	Graph(g, file)
 }

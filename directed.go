@@ -426,24 +426,6 @@ func (d *directed[K, T]) AdjacencyMap() map[K]map[K]Edge[K] {
 	return adjacencyMap
 }
 
-func (d *directed[K, T]) EdgesWithHashes() []Edge[K] {
-	var edges []Edge[K]
-
-	for source, targets := range d.outEdges {
-		for target, edge := range targets {
-			e := Edge[K]{
-				Source: source,
-				Target: target,
-				Weight: edge.Weight,
-				Label:  edge.Label,
-			}
-			edges = append(edges, e)
-		}
-	}
-
-	return edges
-}
-
 func (d *directed[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	aSourceHash := d.hash(a.Source)
 	aTargetHash := d.hash(a.Target)

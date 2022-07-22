@@ -10,7 +10,6 @@ type undirected[K comparable, T any] struct {
 	hash     Hash[K, T]
 	traits   *Traits
 	vertices map[K]T
-	edges    []Edge[K]
 	outEdges map[K]map[K]Edge[T]
 	inEdges  map[K]map[K]Edge[T]
 }
@@ -20,7 +19,6 @@ func newUndirected[K comparable, T any](hash Hash[K, T], traits *Traits) *undire
 		hash:     hash,
 		traits:   traits,
 		vertices: make(map[K]T),
-		edges:    make([]Edge[K], 0),
 		outEdges: make(map[K]map[K]Edge[T]),
 		inEdges:  make(map[K]map[K]Edge[T]),
 	}
@@ -373,15 +371,6 @@ func (u *undirected[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 }
 
 func (u *undirected[K, T]) addEdge(sourceHash, targetHash K, edge Edge[T]) {
-	edgeWithHashes := Edge[K]{
-		Source: sourceHash,
-		Target: targetHash,
-		Weight: edge.Weight,
-		Label:  edge.Label,
-	}
-
-	u.edges = append(u.edges, edgeWithHashes)
-
 	if _, ok := u.outEdges[sourceHash]; !ok {
 		u.outEdges[sourceHash] = make(map[K]Edge[T])
 	}

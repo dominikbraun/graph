@@ -1,29 +1,40 @@
 package draw
 
-import "github.com/dominikbraun/graph"
+import (
+	"os"
+	"text/template"
 
-const dotTemplate = `
-{{.GraphType}} {
-	{{range $s := .Statements}}
-		{{$s.Source}} {{.EdgeOperator}} {{$s.Target}} [ weight={{$s.Weight}}, label="{{$s.Label}}" ];
-	{{end}}
+	"github.com/dominikbraun/graph"
+)
+
+const graphTemplate = `
+graph {
+{{range $s := .Statements}}
+	{{.Source}} {{if .Target}}-- {{.Target}} [ weight={{.Weight}}, label="{{.Label}}" ]{{end}};
+{{end}}
+}
+`
+
+const digraphTemplate = `
+digraph {
+{{range $s := .Statements}}
+	{{.Source}} {{if .Target}}-> {{.Target}} [ weight={{.Weight}}, label="{{.Label}}" ]{{end}};
+{{end}}
 }
 `
 
 type dot struct {
-	GraphType    string
-	EdgeOperator string
-	Statements   []dotStatement
+	GraphType  string
+	Statements []dotStatement
 }
 
 type dotStatement struct {
-	Source string
-	Target string
-	Weight int
-	Label  string
+	Source       interface{}
+	Target       interface{}
+	EdgeOperator string
+	Weight       int
+	Label        string
 }
-
-func (d dotStatement) Attributes()
 
 func Graph[K comparable, T any](g graph.Graph[K, T], options ...func(*config)) {
 	c := defaultConfig()
@@ -32,4 +43,41 @@ func Graph[K comparable, T any](g graph.Graph[K, T], options ...func(*config)) {
 		option(&c)
 	}
 
+	data := dot{
+		Statements: make([]dotStatement, 0),
+	}
+
+	isUndirected := false
+
+	for vertex, adjacencies := range g.AdjacencyMap() {
+		if len(adjacencies) == 0 {
+			statement := dotStatement{
+				Source: vertex,
+			}
+			data.Statements = append(data.Statements, statement)
+			continue
+		}
+
+		for adjacency, edge := range adjacencies {
+			statement := dotStatement{
+				Source: vertex,
+				Target: adjacency,
+				Weight: edge.Weight,
+				Label:  edge.Label,
+			}
+			data.Statements = append(data.Statements, statement)
+		}
+	}
+
+	textTemplate := digraphTemplate
+
+	if isUndirected {
+		textTemplate = graphTemplate
+	}
+
+	tpl, _ := template.New("dot").Parse(textTemplate)
+
+	if err := tpl.Execute(os.Stdout, data); err != nil {
+		panic(err)
+	}
 }

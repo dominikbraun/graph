@@ -1,8 +1,10 @@
+// Package draw provides functions for visualizing graph structures. At this time, draw supports
+// the DOT language which can be interpreted by Graphviz, Grappa, and others.
 package draw
 
 import (
-	"os"
-	"path/filepath"
+	"fmt"
+	"io"
 	"text/template"
 
 	"github.com/dominikbraun/graph"
@@ -29,13 +31,32 @@ type statement struct {
 	Label  string
 }
 
-func Graph[K comparable, T any](g graph.Graph[K, T], options ...func(*config)) error {
-	c := defaultConfig()
-
-	for _, option := range options {
-		option(&c)
-	}
-
+// Graph renders the given graph structure in DOT language into an io.Writer, for example a file.
+// The generated output can be passed to Graphviz or other visualization tools supporting DOT.
+//
+// The following example renders a directed graph into a file mygraph.gv:
+//
+//	g := graph.New(graph.IntHash, graph.Directed())
+//
+//	g.Vertex(1)
+//	g.Vertex(2)
+//	g.Vertex(3)
+//
+//	_ = g.Edge(1, 2)
+//	_ = g.Edge(1, 3)
+//
+//	file, _ := os.Create("./mygraph.gv")
+//	_ = graph.Draw(g, file)
+//
+// To generate an SVG from the created file using Graphviz, use a command such as the following:
+//
+//	dot -Tsvg mygraph.gv
+//
+// Another possibility is to use os.Stdin as an io.Writer, print the DOT output to stdin, and pipe
+// it as follows:
+//
+//	go run main.go | dot -Tsvg > output.svg
+func Graph[K comparable, T any](g graph.Graph[K, T], w io.Writer) error {
 	desc := description{
 		GraphType:    "graph",
 		EdgeOperator: "--",
@@ -67,22 +88,14 @@ func Graph[K comparable, T any](g graph.Graph[K, T], options ...func(*config)) e
 		}
 	}
 
-	return renderDOT(desc, &c)
+	return renderDOT(w, desc)
 }
 
-func renderDOT(data description, c *config) error {
-	tpl, _ := template.New("dotTemplate").Parse(dotTemplate)
-
-	if c.writer != nil {
-		return tpl.Execute(c.writer, data)
-	}
-
-	name := filepath.Join(c.directory, c.filename)
-
-	file, err := os.Create(name)
+func renderDOT(w io.Writer, d description) error {
+	tpl, err := template.New("dotTemplate").Parse(dotTemplate)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse template: %w", err)
 	}
 
-	return tpl.Execute(file, data)
+	return tpl.Execute(w, d)
 }

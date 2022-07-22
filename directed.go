@@ -418,6 +418,25 @@ func (d *directed[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, er
 	return path, nil
 }
 
+func (d *directed[K, T]) AdjacencyList() map[K][]K {
+	adjacencyList := make(map[K][]K)
+	// ToDo(dominikbraun): Don't ignore this and the other error.
+	vertices, _ := d.store.ListVertices()
+
+	// Create an entry for each vertex to guarantee that all vertices are contained and its
+	// adjacencies can be safely accessed without a preceding check.
+	for _, vertexHash := range vertices {
+		adjacencyList[vertexHash] = make([]K, 0)
+		edges, _ := d.store.GetEdgesBySource(vertexHash)
+
+		for _, edge := range edges {
+			adjacencyList[vertexHash] = append(adjacencyList[vertexHash], edge.Target)
+		}
+	}
+
+	return adjacencyList
+}
+
 func (d *directed[K, T]) edgesAreEqual(a, b Edge[K]) bool {
 	return a.Source == b.Source && a.Target == b.Target
 }

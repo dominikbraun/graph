@@ -153,6 +153,13 @@ type Graph[K comparable, T any] interface {
 	// ShortestPathByHashes does the same as ShortestPath, but uses hash values to identify the
 	// vertices.
 	ShortestPathByHashes(sourceHash, targetHash K) ([]K, error)
+
+	// AdjacencyList computes an adjacency list for all vertices in the graph and returns a map
+	// with all vertex hashes mapped against a list of their adjacency hashes.
+	//
+	// Since the AdjacencyList map contains all vertices, it is safe to check for the adjacencies
+	// of every vertex even if some vertices don't have any adjacencies.
+	AdjacencyList() map[K][]K
 }
 
 // Edge represents a graph edge with a source and target vertex as well as a weight, which has the

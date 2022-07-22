@@ -342,6 +342,25 @@ func (u *undirected[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, 
 	return path, nil
 }
 
+func (u *undirected[K, T]) AdjacencyList() map[K][]K {
+	adjacencyList := make(map[K][]K)
+	// ToDo(dominikbraun): Don't ignore this and the other error.
+	vertices, _ := u.store.ListVertices()
+
+	// Create an entry for each vertex to guarantee that all vertices are contained and its
+	// adjacencies can be safely accessed without a preceding check.
+	for _, vertexHash := range vertices {
+		adjacencyList[vertexHash] = make([]K, 0)
+		edges, _ := u.store.GetEdgesBySource(vertexHash)
+
+		for _, edge := range edges {
+			adjacencyList[vertexHash] = append(adjacencyList[vertexHash], edge.Target)
+		}
+	}
+
+	return adjacencyList
+}
+
 func (u *undirected[K, T]) edgesAreEqual(a, b Edge[K]) bool {
 	if a.Source == b.Source && a.Target == b.Target {
 		return true

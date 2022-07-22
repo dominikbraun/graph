@@ -625,7 +625,7 @@ func TestDirected_AdjacencyList(t *testing.T) {
 	tests := map[string]struct {
 		vertices []int
 		edges    []Edge[int]
-		expected map[int][]int
+		expected map[int]map[int]Edge[int]
 	}{
 		"Y-shaped graph": {
 			vertices: []int{1, 2, 3, 4},
@@ -634,10 +634,16 @@ func TestDirected_AdjacencyList(t *testing.T) {
 				{Source: 2, Target: 3},
 				{Source: 3, Target: 4},
 			},
-			expected: map[int][]int{
-				1: {3},
-				2: {3},
-				3: {4},
+			expected: map[int]map[int]Edge[int]{
+				1: {
+					3: {Source: 1, Target: 3},
+				},
+				2: {
+					3: {Source: 2, Target: 3},
+				},
+				3: {
+					4: {Source: 3, Target: 4},
+				},
 				4: {},
 			},
 		},
@@ -649,10 +655,17 @@ func TestDirected_AdjacencyList(t *testing.T) {
 				{Source: 2, Target: 4},
 				{Source: 3, Target: 4},
 			},
-			expected: map[int][]int{
-				1: {2, 3},
-				2: {4},
-				3: {4},
+			expected: map[int]map[int]Edge[int]{
+				1: {
+					2: {Source: 1, Target: 2},
+					3: {Source: 1, Target: 3},
+				},
+				2: {
+					4: {Source: 2, Target: 4},
+				},
+				3: {
+					4: {Source: 3, Target: 4},
+				},
 				4: {},
 			},
 		},
@@ -671,16 +684,22 @@ func TestDirected_AdjacencyList(t *testing.T) {
 			}
 		}
 
-		adjacencyList := graph.AdjacencyList()
+		adjacencyMap := graph.AdjacencyMap()
 
 		for expectedVertex, expectedAdjacencies := range test.expected {
-			adjacencies, ok := adjacencyList[expectedVertex]
+			adjacencies, ok := adjacencyMap[expectedVertex]
 			if !ok {
-				t.Errorf("%s: expected vertex %v does not exist in adjacency list", name, expectedVertex)
+				t.Errorf("%s: expected vertex %v does not exist in adjacency map", name, expectedVertex)
 			}
 
-			if !slicesAreEqual(expectedAdjacencies, adjacencies) {
-				t.Errorf("%s: adjacency expectancy for vertex %v doesn't match: expected %v, got %v", name, expectedVertex, test.expected, adjacencies)
+			for expectedAdjacency, expectedEdge := range expectedAdjacencies {
+				edge, ok := adjacencies[expectedAdjacency]
+				if !ok {
+					t.Errorf("%s: expected adjacency %v does not exist in map of %v", name, expectedAdjacency, expectedVertex)
+				}
+				if edge.Source != expectedEdge.Source || edge.Target != expectedEdge.Target {
+					t.Errorf("%s: edge expectancy doesn't match: expected %v, got %v", name, expectedEdge, edge)
+				}
 			}
 		}
 	}

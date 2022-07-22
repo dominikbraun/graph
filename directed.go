@@ -400,22 +400,26 @@ func (d *directed[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, er
 	return path, nil
 }
 
-func (d *directed[K, T]) AdjacencyList() map[K][]K {
-	adjacencyList := make(map[K][]K)
+func (d *directed[K, T]) AdjacencyMap() map[K]map[K]Edge[K] {
+	adjacencyMap := make(map[K]map[K]Edge[K])
 
 	// Create an entry for each vertex to guarantee that all vertices are contained and its
 	// adjacencies can be safely accessed without a preceding check.
 	for vertexHash := range d.vertices {
-		adjacencyList[vertexHash] = make([]K, 0)
+		adjacencyMap[vertexHash] = make(map[K]Edge[K])
 	}
 
-	for vertex, outEdges := range d.outEdges {
-		for adjacencyHash := range outEdges {
-			adjacencyList[vertex] = append(adjacencyList[vertex], adjacencyHash)
+	for vertexHash, outEdges := range d.outEdges {
+		for adjacencyHash, edge := range outEdges {
+			adjacencyMap[vertexHash][adjacencyHash] = Edge[K]{
+				Source: vertexHash,
+				Target: adjacencyHash,
+				Weight: edge.Weight,
+			}
 		}
 	}
 
-	return adjacencyList
+	return adjacencyMap
 }
 
 func (d *directed[K, T]) EdgesWithHashes() []Edge[K] {

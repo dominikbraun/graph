@@ -155,16 +155,23 @@ type Graph[K comparable, T any] interface {
 	// vertices.
 	ShortestPathByHashes(sourceHash, targetHash K) ([]K, error)
 
-	// AdjacencyList computes an adjacency list for all vertices in the graph and returns a map
-	// with all vertex hashes mapped against a list of their adjacency hashes.
+	// AdjacencyMap computes and returns an adjacency map containing all vertices in the graph.
 	//
-	// Since the AdjacencyList map contains all vertices, it is safe to check for the adjacencies
-	// of every vertex even if some vertices don't have any adjacencies.
-	AdjacencyList() map[K][]K
-
-	// EdgeWithHashes returns all edges in the graph as a slice. Note that the source and target
-	// fields of the edges are the vertex hashes, not the vertices themselves.
-	EdgesWithHashes() []Edge[K]
+	// There is an entry for each vertex, and each of those entries is another map whose keys are
+	// the hash values of the adjacent vertices. The value is an Edge instance that stores the
+	// source and target hash values (these are the same as the map keys) as well as edge metadata.
+	//
+	// For a graph with edges AB and AC, the adjacency map would look as follows:
+	//
+	//	map[string]map[string]Edge[string]{
+	//		"A": map[string]Edge[string]{
+	//			"B": {Source: "A", Target: "B"}
+	//			"C": {Source: "A", Target: "B"}
+	//		}
+	//	}
+	//
+	// This design makes AdjacencyMap suitable for a wide variety of scenarios and demands.
+	AdjacencyMap() map[K]map[K]Edge[K]
 }
 
 // Edge represents a graph edge with a source and target vertex as well as a weight, which has the

@@ -8,14 +8,14 @@ import (
 
 type undirected[K comparable, T any] struct {
 	hash     Hash[K, T]
-	traits   *traits
+	traits   *Traits
 	vertices map[K]T
 	edges    map[K]map[K]Edge[T]
 	outEdges map[K]map[K]Edge[T]
 	inEdges  map[K]map[K]Edge[T]
 }
 
-func newUndirected[K comparable, T any](hash Hash[K, T], traits *traits) *undirected[K, T] {
+func newUndirected[K comparable, T any](hash Hash[K, T], traits *Traits) *undirected[K, T] {
 	return &undirected[K, T]{
 		hash:     hash,
 		traits:   traits,
@@ -24,6 +24,10 @@ func newUndirected[K comparable, T any](hash Hash[K, T], traits *traits) *undire
 		outEdges: make(map[K]map[K]Edge[T]),
 		inEdges:  make(map[K]map[K]Edge[T]),
 	}
+}
+
+func (u *undirected[K, T]) Traits() *Traits {
+	return u.traits
 }
 
 func (u *undirected[K, T]) Vertex(value T) {
@@ -62,7 +66,7 @@ func (u *undirected[K, T]) WeightedEdgeByHashes(sourceHash, targetHash K, weight
 	}
 
 	// If the graph was declared to be acyclic, permit the creation of a cycle.
-	if u.traits.isAcyclic {
+	if u.traits.IsAcyclic {
 		createsCycle, err := u.CreatesCycleByHashes(sourceHash, targetHash)
 		if err != nil {
 			return fmt.Errorf("failed to check for cycles: %w", err)
@@ -361,7 +365,7 @@ func (u *undirected[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 		return true
 	}
 
-	if !u.traits.isDirected {
+	if !u.traits.IsDirected {
 		return aSourceHash == bTargetHash && aTargetHash == bSourceHash
 	}
 

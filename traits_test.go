@@ -4,17 +4,17 @@ import "testing"
 
 func TestDirected(t *testing.T) {
 	tests := map[string]struct {
-		expected *traits
+		expected *Traits
 	}{
 		"directed graph": {
-			expected: &traits{
-				isDirected: true,
+			expected: &Traits{
+				IsDirected: true,
 			},
 		},
 	}
 
 	for name, test := range tests {
-		p := &traits{}
+		p := &Traits{}
 
 		Directed()(p)
 
@@ -26,17 +26,17 @@ func TestDirected(t *testing.T) {
 
 func TestAcyclic(t *testing.T) {
 	tests := map[string]struct {
-		expected *traits
+		expected *Traits
 	}{
 		"acyclic graph": {
-			expected: &traits{
-				isAcyclic: true,
+			expected: &Traits{
+				IsAcyclic: true,
 			},
 		},
 	}
 
 	for name, test := range tests {
-		p := &traits{}
+		p := &Traits{}
 
 		Acyclic()(p)
 
@@ -48,17 +48,17 @@ func TestAcyclic(t *testing.T) {
 
 func TestWeighted(t *testing.T) {
 	tests := map[string]struct {
-		expected *traits
+		expected *Traits
 	}{
 		"weighted graph": {
-			expected: &traits{
-				isWeighted: true,
+			expected: &Traits{
+				IsWeighted: true,
 			},
 		},
 	}
 
 	for name, test := range tests {
-		p := &traits{}
+		p := &Traits{}
 
 		Weighted()(p)
 
@@ -70,17 +70,17 @@ func TestWeighted(t *testing.T) {
 
 func TestRooted(t *testing.T) {
 	tests := map[string]struct {
-		expected *traits
+		expected *Traits
 	}{
 		"rooted graph": {
-			expected: &traits{
-				isRooted: true,
+			expected: &Traits{
+				IsRooted: true,
 			},
 		},
 	}
 
 	for name, test := range tests {
-		p := &traits{}
+		p := &Traits{}
 
 		Rooted()(p)
 
@@ -92,18 +92,18 @@ func TestRooted(t *testing.T) {
 
 func TestTree(t *testing.T) {
 	tests := map[string]struct {
-		expected *traits
+		expected *Traits
 	}{
 		"tree graph": {
-			expected: &traits{
-				isAcyclic: true,
-				isRooted:  true,
+			expected: &Traits{
+				IsAcyclic: true,
+				IsRooted:  true,
 			},
 		},
 	}
 
 	for name, test := range tests {
-		p := &traits{}
+		p := &Traits{}
 
 		Tree()(p)
 
@@ -113,9 +113,9 @@ func TestTree(t *testing.T) {
 	}
 }
 
-func traitsAreEqual(a, b *traits) bool {
-	return a.isAcyclic == b.isAcyclic &&
-		a.isDirected == b.isDirected &&
-		a.isRooted == b.isRooted &&
-		a.isWeighted == b.isWeighted
+func traitsAreEqual(a, b *Traits) bool {
+	return a.IsAcyclic == b.IsAcyclic &&
+		a.IsDirected == b.IsDirected &&
+		a.IsRooted == b.IsRooted &&
+		a.IsWeighted == b.IsWeighted
 }

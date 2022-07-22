@@ -161,6 +161,10 @@ type Graph[K comparable, T any] interface {
 	// Since the AdjacencyList map contains all vertices, it is safe to check for the adjacencies
 	// of every vertex even if some vertices don't have any adjacencies.
 	AdjacencyList() map[K][]K
+
+	// EdgeWithHashes returns all edges in the graph as a slice. Note that the source and target
+	// fields of the edges are the vertex hashes, not the vertices themselves.
+	EdgesWithHashes() []Edge[K]
 }
 
 // Edge represents a graph edge with a source and target vertex as well as a weight, which has the
@@ -170,6 +174,7 @@ type Edge[T any] struct {
 	Source T
 	Target T
 	Weight int
+	Label  string
 }
 
 // Hash is a hashing function that takes a vertex of type T and returns a hash value of type K.

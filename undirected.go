@@ -10,7 +10,7 @@ type undirected[K comparable, T any] struct {
 	hash     Hash[K, T]
 	traits   *traits
 	vertices map[K]T
-	edges    map[K]map[K]Edge[T]
+	edges    []Edge[K]
 	outEdges map[K]map[K]Edge[T]
 	inEdges  map[K]map[K]Edge[T]
 }
@@ -20,7 +20,7 @@ func newUndirected[K comparable, T any](hash Hash[K, T], traits *traits) *undire
 		hash:     hash,
 		traits:   traits,
 		vertices: make(map[K]T),
-		edges:    make(map[K]map[K]Edge[T]),
+		edges:    make([]Edge[K], 0),
 		outEdges: make(map[K]map[K]Edge[T]),
 		inEdges:  make(map[K]map[K]Edge[T]),
 	}
@@ -93,14 +93,14 @@ func (u *undirected[K, T]) GetEdge(source, target T) (Edge[T], bool) {
 func (u *undirected[K, T]) GetEdgeByHashes(sourceHash, targetHash K) (Edge[T], bool) {
 	// In an undirected graph, since multigraphs aren't supported, the edge AB is the same as BA.
 	// Therefore, if source[target] cannot be found, this function also looks for target[source].
-	sourceEdges, ok := u.edges[sourceHash]
+	sourceEdges, ok := u.outEdges[sourceHash]
 	if ok {
 		if edge, ok := sourceEdges[targetHash]; ok {
 			return edge, true
 		}
 	}
 
-	targetEdges, ok := u.edges[targetHash]
+	targetEdges, ok := u.outEdges[targetHash]
 	if ok {
 		if edge, ok := targetEdges[sourceHash]; ok {
 			return edge, ok
@@ -347,6 +347,10 @@ func (u *undirected[K, T]) AdjacencyList() map[K][]K {
 	return adjacencyList
 }
 
+func (u *undirected[K, T]) EdgesWithHashes() []Edge[K] {
+	return u.edges
+}
+
 func (u *undirected[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	aSourceHash := u.hash(a.Source)
 	aTargetHash := u.hash(a.Target)
@@ -365,15 +369,14 @@ func (u *undirected[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 }
 
 func (u *undirected[K, T]) addEdge(sourceHash, targetHash K, edge Edge[T]) {
-	if _, ok := u.edges[sourceHash]; !ok {
-		u.edges[sourceHash] = make(map[K]Edge[T])
-	}
-	if _, ok := u.edges[targetHash]; !ok {
-		u.edges[targetHash] = make(map[K]Edge[T])
+	edgeWithHashes := Edge[K]{
+		Source: sourceHash,
+		Target: targetHash,
+		Weight: edge.Weight,
+		Label:  edge.Label,
 	}
 
-	u.edges[sourceHash][targetHash] = edge
-	u.edges[targetHash][sourceHash] = edge
+	u.edges = append(u.edges, edgeWithHashes)
 
 	if _, ok := u.outEdges[sourceHash]; !ok {
 		u.outEdges[sourceHash] = make(map[K]Edge[T])

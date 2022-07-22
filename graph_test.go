@@ -10,15 +10,15 @@ func TestNew(t *testing.T) {
 	undirectedType := reflect.TypeOf(&undirected[int, int]{})
 
 	tests := map[string]struct {
-		options      []func(*traits)
+		options      []func(*Traits)
 		expectedType reflect.Type
 	}{
 		"no options": {
-			options:      []func(*traits){},
+			options:      []func(*Traits){},
 			expectedType: undirectedType,
 		},
 		"directed option": {
-			options:      []func(*traits){Directed()},
+			options:      []func(*Traits){Directed()},
 			expectedType: directedType,
 		},
 	}

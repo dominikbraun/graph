@@ -4,6 +4,31 @@ import (
 	"testing"
 )
 
+func TestDirected_Traits(t *testing.T) {
+	tests := map[string]struct {
+		traits   *Traits
+		expected *Traits
+	}{
+		"default traits": {
+			traits:   &Traits{},
+			expected: &Traits{},
+		},
+		"directed": {
+			traits:   &Traits{IsDirected: true},
+			expected: &Traits{IsDirected: true},
+		},
+	}
+
+	for name, test := range tests {
+		g := newDirected(IntHash, test.traits)
+		traits := g.Traits()
+
+		if !traitsAreEqual(traits, test.expected) {
+			t.Errorf("%s: traits expectancy doesn't match: expected %v, got %v", name, test.expected, traits)
+		}
+	}
+}
+
 func TestDirected_Vertex(t *testing.T) {
 	tests := map[string]struct {
 		vertices         []int
@@ -20,7 +45,7 @@ func TestDirected_Vertex(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -51,7 +76,7 @@ func TestDirected_WeightedEdgeByHashes(t *testing.T) {
 	tests := map[string]struct {
 		vertices      []int
 		edgeHashes    [][3]int
-		traits        *traits
+		traits        *Traits
 		expectedEdges []Edge[int]
 		// Even though some of the WeightedEdgeByHashes calls might work, at least one of them
 		// could fail - for example if the last call would introduce a cycle.
@@ -60,7 +85,7 @@ func TestDirected_WeightedEdgeByHashes(t *testing.T) {
 		"graph with 2 edges": {
 			vertices:   []int{1, 2, 3},
 			edgeHashes: [][3]int{{1, 2, 10}, {1, 3, 20}},
-			traits:     &traits{},
+			traits:     &Traits{},
 			expectedEdges: []Edge[int]{
 				{Source: 1, Target: 2, Weight: 10},
 				{Source: 1, Target: 3, Weight: 20},
@@ -69,14 +94,14 @@ func TestDirected_WeightedEdgeByHashes(t *testing.T) {
 		"hashes for non-existent vertices": {
 			vertices:          []int{1, 2},
 			edgeHashes:        [][3]int{{1, 3, 20}},
-			traits:            &traits{},
+			traits:            &Traits{},
 			shouldFinallyFail: true,
 		},
 		"edge introducing a cycle in an acyclic graph": {
 			vertices:   []int{1, 2, 3},
 			edgeHashes: [][3]int{{1, 2, 0}, {2, 3, 0}, {3, 1, 0}},
-			traits: &traits{
-				isAcyclic: true,
+			traits: &Traits{
+				IsAcyclic: true,
 			},
 			shouldFinallyFail: true,
 		},
@@ -147,7 +172,7 @@ func TestDirected_GetEdgeByHashes(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, &Traits{})
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
 		}
@@ -222,7 +247,7 @@ func TestDirected_DFSByHash(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -309,7 +334,7 @@ func TestDirected_BFSByHash(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -402,7 +427,7 @@ func TestDirected_CreatesCycleByHashes(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -439,7 +464,7 @@ func TestDirected_DegreeByHash(t *testing.T) {
 	}{}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -492,7 +517,7 @@ func TestDirected_StronglyConnectedComponents(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -590,7 +615,7 @@ func TestDirected_ShortestPathByHashes(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(StringHash, &traits{})
+		graph := newDirected(StringHash, &Traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -671,7 +696,7 @@ func TestDirected_AdjacencyList(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)
@@ -779,7 +804,7 @@ func TestDirected_edgesAreEqual(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, &Traits{})
 		actual := graph.edgesAreEqual(test.a, test.b)
 
 		if actual != test.edgesAreEqual {
@@ -802,7 +827,7 @@ func TestDirected_addEdge(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, &Traits{})
 
 		for _, edge := range test.edges {
 			sourceHash := graph.hash(edge.Source)
@@ -863,7 +888,7 @@ func TestDirected_predecessors(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &traits{})
+		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
 			graph.Vertex(vertex)

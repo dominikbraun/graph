@@ -1,45 +1,52 @@
 package graph
 
-type traits struct {
-	isDirected bool
-	isAcyclic  bool
-	isWeighted bool
-	isRooted   bool
+// Traits represents a set of graph traits and types, such as directedness or acyclicness. These
+// traits can be set when creating a graph by passing the corresponding functional options, for
+// example:
+//
+//	g := graph.New(graph.IntHash, graph.Directed())
+//
+// This will set the IsDirected field to true.
+type Traits struct {
+	IsDirected bool
+	IsAcyclic  bool
+	IsWeighted bool
+	IsRooted   bool
 }
 
 // Directed creates a directed graph. This has implications on graph traversal and the order of
 // arguments of the Edge and EdgeByHashes functions.
-func Directed() func(*traits) {
-	return func(t *traits) {
-		t.isDirected = true
+func Directed() func(*Traits) {
+	return func(t *Traits) {
+		t.IsDirected = true
 	}
 }
 
 // Acyclic creates an acyclic graph, which won't allow adding directed edges resulting in a cycle.
-func Acyclic() func(*traits) {
-	return func(t *traits) {
-		t.isAcyclic = true
+func Acyclic() func(*Traits) {
+	return func(t *Traits) {
+		t.IsAcyclic = true
 	}
 }
 
 // Weighted creates a weighted graph. To set weights, use the WeightedEdge and WeightedEdgeByHashes
 // functions.
-func Weighted() func(*traits) {
-	return func(t *traits) {
-		t.isWeighted = true
+func Weighted() func(*Traits) {
+	return func(t *Traits) {
+		t.IsWeighted = true
 	}
 }
 
 // Rooted creates a rooted graph. This is particularly common for building tree data structures.
-func Rooted() func(*traits) {
-	return func(t *traits) {
-		t.isRooted = true
+func Rooted() func(*Traits) {
+	return func(t *Traits) {
+		t.IsRooted = true
 	}
 }
 
 // Tree is an alias for Acyclic and Rooted, since most trees in Computer Science are rooted trees.
-func Tree() func(*traits) {
-	return func(t *traits) {
+func Tree() func(*Traits) {
+	return func(t *Traits) {
 		Acyclic()(t)
 		Rooted()(t)
 	}

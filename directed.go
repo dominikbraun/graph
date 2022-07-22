@@ -7,14 +7,14 @@ import (
 
 type directed[K comparable, T any] struct {
 	hash     Hash[K, T]
-	traits   *traits
+	traits   *Traits
 	vertices map[K]T
 	edges    map[K]map[K]Edge[T]
 	outEdges map[K]map[K]Edge[T]
 	inEdges  map[K]map[K]Edge[T]
 }
 
-func newDirected[K comparable, T any](hash Hash[K, T], traits *traits) *directed[K, T] {
+func newDirected[K comparable, T any](hash Hash[K, T], traits *Traits) *directed[K, T] {
 	return &directed[K, T]{
 		hash:     hash,
 		traits:   traits,
@@ -23,6 +23,10 @@ func newDirected[K comparable, T any](hash Hash[K, T], traits *traits) *directed
 		outEdges: make(map[K]map[K]Edge[T]),
 		inEdges:  make(map[K]map[K]Edge[T]),
 	}
+}
+
+func (d *directed[K, T]) Traits() *Traits {
+	return d.traits
 }
 
 func (d *directed[K, T]) Vertex(value T) {
@@ -61,7 +65,7 @@ func (d *directed[K, T]) WeightedEdgeByHashes(sourceHash, targetHash K, weight i
 	}
 
 	// If the graph was declared to be acyclic, permit the creation of a cycle.
-	if d.traits.isAcyclic {
+	if d.traits.IsAcyclic {
 		createsCycle, err := d.CreatesCycleByHashes(sourceHash, targetHash)
 		if err != nil {
 			return fmt.Errorf("failed to check for cycles: %w", err)

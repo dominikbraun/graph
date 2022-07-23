@@ -1,6 +1,8 @@
 package draw
 
 import (
+	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/dominikbraun/graph"
@@ -61,6 +63,41 @@ func TestGenerateDOT(t *testing.T) {
 }
 
 func TestRenderDOT(t *testing.T) {
+	tests := map[string]struct {
+		description description
+		expected    string
+	}{
+		"3-vertex directed graph": {
+			description: description{
+				GraphType:    "digraph",
+				EdgeOperator: "->",
+				Statements: []statement{
+					{Source: 1, Target: 2},
+					{Source: 1, Target: 3},
+					{Source: 2},
+					{Source: 3},
+				},
+			},
+			expected: `strict digraph {
+				1 -> 2 [ weight=0, label="" ];
+				1 -> 3 [ weight=0, label="" ];
+				2 ;
+				3 ;
+			}`,
+		},
+	}
+
+	for name, test := range tests {
+		buf := new(bytes.Buffer)
+		renderDOT(buf, test.description)
+
+		output := normalizeOutput(buf.String())
+		expected := normalizeOutput(test.expected)
+
+		if output != expected {
+			t.Errorf("%s: DOT output expectancy doesn't match: expected %v, got %v", name, expected, output)
+		}
+	}
 }
 
 func slicesAreEqual[T any](a []T, b []T, equals func(a, b T) bool) bool {
@@ -81,6 +118,12 @@ func slicesAreEqual[T any](a []T, b []T, equals func(a, b T) bool) bool {
 	}
 
 	return true
+}
+
+func normalizeOutput(output string) string {
+	replacer := strings.NewReplacer(" ", "", "\n", "", "\t", "")
+
+	return replacer.Replace(output)
 }
 
 func statementsAreEqual(a, b statement) bool {

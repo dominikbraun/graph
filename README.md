@@ -15,7 +15,7 @@ It supports different kinds of graphs such as directed graphs, acyclic graphs, o
   * [ ] Eulerian paths and cycles
   * [x] Shortest path (Dijkstra)
   * [x] Strongly connected components (Tarjan)
-* Visualization of graphs using Graphviz
+* Visualization of graphs using Graphviz.
 
 > Status: Work in progress. Multigraphs aren't supported.
 

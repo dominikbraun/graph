@@ -12,7 +12,7 @@ import (
 
 const dotTemplate = `strict {{.GraphType}} {
 {{range $s := .Statements}}
-	{{.Source}} {{if .Target}}{{$.EdgeOperator}} {{.Target}} [ weight={{.Weight}}, label="{{.Label}}" ]{{end}};
+	{{.Source}} {{if .Target}}{{$.EdgeOperator}} {{.Target}} [ {{range $k, $v := .Attributes}}{{$k}}="{{$v}}", {{end}} weight={{.Weight}} ]{{end}};
 {{end}}
 }
 `
@@ -24,10 +24,10 @@ type description struct {
 }
 
 type statement struct {
-	Source interface{}
-	Target interface{}
-	Weight int
-	Label  string
+	Source     interface{}
+	Target     interface{}
+	Weight     int
+	Attributes map[string]string
 }
 
 // Graph renders the given graph structure in DOT language into an io.Writer, for example a file.
@@ -84,10 +84,10 @@ func generateDOT[K comparable, T any](g graph.Graph[K, T]) description {
 
 		for adjacency, edge := range adjacencies {
 			statement := statement{
-				Source: vertex,
-				Target: adjacency,
-				Weight: edge.Weight,
-				Label:  edge.Label,
+				Source:     vertex,
+				Target:     adjacency,
+				Weight:     edge.Weight,
+				Attributes: edge.Attributes,
 			}
 			description.Statements = append(description.Statements, statement)
 		}

@@ -181,10 +181,10 @@ type Graph[K comparable, T any] interface {
 // same value for all edges in an unweighted graph. Even though the vertices are referred to as
 // source and target, whether the graph is directed or not is determined by its traits.
 type Edge[T any] struct {
-	Source T
-	Target T
-	Weight int
-	Label  string
+	Source     T
+	Target     T
+	Weight     int
+	Attributes map[string]string
 }
 
 // Hash is a hashing function that takes a vertex of type T and returns a hash value of type K.

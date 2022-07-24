@@ -79,8 +79,38 @@ func TestRenderDOT(t *testing.T) {
 				},
 			},
 			expected: `strict digraph {
-				1 -> 2 [ weight=0, label="" ];
-				1 -> 3 [ weight=0, label="" ];
+				1 -> 2 [ weight=0 ];
+				1 -> 3 [ weight=0 ];
+				2 ;
+				3 ;
+			}`,
+		},
+		"custom edge attributes": {
+			description: description{
+				GraphType:    "digraph",
+				EdgeOperator: "->",
+				Statements: []statement{
+					{
+						Source: 1,
+						Target: 2,
+						Attributes: map[string]string{
+							"color": "red",
+						},
+					},
+					{
+						Source: 1,
+						Target: 3,
+						Attributes: map[string]string{
+							"color": "blue",
+						},
+					},
+					{Source: 2},
+					{Source: 3},
+				},
+			},
+			expected: `strict digraph {
+				1 -> 2 [ color="red", weight=0 ];
+				1 -> 3 [ color="blue", weight=0 ];
 				2 ;
 				3 ;
 			}`,
@@ -127,8 +157,21 @@ func normalizeOutput(output string) string {
 }
 
 func statementsAreEqual(a, b statement) bool {
+	if len(a.Attributes) != len(b.Attributes) {
+		return false
+	}
+
+	for aKey, aValue := range a.Attributes {
+		bValue, ok := b.Attributes[aKey]
+		if !ok {
+			return false
+		}
+		if aValue != bValue {
+			return false
+		}
+	}
+
 	return a.Source == b.Source &&
 		a.Target == b.Target &&
-		a.Weight == b.Weight &&
-		a.Label == b.Label
+		a.Weight == b.Weight
 }

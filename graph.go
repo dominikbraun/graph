@@ -184,6 +184,7 @@ type Edge[T any] struct {
 	Source T
 	Target T
 	Weight int
+	Label  string
 }
 
 // Hash is a hashing function that takes a vertex of type T and returns a hash value of type K.

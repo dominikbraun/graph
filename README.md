@@ -15,6 +15,7 @@ It supports different kinds of graphs such as directed graphs, acyclic graphs, o
   * [ ] Eulerian paths and cycles
   * [x] Shortest path (Dijkstra)
   * [x] Strongly connected components (Tarjan)
+* Visualization of graphs using Graphviz.
 
 > Status: Work in progress. Multigraphs aren't supported.
 
@@ -189,6 +190,30 @@ if err := g.Edge(2, 3); err != nil {
 
 ```
 panic: an edge between 2 and 3 would introduce a cycle
+```
+
+## Visualize a graph using Graphviz
+
+The following example will generate a DOT description for `g` and write it into the given file.
+
+```go
+g := graph.New(graph.IntHash, graph.Directed())
+
+g.Vertex(1)
+g.Vertex(2)
+g.Vertex(3)
+
+_ = g.Edge(1, 2)
+_ = g.Edge(1, 3)
+
+file, _ := os.Create("./mygraph.gv")
+_ = graph.Draw(g, file)
+```
+
+To generate an SVG from the created file using Graphviz, use a command such as the following:
+
+```
+dot -Tsvg -O mygraph.gv
 ```
 
 # Concepts

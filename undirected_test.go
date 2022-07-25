@@ -130,7 +130,7 @@ func TestUndirected_WeightedEdgeByHashes(t *testing.T) {
 			sourceHash := graph.hash(expectedEdge.Source)
 			targetHash := graph.hash(expectedEdge.Target)
 
-			edge, ok := graph.edges[sourceHash][targetHash]
+			edge, ok := graph.outEdges[sourceHash][targetHash]
 			if !ok {
 				t.Fatalf("%s: edge with source %v and target %v not found", name, expectedEdge.Source, expectedEdge.Target)
 			}
@@ -844,9 +844,6 @@ func TestUndirected_addEdge(t *testing.T) {
 			graph.addEdge(sourceHash, TargetHash, edge)
 		}
 
-		if len(graph.edges) != len(test.edges) {
-			t.Errorf("%s: number of edges doesn't match: expected %v, got %v", name, len(test.edges), len(graph.edges))
-		}
 		if len(graph.outEdges) != len(test.edges) {
 			t.Errorf("%s: number of outgoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(graph.outEdges))
 		}

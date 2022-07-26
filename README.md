@@ -207,7 +207,7 @@ _ = g.Edge(1, 2)
 _ = g.Edge(1, 3)
 
 file, _ := os.Create("./mygraph.gv")
-_ = graph.Draw(g, file)
+_ = draw.Graph(g, file)
 ```
 
 To generate an SVG from the created file using Graphviz, use a command such as the following:

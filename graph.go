@@ -234,7 +234,7 @@ type Hash[K comparable, T any] func(T) K
 //
 //	g := graph.New(graph.IntHash, graph.Directed(), graph.Acyclic())
 //
-// The obtained Graph implementation is depends on these traits.
+// Which Graph implementation will be returned depends on these traits.
 func New[K comparable, T any](hash Hash[K, T], options ...func(*Traits)) Graph[K, T] {
 	var p Traits
 
@@ -259,4 +259,20 @@ func StringHash(v string) string {
 // value. Using it as Hash will yield a Graph[int, int].
 func IntHash(v int) int {
 	return v
+}
+
+// EdgeWeight returns a function that sets the weight of an edge to the given weight. This is a
+// functional option for the Edge and EdgeByHashes methods.
+func EdgeWeight[T any](weight int) func(*Edge[T]) {
+	return func(e *Edge[T]) {
+		e.Weight = weight
+	}
+}
+
+// EdgeAttribute returns a function that adds the given key-value pair to the attributes of an
+// edge. This is a functional option for the Edge and EdgeByHashes methods.
+func EdgeAttribute[T any](key, value string) func(*Edge[T]) {
+	return func(e *Edge[T]) {
+		e.Attributes[key] = value
+	}
 }

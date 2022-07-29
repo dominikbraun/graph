@@ -87,8 +87,8 @@ func TestUndirected_WeightedEdgeByHashes(t *testing.T) {
 			edgeHashes: [][3]int{{1, 2, 10}, {1, 3, 20}},
 			traits:     &Traits{},
 			expectedEdges: []Edge[int]{
-				{Source: 1, Target: 2, Weight: 10},
-				{Source: 1, Target: 3, Weight: 20},
+				{Source: 1, Target: 2, properties: edgeProperties{Weight: 10}},
+				{Source: 1, Target: 3, properties: edgeProperties{Weight: 20}},
 			},
 		},
 		"hashes for non-existent vertices": {
@@ -117,7 +117,7 @@ func TestUndirected_WeightedEdgeByHashes(t *testing.T) {
 		var err error
 
 		for _, edge := range test.edgeHashes {
-			if err = graph.WeightedEdgeByHashes(edge[0], edge[1], edge[2]); err != nil {
+			if err = graph.EdgeByHashes(edge[0], edge[1], EdgeWeight(edge[2])); err != nil {
 				break
 			}
 		}
@@ -143,8 +143,8 @@ func TestUndirected_WeightedEdgeByHashes(t *testing.T) {
 				t.Errorf("%s: edge targets don't match: expected target %v, got %v", name, expectedEdge.Target, edge.Target)
 			}
 
-			if edge.Weight != expectedEdge.Weight {
-				t.Errorf("%s: edge weights don't match: expected weight %v, got %v", name, expectedEdge.Weight, edge.Weight)
+			if edge.properties.Weight != expectedEdge.properties.Weight {
+				t.Errorf("%s: edge weights don't match: expected weight %v, got %v", name, expectedEdge.properties.Weight, edge.properties.Weight)
 			}
 		}
 	}
@@ -614,16 +614,16 @@ func TestUndirected_ShortestPathByHashes(t *testing.T) {
 		"graph as on img/dijkstra.svg": {
 			vertices: []string{"A", "B", "C", "D", "E", "F", "G"},
 			edges: []Edge[string]{
-				{Source: "A", Target: "C", Weight: 3},
-				{Source: "A", Target: "F", Weight: 2},
-				{Source: "C", Target: "D", Weight: 4},
-				{Source: "C", Target: "E", Weight: 1},
-				{Source: "C", Target: "F", Weight: 2},
-				{Source: "D", Target: "B", Weight: 1},
-				{Source: "E", Target: "B", Weight: 2},
-				{Source: "E", Target: "F", Weight: 3},
-				{Source: "F", Target: "G", Weight: 5},
-				{Source: "G", Target: "B", Weight: 2},
+				{Source: "A", Target: "C", properties: edgeProperties{Weight: 3}},
+				{Source: "A", Target: "F", properties: edgeProperties{Weight: 2}},
+				{Source: "C", Target: "D", properties: edgeProperties{Weight: 4}},
+				{Source: "C", Target: "E", properties: edgeProperties{Weight: 1}},
+				{Source: "C", Target: "F", properties: edgeProperties{Weight: 2}},
+				{Source: "D", Target: "B", properties: edgeProperties{Weight: 1}},
+				{Source: "E", Target: "B", properties: edgeProperties{Weight: 2}},
+				{Source: "E", Target: "F", properties: edgeProperties{Weight: 3}},
+				{Source: "F", Target: "G", properties: edgeProperties{Weight: 5}},
+				{Source: "G", Target: "B", properties: edgeProperties{Weight: 2}},
 			},
 			sourceHash:           "A",
 			targetHash:           "B",
@@ -632,10 +632,10 @@ func TestUndirected_ShortestPathByHashes(t *testing.T) {
 		"diamond-shaped graph": {
 			vertices: []string{"A", "B", "C", "D"},
 			edges: []Edge[string]{
-				{Source: "A", Target: "B", Weight: 2},
-				{Source: "A", Target: "C", Weight: 4},
-				{Source: "B", Target: "D", Weight: 2},
-				{Source: "C", Target: "D", Weight: 2},
+				{Source: "A", Target: "B", properties: edgeProperties{Weight: 2}},
+				{Source: "A", Target: "C", properties: edgeProperties{Weight: 4}},
+				{Source: "B", Target: "D", properties: edgeProperties{Weight: 2}},
+				{Source: "C", Target: "D", properties: edgeProperties{Weight: 2}},
 			},
 			sourceHash:           "A",
 			targetHash:           "D",
@@ -644,10 +644,10 @@ func TestUndirected_ShortestPathByHashes(t *testing.T) {
 		"source equal to target": {
 			vertices: []string{"A", "B", "C", "D"},
 			edges: []Edge[string]{
-				{Source: "A", Target: "B", Weight: 2},
-				{Source: "A", Target: "C", Weight: 4},
-				{Source: "B", Target: "D", Weight: 2},
-				{Source: "C", Target: "D", Weight: 2},
+				{Source: "A", Target: "B", properties: edgeProperties{Weight: 2}},
+				{Source: "A", Target: "C", properties: edgeProperties{Weight: 4}},
+				{Source: "B", Target: "D", properties: edgeProperties{Weight: 2}},
+				{Source: "C", Target: "D", properties: edgeProperties{Weight: 2}},
 			},
 			sourceHash:           "B",
 			targetHash:           "B",
@@ -656,8 +656,8 @@ func TestUndirected_ShortestPathByHashes(t *testing.T) {
 		"target not reachable": {
 			vertices: []string{"A", "B", "C", "D"},
 			edges: []Edge[string]{
-				{Source: "A", Target: "B", Weight: 2},
-				{Source: "A", Target: "C", Weight: 4},
+				{Source: "A", Target: "B", properties: edgeProperties{Weight: 2}},
+				{Source: "A", Target: "C", properties: edgeProperties{Weight: 4}},
 			},
 			sourceHash:           "A",
 			targetHash:           "D",
@@ -674,7 +674,7 @@ func TestUndirected_ShortestPathByHashes(t *testing.T) {
 		}
 
 		for _, edge := range test.edges {
-			if err := graph.WeightedEdge(edge.Source, edge.Target, edge.Weight); err != nil {
+			if err := graph.Edge(edge.Source, edge.Target, EdgeWeight(edge.properties.Weight)); err != nil {
 				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
 			}
 		}
@@ -764,7 +764,7 @@ func TestUndirected_AdjacencyList(t *testing.T) {
 		}
 
 		for _, edge := range test.edges {
-			if err := graph.WeightedEdge(edge.Source, edge.Target, edge.Weight); err != nil {
+			if err := graph.Edge(edge.Source, edge.Target, EdgeWeight(edge.properties.Weight)); err != nil {
 				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
 			}
 		}
@@ -828,9 +828,9 @@ func TestUndirected_addEdge(t *testing.T) {
 	}{
 		"add 3 edges": {
 			edges: []Edge[int]{
-				{Source: 1, Target: 2, Weight: 1},
-				{Source: 2, Target: 3, Weight: 2},
-				{Source: 3, Target: 1, Weight: 3},
+				{Source: 1, Target: 2, properties: edgeProperties{Weight: 1}},
+				{Source: 2, Target: 3, properties: edgeProperties{Weight: 2}},
+				{Source: 3, Target: 1, properties: edgeProperties{Weight: 3}},
 			},
 		},
 	}

@@ -34,22 +34,14 @@ func (d *directed[K, T]) Vertex(value T) {
 	d.vertices[hash] = value
 }
 
-func (d *directed[K, T]) Edge(source, target T) error {
-	return d.WeightedEdge(source, target, 0)
-}
-
-func (d *directed[K, T]) WeightedEdge(source, target T, weight int) error {
+func (d *directed[K, T]) Edge(source, target T, options ...func(*edgeProperties)) error {
 	sourceHash := d.hash(source)
 	targetHash := d.hash(target)
 
-	return d.WeightedEdgeByHashes(sourceHash, targetHash, weight)
+	return d.EdgeByHashes(sourceHash, targetHash, options...)
 }
 
-func (d *directed[K, T]) EdgeByHashes(sourceHash, targetHash K) error {
-	return d.WeightedEdgeByHashes(sourceHash, targetHash, 0)
-}
-
-func (d *directed[K, T]) WeightedEdgeByHashes(sourceHash, targetHash K, weight int) error {
+func (d *directed[K, T]) EdgeByHashes(sourceHash, targetHash K, options ...func(*edgeProperties)) error {
 	source, ok := d.vertices[sourceHash]
 	if !ok {
 		return fmt.Errorf("could not find source vertex with hash %v", sourceHash)
@@ -78,7 +70,13 @@ func (d *directed[K, T]) WeightedEdgeByHashes(sourceHash, targetHash K, weight i
 	edge := Edge[T]{
 		Source: source,
 		Target: target,
-		Weight: weight,
+		properties: edgeProperties{
+			Attributes: make(map[string]string),
+		},
+	}
+
+	for _, option := range options {
+		option(&edge.properties)
 	}
 
 	d.addEdge(sourceHash, targetHash, edge)
@@ -382,7 +380,7 @@ func (d *directed[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, er
 		}
 
 		for successor, edge := range outEdges {
-			weight := weights[vertex] + float64(edge.Weight)
+			weight := weights[vertex] + float64(edge.properties.Weight)
 
 			if weight < weights[successor] && !hasInfiniteWeight {
 				weights[successor] = weight
@@ -418,7 +416,9 @@ func (d *directed[K, T]) AdjacencyMap() map[K]map[K]Edge[K] {
 			adjacencyMap[vertexHash][adjacencyHash] = Edge[K]{
 				Source: vertexHash,
 				Target: adjacencyHash,
-				Weight: edge.Weight,
+				properties: edgeProperties{
+					Weight: edge.properties.Weight,
+				},
 			}
 		}
 	}

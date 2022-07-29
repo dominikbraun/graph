@@ -14,22 +14,22 @@ type Graph[K comparable, T any] interface {
 	// Edge creates an edge between the source and the target vertex. If the Directed option has
 	// been called on the graph, this is a directed edge. Returns an error if either vertex doesn't
 	// exist or the edge already exists.
-	Edge(source, target T) error
+	//
+	// Edge accepts a variety of functional options to set further edge details such as the weight
+	// or an attribute:
+	//
+	//	_ = graph.Edge("A", "B", graph.EdgeWeight(4), graph.EdgeAttribute("label", "mylabel"))
+	//
+	Edge(source, target T, options ...func(*edgeProperties)) error
 
 	// EdgeByHashes creates an edge between the source and the target vertex, but uses hash values
 	// to identify the vertices. This is convenient when you don't have the full vertex objects at
 	// hand. Returns an error if either vertex doesn't exist or the edge already exists.
 	//
 	// To obtain the hash value for a vertex, call the hashing function passed to New.
-	EdgeByHashes(sourceHash, targetHash K) error
-
-	// WeightedEdge does the same as Edge, but adds an additional weight to the created edge. In an
-	// unweighted graph, all edges have the same weight of 0.
-	WeightedEdge(source, target T, weight int) error
-
-	// WeightedEdgeByHashes does the same as EdgeByHashes, but adds an additional weight to the
-	// created edge. In an unweighted graph, all edges have the same weight of 0.
-	WeightedEdgeByHashes(sourceHash, targetHash K, weight int) error
+	//
+	// EdgeByHashes accepts the same functional options as Edge.
+	EdgeByHashes(sourceHash, targetHash K, options ...func(*edgeProperties)) error
 
 	// GetEdgeByHashes returns the edge between two vertices. The second return value indicates
 	// whether the edge exists. If the graph  is undirected, an edge with swapped source and target
@@ -183,6 +183,10 @@ type Graph[K comparable, T any] interface {
 type Edge[T any] struct {
 	Source     T
 	Target     T
+	properties edgeProperties
+}
+
+type edgeProperties struct {
 	Weight     int
 	Attributes map[string]string
 }
@@ -263,16 +267,16 @@ func IntHash(v int) int {
 
 // EdgeWeight returns a function that sets the weight of an edge to the given weight. This is a
 // functional option for the Edge and EdgeByHashes methods.
-func EdgeWeight[T any](weight int) func(*Edge[T]) {
-	return func(e *Edge[T]) {
+func EdgeWeight(weight int) func(*edgeProperties) {
+	return func(e *edgeProperties) {
 		e.Weight = weight
 	}
 }
 
 // EdgeAttribute returns a function that adds the given key-value pair to the attributes of an
 // edge. This is a functional option for the Edge and EdgeByHashes methods.
-func EdgeAttribute[T any](key, value string) func(*Edge[T]) {
-	return func(e *Edge[T]) {
+func EdgeAttribute(key, value string) func(*edgeProperties) {
+	return func(e *edgeProperties) {
 		e.Attributes[key] = value
 	}
 }

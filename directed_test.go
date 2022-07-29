@@ -121,7 +121,7 @@ func TestDirected_EdgeByHashes(t *testing.T) {
 		var err error
 
 		for _, edge := range test.edgeHashes {
-			if err = graph.EdgeByHashes(edge[0], edge[1], EdgeWeight(edge[1])); err != nil {
+			if err = graph.EdgeByHashes(edge[0], edge[1], EdgeWeight(edge[2])); err != nil {
 				break
 			}
 		}

@@ -82,14 +82,14 @@ func TestDirected_EdgeByHashes(t *testing.T) {
 				{
 					Source: 1,
 					Target: 2,
-					properties: edgeProperties{
+					Properties: EdgeProperties{
 						Weight: 10,
 					},
 				},
 				{
 					Source: 1,
 					Target: 3,
-					properties: edgeProperties{
+					Properties: EdgeProperties{
 						Weight: 20,
 					},
 				},
@@ -147,8 +147,8 @@ func TestDirected_EdgeByHashes(t *testing.T) {
 				t.Errorf("%s: edge targets don't match: expected target %v, got %v", name, expectedEdge.Target, edge.Target)
 			}
 
-			if edge.properties.Weight != expectedEdge.properties.Weight {
-				t.Errorf("%s: edge weights don't match: expected weight %v, got %v", name, expectedEdge.properties.Weight, edge.properties.Weight)
+			if edge.Properties.Weight != expectedEdge.Properties.Weight {
+				t.Errorf("%s: edge weights don't match: expected weight %v, got %v", name, expectedEdge.Properties.Weight, edge.Properties.Weight)
 			}
 		}
 	}
@@ -599,16 +599,16 @@ func TestDirected_ShortestPathByHashes(t *testing.T) {
 		"graph as on img/dijkstra.svg": {
 			vertices: []string{"A", "B", "C", "D", "E", "F", "G"},
 			edges: []Edge[string]{
-				{Source: "A", Target: "C", properties: edgeProperties{Weight: 3}},
-				{Source: "A", Target: "F", properties: edgeProperties{Weight: 2}},
-				{Source: "C", Target: "D", properties: edgeProperties{Weight: 4}},
-				{Source: "C", Target: "E", properties: edgeProperties{Weight: 1}},
-				{Source: "C", Target: "F", properties: edgeProperties{Weight: 2}},
-				{Source: "D", Target: "B", properties: edgeProperties{Weight: 1}},
-				{Source: "E", Target: "B", properties: edgeProperties{Weight: 2}},
-				{Source: "E", Target: "F", properties: edgeProperties{Weight: 3}},
-				{Source: "F", Target: "G", properties: edgeProperties{Weight: 5}},
-				{Source: "G", Target: "B", properties: edgeProperties{Weight: 2}},
+				{Source: "A", Target: "C", Properties: EdgeProperties{Weight: 3}},
+				{Source: "A", Target: "F", Properties: EdgeProperties{Weight: 2}},
+				{Source: "C", Target: "D", Properties: EdgeProperties{Weight: 4}},
+				{Source: "C", Target: "E", Properties: EdgeProperties{Weight: 1}},
+				{Source: "C", Target: "F", Properties: EdgeProperties{Weight: 2}},
+				{Source: "D", Target: "B", Properties: EdgeProperties{Weight: 1}},
+				{Source: "E", Target: "B", Properties: EdgeProperties{Weight: 2}},
+				{Source: "E", Target: "F", Properties: EdgeProperties{Weight: 3}},
+				{Source: "F", Target: "G", Properties: EdgeProperties{Weight: 5}},
+				{Source: "G", Target: "B", Properties: EdgeProperties{Weight: 2}},
 			},
 			sourceHash:           "A",
 			targetHash:           "B",
@@ -617,10 +617,10 @@ func TestDirected_ShortestPathByHashes(t *testing.T) {
 		"diamond-shaped graph": {
 			vertices: []string{"A", "B", "C", "D"},
 			edges: []Edge[string]{
-				{Source: "A", Target: "B", properties: edgeProperties{Weight: 2}},
-				{Source: "A", Target: "C", properties: edgeProperties{Weight: 4}},
-				{Source: "B", Target: "D", properties: edgeProperties{Weight: 2}},
-				{Source: "C", Target: "D", properties: edgeProperties{Weight: 2}},
+				{Source: "A", Target: "B", Properties: EdgeProperties{Weight: 2}},
+				{Source: "A", Target: "C", Properties: EdgeProperties{Weight: 4}},
+				{Source: "B", Target: "D", Properties: EdgeProperties{Weight: 2}},
+				{Source: "C", Target: "D", Properties: EdgeProperties{Weight: 2}},
 			},
 			sourceHash:           "A",
 			targetHash:           "D",
@@ -629,10 +629,10 @@ func TestDirected_ShortestPathByHashes(t *testing.T) {
 		"source equal to target": {
 			vertices: []string{"A", "B", "C", "D"},
 			edges: []Edge[string]{
-				{Source: "A", Target: "B", properties: edgeProperties{Weight: 2}},
-				{Source: "A", Target: "C", properties: edgeProperties{Weight: 4}},
-				{Source: "B", Target: "D", properties: edgeProperties{Weight: 2}},
-				{Source: "C", Target: "D", properties: edgeProperties{Weight: 2}},
+				{Source: "A", Target: "B", Properties: EdgeProperties{Weight: 2}},
+				{Source: "A", Target: "C", Properties: EdgeProperties{Weight: 4}},
+				{Source: "B", Target: "D", Properties: EdgeProperties{Weight: 2}},
+				{Source: "C", Target: "D", Properties: EdgeProperties{Weight: 2}},
 			},
 			sourceHash:           "B",
 			targetHash:           "B",
@@ -641,8 +641,8 @@ func TestDirected_ShortestPathByHashes(t *testing.T) {
 		"target not reachable": {
 			vertices: []string{"A", "B", "C", "D"},
 			edges: []Edge[string]{
-				{Source: "A", Target: "B", properties: edgeProperties{Weight: 2}},
-				{Source: "A", Target: "C", properties: edgeProperties{Weight: 4}},
+				{Source: "A", Target: "B", Properties: EdgeProperties{Weight: 2}},
+				{Source: "A", Target: "C", Properties: EdgeProperties{Weight: 4}},
 			},
 			sourceHash:           "A",
 			targetHash:           "D",
@@ -659,7 +659,7 @@ func TestDirected_ShortestPathByHashes(t *testing.T) {
 		}
 
 		for _, edge := range test.edges {
-			if err := graph.Edge(edge.Source, edge.Target, EdgeWeight(edge.properties.Weight)); err != nil {
+			if err := graph.Edge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
 				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
 			}
 		}
@@ -740,7 +740,7 @@ func TestDirected_AdjacencyList(t *testing.T) {
 		}
 
 		for _, edge := range test.edges {
-			if err := graph.Edge(edge.Source, edge.Target, EdgeWeight(edge.properties.Weight)); err != nil {
+			if err := graph.Edge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
 				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
 			}
 		}
@@ -799,9 +799,9 @@ func TestDirected_addEdge(t *testing.T) {
 	}{
 		"add 3 edges": {
 			edges: []Edge[int]{
-				{Source: 1, Target: 2, properties: edgeProperties{Weight: 1}},
-				{Source: 2, Target: 3, properties: edgeProperties{Weight: 2}},
-				{Source: 3, Target: 1, properties: edgeProperties{Weight: 3}},
+				{Source: 1, Target: 2, Properties: EdgeProperties{Weight: 1}},
+				{Source: 2, Target: 3, Properties: EdgeProperties{Weight: 2}},
+				{Source: 3, Target: 1, Properties: EdgeProperties{Weight: 3}},
 			},
 		},
 	}

@@ -76,18 +76,18 @@ func TestIntHash(t *testing.T) {
 func TestEdgeWeight(t *testing.T) {
 	tests := map[string]struct {
 		weight   int
-		expected edgeProperties
+		expected EdgeProperties
 	}{
 		"weight 4": {
 			weight: 4,
-			expected: edgeProperties{
+			expected: EdgeProperties{
 				Weight: 4,
 			},
 		},
 	}
 
 	for name, test := range tests {
-		properties := edgeProperties{}
+		properties := EdgeProperties{}
 
 		EdgeWeight(test.weight)(&properties)
 
@@ -101,12 +101,12 @@ func TestEdgeAttribute(t *testing.T) {
 	tests := map[string]struct {
 		key      string
 		value    string
-		expected edgeProperties
+		expected EdgeProperties
 	}{
 		"attribute label=mylabel": {
 			key:   "label",
 			value: "mylabel",
-			expected: edgeProperties{
+			expected: EdgeProperties{
 				Attributes: map[string]string{
 					"label": "mylabel",
 				},
@@ -115,7 +115,7 @@ func TestEdgeAttribute(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		properties := edgeProperties{
+		properties := EdgeProperties{
 			Attributes: make(map[string]string),
 		}
 

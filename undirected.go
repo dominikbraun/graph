@@ -33,14 +33,14 @@ func (u *undirected[K, T]) Vertex(value T) {
 	u.vertices[hash] = value
 }
 
-func (u *undirected[K, T]) Edge(source, target T, options ...func(*edgeProperties)) error {
+func (u *undirected[K, T]) Edge(source, target T, options ...func(*EdgeProperties)) error {
 	sourceHash := u.hash(source)
 	targetHash := u.hash(target)
 
 	return u.EdgeByHashes(sourceHash, targetHash, options...)
 }
 
-func (u *undirected[K, T]) EdgeByHashes(sourceHash, targetHash K, options ...func(*edgeProperties)) error {
+func (u *undirected[K, T]) EdgeByHashes(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
 	source, ok := u.vertices[sourceHash]
 	if !ok {
 		return fmt.Errorf("could not find source vertex with hash %v", sourceHash)
@@ -69,13 +69,13 @@ func (u *undirected[K, T]) EdgeByHashes(sourceHash, targetHash K, options ...fun
 	edge := Edge[T]{
 		Source: source,
 		Target: target,
-		properties: edgeProperties{
+		Properties: EdgeProperties{
 			Attributes: make(map[string]string),
 		},
 	}
 
 	for _, option := range options {
-		option(&edge.properties)
+		option(&edge.Properties)
 	}
 
 	u.addEdge(sourceHash, targetHash, edge)
@@ -307,7 +307,7 @@ func (u *undirected[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, 
 		}
 
 		for successor, edge := range inEdges {
-			weight := weights[vertex] + float64(edge.properties.Weight)
+			weight := weights[vertex] + float64(edge.Properties.Weight)
 
 			if weight < weights[successor] && !hasInfiniteWeight {
 				weights[successor] = weight
@@ -343,8 +343,8 @@ func (u *undirected[K, T]) AdjacencyMap() map[K]map[K]Edge[K] {
 			adjacencyMap[vertexHash][adjacencyHash] = Edge[K]{
 				Source: vertexHash,
 				Target: adjacencyHash,
-				properties: edgeProperties{
-					Weight: edge.properties.Weight,
+				Properties: EdgeProperties{
+					Weight: edge.Properties.Weight,
 				},
 			}
 		}

@@ -20,7 +20,7 @@ type Graph[K comparable, T any] interface {
 	//
 	//	_ = graph.Edge("A", "B", graph.EdgeWeight(4), graph.EdgeAttribute("label", "mylabel"))
 	//
-	Edge(source, target T, options ...func(*edgeProperties)) error
+	Edge(source, target T, options ...func(*EdgeProperties)) error
 
 	// EdgeByHashes creates an edge between the source and the target vertex, but uses hash values
 	// to identify the vertices. This is convenient when you don't have the full vertex objects at
@@ -29,7 +29,7 @@ type Graph[K comparable, T any] interface {
 	// To obtain the hash value for a vertex, call the hashing function passed to New.
 	//
 	// EdgeByHashes accepts the same functional options as Edge.
-	EdgeByHashes(sourceHash, targetHash K, options ...func(*edgeProperties)) error
+	EdgeByHashes(sourceHash, targetHash K, options ...func(*EdgeProperties)) error
 
 	// GetEdgeByHashes returns the edge between two vertices. The second return value indicates
 	// whether the edge exists. If the graph  is undirected, an edge with swapped source and target
@@ -183,10 +183,16 @@ type Graph[K comparable, T any] interface {
 type Edge[T any] struct {
 	Source     T
 	Target     T
-	properties edgeProperties
+	Properties EdgeProperties
 }
 
-type edgeProperties struct {
+// EdgeProperties represents a set of properties that each edge posesses. They can be set when
+// adding a new edge using the functional options provided by this library:
+//
+//	g.Edge("A", "B", graph.EdgeWeight(2), graph.EdgeAttribute("color", "red"))
+//
+// The example above will create an edge with weight 2 and a "color" atttribute with value "red".
+type EdgeProperties struct {
 	Weight     int
 	Attributes map[string]string
 }
@@ -267,16 +273,16 @@ func IntHash(v int) int {
 
 // EdgeWeight returns a function that sets the weight of an edge to the given weight. This is a
 // functional option for the Edge and EdgeByHashes methods.
-func EdgeWeight(weight int) func(*edgeProperties) {
-	return func(e *edgeProperties) {
+func EdgeWeight(weight int) func(*EdgeProperties) {
+	return func(e *EdgeProperties) {
 		e.Weight = weight
 	}
 }
 
 // EdgeAttribute returns a function that adds the given key-value pair to the attributes of an
 // edge. This is a functional option for the Edge and EdgeByHashes methods.
-func EdgeAttribute(key, value string) func(*edgeProperties) {
-	return func(e *edgeProperties) {
+func EdgeAttribute(key, value string) func(*EdgeProperties) {
+	return func(e *EdgeProperties) {
 		e.Attributes[key] = value
 	}
 }

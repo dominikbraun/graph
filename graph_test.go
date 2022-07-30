@@ -72,3 +72,64 @@ func TestIntHash(t *testing.T) {
 		}
 	}
 }
+
+func TestEdgeWeight(t *testing.T) {
+	tests := map[string]struct {
+		weight   int
+		expected EdgeProperties
+	}{
+		"weight 4": {
+			weight: 4,
+			expected: EdgeProperties{
+				Weight: 4,
+			},
+		},
+	}
+
+	for name, test := range tests {
+		properties := EdgeProperties{}
+
+		EdgeWeight(test.weight)(&properties)
+
+		if properties.Weight != test.expected.Weight {
+			t.Errorf("%s: weight expectation doesn't match: expected %v, got %v", name, test.expected.Weight, properties.Weight)
+		}
+	}
+}
+
+func TestEdgeAttribute(t *testing.T) {
+	tests := map[string]struct {
+		key      string
+		value    string
+		expected EdgeProperties
+	}{
+		"attribute label=mylabel": {
+			key:   "label",
+			value: "mylabel",
+			expected: EdgeProperties{
+				Attributes: map[string]string{
+					"label": "mylabel",
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		properties := EdgeProperties{
+			Attributes: make(map[string]string),
+		}
+
+		EdgeAttribute(test.key, test.value)(&properties)
+
+		value, ok := properties.Attributes[test.key]
+		if !ok {
+			t.Errorf("%s: attribute expectaton doesn't match: key %v doesn't exist", name, test.key)
+		}
+
+		expectedValue := test.expected.Attributes[test.key]
+
+		if value != expectedValue {
+			t.Errorf("%s: value expectation doesn't match: expected %v, got %v", name, expectedValue, value)
+		}
+	}
+}

@@ -86,8 +86,8 @@ func generateDOT[K comparable, T any](g graph.Graph[K, T]) description {
 			statement := statement{
 				Source:     vertex,
 				Target:     adjacency,
-				Weight:     edge.Weight,
-				Attributes: edge.Attributes,
+				Weight:     edge.Properties.Weight,
+				Attributes: edge.Properties.Attributes,
 			}
 			description.Statements = append(description.Statements, statement)
 		}

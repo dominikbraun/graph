@@ -33,22 +33,14 @@ func (u *undirected[K, T]) Vertex(value T) {
 	u.vertices[hash] = value
 }
 
-func (u *undirected[K, T]) Edge(source, target T) error {
-	return u.WeightedEdge(source, target, 0)
-}
-
-func (u *undirected[K, T]) WeightedEdge(source, target T, weight int) error {
+func (u *undirected[K, T]) Edge(source, target T, options ...func(*EdgeProperties)) error {
 	sourceHash := u.hash(source)
 	targetHash := u.hash(target)
 
-	return u.WeightedEdgeByHashes(sourceHash, targetHash, weight)
+	return u.EdgeByHashes(sourceHash, targetHash, options...)
 }
 
-func (u *undirected[K, T]) EdgeByHashes(sourceHash, targetHash K) error {
-	return u.WeightedEdgeByHashes(sourceHash, targetHash, 0)
-}
-
-func (u *undirected[K, T]) WeightedEdgeByHashes(sourceHash, targetHash K, weight int) error {
+func (u *undirected[K, T]) EdgeByHashes(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
 	source, ok := u.vertices[sourceHash]
 	if !ok {
 		return fmt.Errorf("could not find source vertex with hash %v", sourceHash)
@@ -77,7 +69,13 @@ func (u *undirected[K, T]) WeightedEdgeByHashes(sourceHash, targetHash K, weight
 	edge := Edge[T]{
 		Source: source,
 		Target: target,
-		Weight: weight,
+		Properties: EdgeProperties{
+			Attributes: make(map[string]string),
+		},
+	}
+
+	for _, option := range options {
+		option(&edge.Properties)
 	}
 
 	u.addEdge(sourceHash, targetHash, edge)
@@ -309,7 +307,7 @@ func (u *undirected[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, 
 		}
 
 		for successor, edge := range inEdges {
-			weight := weights[vertex] + float64(edge.Weight)
+			weight := weights[vertex] + float64(edge.Properties.Weight)
 
 			if weight < weights[successor] && !hasInfiniteWeight {
 				weights[successor] = weight
@@ -345,7 +343,9 @@ func (u *undirected[K, T]) AdjacencyMap() map[K]map[K]Edge[K] {
 			adjacencyMap[vertexHash][adjacencyHash] = Edge[K]{
 				Source: vertexHash,
 				Target: adjacencyHash,
-				Weight: edge.Weight,
+				Properties: EdgeProperties{
+					Weight: edge.Properties.Weight,
+				},
 			}
 		}
 	}

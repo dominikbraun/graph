@@ -61,18 +61,10 @@ func TestUndirected_Vertex(t *testing.T) {
 }
 
 func TestUndirected_Edge(t *testing.T) {
-	TestUndirected_WeightedEdge(t)
-}
-
-func TestUndirected_WeightedEdge(t *testing.T) {
-	TestUndirected_WeightedEdgeByHashes(t)
+	TestDirected_EdgeByHashes(t)
 }
 
 func TestUndirected_EdgeByHashes(t *testing.T) {
-	TestUndirected_WeightedEdgeByHashes(t)
-}
-
-func TestUndirected_WeightedEdgeByHashes(t *testing.T) {
 	tests := map[string]struct {
 		vertices      []int
 		edgeHashes    [][3]int

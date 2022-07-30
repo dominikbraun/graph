@@ -67,7 +67,7 @@ func TestDirected_Edge(t *testing.T) {
 func TestDirected_EdgeByHashes(t *testing.T) {
 	tests := map[string]struct {
 		vertices      []int
-		edgeHashes    [][3]int
+		edgeHashes    []Edge[int]
 		traits        *Traits
 		expectedEdges []Edge[int]
 		// Even though some of the WeightedEdgeByHashes calls might work, at least one of them
@@ -75,35 +75,32 @@ func TestDirected_EdgeByHashes(t *testing.T) {
 		shouldFinallyFail bool
 	}{
 		"graph with 2 edges": {
-			vertices:   []int{1, 2, 3},
-			edgeHashes: [][3]int{{1, 2, 10}, {1, 3, 20}},
-			traits:     &Traits{},
+			vertices: []int{1, 2, 3},
+			edgeHashes: []Edge[int]{
+				{Source: 1, Target: 2, Properties: EdgeProperties{Weight: 10}},
+				{Source: 1, Target: 3, Properties: EdgeProperties{Weight: 20}},
+			},
+			traits: &Traits{},
 			expectedEdges: []Edge[int]{
-				{
-					Source: 1,
-					Target: 2,
-					Properties: EdgeProperties{
-						Weight: 10,
-					},
-				},
-				{
-					Source: 1,
-					Target: 3,
-					Properties: EdgeProperties{
-						Weight: 20,
-					},
-				},
+				{Source: 1, Target: 2, Properties: EdgeProperties{Weight: 10}},
+				{Source: 1, Target: 3, Properties: EdgeProperties{Weight: 20}},
 			},
 		},
 		"hashes for non-existent vertices": {
-			vertices:          []int{1, 2},
-			edgeHashes:        [][3]int{{1, 3, 20}},
+			vertices: []int{1, 2},
+			edgeHashes: []Edge[int]{
+				{Source: 1, Target: 3, Properties: EdgeProperties{Weight: 20}},
+			},
 			traits:            &Traits{},
 			shouldFinallyFail: true,
 		},
 		"edge introducing a cycle in an acyclic graph": {
-			vertices:   []int{1, 2, 3},
-			edgeHashes: [][3]int{{1, 2, 0}, {2, 3, 0}, {3, 1, 0}},
+			vertices: []int{1, 2, 3},
+			edgeHashes: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 2, Target: 3},
+				{Source: 3, Target: 1},
+			},
 			traits: &Traits{
 				IsAcyclic: true,
 			},
@@ -121,7 +118,7 @@ func TestDirected_EdgeByHashes(t *testing.T) {
 		var err error
 
 		for _, edge := range test.edgeHashes {
-			if err = graph.EdgeByHashes(edge[0], edge[1], EdgeWeight(edge[2])); err != nil {
+			if err = graph.EdgeByHashes(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
 				break
 			}
 		}

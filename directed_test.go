@@ -144,8 +144,11 @@ func TestDirected_EdgeByHashes(t *testing.T) {
 		var err error
 
 		for _, edge := range test.edges {
-			// edge.Properties.Attributes should only have one entry, so that EdgeByHashes isn't
-			// invoked multiple times. Yes, this is a workaround to test the functional option.
+			if len(edge.Properties.Attributes) == 0 {
+				err = graph.EdgeByHashes(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight))
+			}
+			// If there are edge attributes, iterate over them and call EdgeAttribute for each
+			// entry. An edge should only have one attribute so that EdgeByHashes is invoked once.
 			for key, value := range edge.Properties.Attributes {
 				err = graph.EdgeByHashes(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight), EdgeAttribute(key, value))
 			}

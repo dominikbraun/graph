@@ -344,7 +344,8 @@ func (u *undirected[K, T]) AdjacencyMap() map[K]map[K]Edge[K] {
 				Source: vertexHash,
 				Target: adjacencyHash,
 				Properties: EdgeProperties{
-					Weight: edge.Properties.Weight,
+					Weight:     edge.Properties.Weight,
+					Attributes: edge.Properties.Attributes,
 				},
 			}
 		}

@@ -67,7 +67,7 @@ func TestDirected_Edge(t *testing.T) {
 func TestDirected_EdgeByHashes(t *testing.T) {
 	tests := map[string]struct {
 		vertices      []int
-		edgeHashes    []Edge[int]
+		edges         []Edge[int]
 		traits        *Traits
 		expectedEdges []Edge[int]
 		// Even though some of the EdgeByHashes calls might work, at least one of them could fail,
@@ -76,7 +76,7 @@ func TestDirected_EdgeByHashes(t *testing.T) {
 	}{
 		"graph with 2 edges": {
 			vertices: []int{1, 2, 3},
-			edgeHashes: []Edge[int]{
+			edges: []Edge[int]{
 				{Source: 1, Target: 2, Properties: EdgeProperties{Weight: 10}},
 				{Source: 1, Target: 3, Properties: EdgeProperties{Weight: 20}},
 			},
@@ -88,7 +88,7 @@ func TestDirected_EdgeByHashes(t *testing.T) {
 		},
 		"hashes for non-existent vertices": {
 			vertices: []int{1, 2},
-			edgeHashes: []Edge[int]{
+			edges: []Edge[int]{
 				{Source: 1, Target: 3, Properties: EdgeProperties{Weight: 20}},
 			},
 			traits:            &Traits{},
@@ -96,7 +96,7 @@ func TestDirected_EdgeByHashes(t *testing.T) {
 		},
 		"edge introducing a cycle in an acyclic graph": {
 			vertices: []int{1, 2, 3},
-			edgeHashes: []Edge[int]{
+			edges: []Edge[int]{
 				{Source: 1, Target: 2},
 				{Source: 2, Target: 3},
 				{Source: 3, Target: 1},
@@ -105,6 +105,32 @@ func TestDirected_EdgeByHashes(t *testing.T) {
 				IsAcyclic: true,
 			},
 			shouldFinallyFail: true,
+		},
+		"edge with attributes": {
+			vertices: []int{1, 2},
+			edges: []Edge[int]{
+				{
+					Source: 1,
+					Target: 2,
+					Properties: EdgeProperties{
+						Attributes: map[string]string{
+							"color": "red",
+						},
+					},
+				},
+			},
+			expectedEdges: []Edge[int]{
+				{
+					Source: 1,
+					Target: 2,
+					Properties: EdgeProperties{
+						Attributes: map[string]string{
+							"color": "red",
+						},
+					},
+				},
+			},
+			traits: &Traits{},
 		},
 	}
 
@@ -117,8 +143,13 @@ func TestDirected_EdgeByHashes(t *testing.T) {
 
 		var err error
 
-		for _, edge := range test.edgeHashes {
-			if err = graph.EdgeByHashes(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
+		for _, edge := range test.edges {
+			// edge.Properties.Attributes should only have one entry, so that EdgeByHashes isn't
+			// invoked multiple times. Yes, this is a workaround to test the functional option.
+			for key, value := range edge.Properties.Attributes {
+				err = graph.EdgeByHashes(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight), EdgeAttribute(key, value))
+			}
+			if err != nil {
 				break
 			}
 		}
@@ -146,6 +177,20 @@ func TestDirected_EdgeByHashes(t *testing.T) {
 
 			if edge.Properties.Weight != expectedEdge.Properties.Weight {
 				t.Errorf("%s: edge weights don't match: expected weight %v, got %v", name, expectedEdge.Properties.Weight, edge.Properties.Weight)
+			}
+
+			if len(edge.Properties.Attributes) != len(expectedEdge.Properties.Attributes) {
+				t.Fatalf("%s: attributes length don't match: expcted %v, got %v", name, len(expectedEdge.Properties.Attributes), len(edge.Properties.Attributes))
+			}
+
+			for expectedKey, expectedValue := range expectedEdge.Properties.Attributes {
+				value, ok := edge.Properties.Attributes[expectedKey]
+				if !ok {
+					t.Errorf("%s: attribute keys don't match: expected key %v not found", name, expectedKey)
+				}
+				if value != expectedValue {
+					t.Errorf("%s: attribute values don't match: expected value %v for key %v, got %v", name, expectedValue, expectedKey, value)
+				}
 			}
 		}
 	}

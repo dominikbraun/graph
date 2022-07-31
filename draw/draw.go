@@ -30,8 +30,8 @@ type statement struct {
 	Attributes map[string]string
 }
 
-// Graph renders the given graph structure in DOT language into an io.Writer, for example a file.
-// The generated output can be passed to Graphviz or other visualization tools supporting DOT.
+// DOT renders the given graph structure in DOT language into an io.Writer, for example a file. The
+// generated output can be passed to Graphviz or other visualization tools supporting DOT.
 //
 // The following example renders a directed graph into a file mygraph.gv:
 //
@@ -55,7 +55,7 @@ type statement struct {
 // it as follows:
 //
 //	go run main.go | dot -Tsvg > output.svg
-func Graph[K comparable, T any](g graph.Graph[K, T], w io.Writer) error {
+func DOT[K comparable, T any](g graph.Graph[K, T], w io.Writer) error {
 	description := generateDOT(g)
 
 	return renderDOT(w, description)

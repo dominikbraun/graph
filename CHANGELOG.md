@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 * Changed `Edge` to accept a variadic `options` parameter.
 * Changed `EdgeByHashes` to accept a variadic `options` parameter.
+* Renamed `draw.Graph` to `draw.DOT` for more clarity regarding the rendering format.
 
 ### Removed
 * Removed the `WeightedEdge` function. Use `Edge` with the `EdgeWeight` functional option instead.

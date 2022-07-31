@@ -97,12 +97,12 @@ g.Vertex(munich)
 g.Vertex(paris)
 g.Vertex(madrid)
 
-_ = g.WeightedEdge(london, munich, 3)
-_ = g.WeightedEdge(london, paris, 2)
-_ = g.WeightedEdge(london, madrid, 5)
-_ = g.WeightedEdge(munich, madrid, 6)
-_ = g.WeightedEdge(munich, paris, 2)
-_ = g.WeightedEdge(paris, madrid, 4)
+_ = g.Edge(london, munich, graph.EdgeWeight(3))
+_ = g.Edge(london, paris, graph.EdgeWeight(2))
+_ = g.Edge(london, madrid, graph.EdgeWeight(5))
+_ = g.Edge(munich, madrid, graph.EdgeWeight(6))
+_ = g.Edge(munich, paris, graph.EdgeWeight(2))
+_ = g.Edge(paris, madrid, graph.EdgeWeight(4))
 ```
 
 ## Perform a Depth-First Search

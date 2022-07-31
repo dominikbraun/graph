@@ -29,8 +29,7 @@ func Acyclic() func(*Traits) {
 	}
 }
 
-// Weighted creates a weighted graph. To set weights, use the WeightedEdge and WeightedEdgeByHashes
-// functions.
+// Weighted creates a weighted graph. To set weights, use the Edge and EdgeByHashes functions.
 func Weighted() func(*Traits) {
 	return func(t *Traits) {
 		t.IsWeighted = true

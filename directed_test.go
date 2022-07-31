@@ -70,8 +70,8 @@ func TestDirected_EdgeByHashes(t *testing.T) {
 		edgeHashes    []Edge[int]
 		traits        *Traits
 		expectedEdges []Edge[int]
-		// Even though some of the WeightedEdgeByHashes calls might work, at least one of them
-		// could fail - for example if the last call would introduce a cycle.
+		// Even though some of the EdgeByHashes calls might work, at least one of them could fail,
+		// for example if the last call would introduce a cycle.
 		shouldFinallyFail bool
 	}{
 		"graph with 2 edges": {

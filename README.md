@@ -216,6 +216,19 @@ To generate an SVG from the created file using Graphviz, use a command such as t
 dot -Tsvg -O mygraph.gv
 ```
 
+## Setting edge attributes
+
+Edges may have one or more attributes which can be used to store metadata. Attributes will be taken
+into account when [visualizing a graph](#visualize-a-graph-using-graphviz). For example, this edge
+will be rendered in red color:
+
+```go
+_ = g.Edge(1, 2, graph.EdgeAttribute("color", "red"))
+```
+
+To get an overview of all supported attributes, take a look at the
+[DOT documentation](https://graphviz.org/doc/info/attrs.html).
+
 # Concepts
 
 ## Hashes

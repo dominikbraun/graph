@@ -51,8 +51,8 @@ type statement struct {
 //
 //	dot -Tsvg -O mygraph.gv
 //
-// Another possibility is to use os.Stdin as an io.Writer, print the DOT output to stdin, and pipe
-// it as follows:
+// Another possibility is to use os.Stdout as an io.Writer, print the DOT output to stdout, and
+// pipe it as follows:
 //
 //	go run main.go | dot -Tsvg > output.svg
 func DOT[K comparable, T any](g graph.Graph[K, T], w io.Writer) error {

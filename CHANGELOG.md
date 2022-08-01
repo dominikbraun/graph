@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Removed the `WeightedEdge` function. Use `Edge` with the `EdgeWeight` functional option instead.
 * Removed the `WeightedEdgeByHashes` function. Use `EdgeByHashes` with the `EdgeWeight` functional option instead.
 
+### Fixed
+* Fixed missing edge attributes when drawing a graph using `draw.DOT`.
+
 ## [0.7.0] - 2022-07-26
 
 ### Added

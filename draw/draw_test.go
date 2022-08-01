@@ -33,6 +33,40 @@ func TestGenerateDOT(t *testing.T) {
 				},
 			},
 		},
+		"3-vertex directed, weighted graph with weights and attributes": {
+			graph:    graph.New(graph.IntHash, graph.Directed(), graph.Weighted()),
+			vertices: []int{1, 2, 3},
+			edges: []graph.Edge[int]{
+				{
+					Source: 1,
+					Target: 2,
+					Properties: graph.EdgeProperties{
+						Weight: 10,
+						Attributes: map[string]string{
+							"color": "red",
+						},
+					},
+				},
+				{Source: 1, Target: 3},
+			},
+			expected: description{
+				GraphType:    "digraph",
+				EdgeOperator: "->",
+				Statements: []statement{
+					{
+						Source: 1,
+						Target: 2,
+						Weight: 10,
+						Attributes: map[string]string{
+							"color": "red",
+						},
+					},
+					{Source: 1, Target: 3},
+					{Source: 2},
+					{Source: 3},
+				},
+			},
+		},
 	}
 
 	for name, test := range tests {

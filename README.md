@@ -6,6 +6,7 @@ It supports different kinds of graphs such as directed graphs, acyclic graphs, o
 # Features
 
 * Vertices of any data type, such as `int` or `City`.
+* Edges with optional data, such as weights or attributes.
 * Optionally combinable graph types and traits.
 * Validations considering the graph type, such as cycle detection in acyclic graphs.
 * Determination of graph and vertex properties, such as degree or tree-depth.
@@ -16,8 +17,9 @@ It supports different kinds of graphs such as directed graphs, acyclic graphs, o
   * [x] Shortest path (Dijkstra)
   * [x] Strongly connected components (Tarjan)
 * Visualization of graphs using Graphviz.
+* Extensive tests with ~90% coverage.
 
-> Status: Work in progress. Multigraphs aren't supported.
+> Status: Because `graph` is in version 0, the public API shouldn't be considered stable.
 
 # Getting started
 

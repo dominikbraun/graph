@@ -3,7 +3,6 @@ package graph
 // Graph represents a generic graph data structure consisting of vertices and edges. Its vertices
 // are of type T, and each vertex is identified by a hash of type K.
 type Graph[K comparable, T any] interface {
-
 	// Traits returns the graph's traits. Those traits must be set when creating a graph using New.
 	Traits() *Traits
 

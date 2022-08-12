@@ -267,7 +267,6 @@ type sccState[K comparable] struct {
 // the hashes of the vertices shaping these components. The current implementation of this function
 // uses Tarjan's algorithm and runs recursively.
 func (d *directed[K, T]) StronglyConnectedComponents() ([][]K, error) {
-
 	state := &sccState[K]{
 		components: make([][]K, 0),
 		stack:      make([]K, 0),

@@ -173,7 +173,7 @@ func TestRenderDOT(t *testing.T) {
 	}
 }
 
-func slicesAreEqual[T any](a []T, b []T, equals func(a, b T) bool) bool {
+func slicesAreEqual[T any](a, b []T, equals func(a, b T) bool) bool {
 	if len(a) != len(b) {
 		return false
 	}

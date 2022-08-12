@@ -229,7 +229,9 @@ func TestDirected_GetEdgeByHashes(t *testing.T) {
 		sourceHash := graph.hash(test.vertices[0])
 		targetHash := graph.hash(test.vertices[1])
 
-		graph.EdgeByHashes(sourceHash, targetHash)
+		if err := graph.EdgeByHashes(sourceHash, targetHash); err != nil {
+			t.Fatal("unexpected error:", err)
+		}
 
 		_, ok := graph.GetEdgeByHashes(test.getEdgeHashes[0], test.getEdgeHashes[1])
 

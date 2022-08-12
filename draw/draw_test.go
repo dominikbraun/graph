@@ -162,7 +162,9 @@ func TestRenderDOT(t *testing.T) {
 
 	for name, test := range tests {
 		buf := new(bytes.Buffer)
-		renderDOT(buf, test.description)
+		if err := renderDOT(buf, test.description); err != nil {
+			t.Fatal("unexpected error", err)
+		}
 
 		output := normalizeOutput(buf.String())
 		expected := normalizeOutput(test.expected)

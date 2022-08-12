@@ -15,7 +15,7 @@ type Traits struct {
 }
 
 // Directed creates a directed graph. This has implications on graph traversal and the order of
-// arguments of the Edge and EdgeByHashes functions.
+// arguments of the Edge and AddEdge functions.
 func Directed() func(*Traits) {
 	return func(t *Traits) {
 		t.IsDirected = true
@@ -29,7 +29,7 @@ func Acyclic() func(*Traits) {
 	}
 }
 
-// Weighted creates a weighted graph. To set weights, use the Edge and EdgeByHashes functions.
+// Weighted creates a weighted graph. To set weights, use the Edge and AddEdge functions.
 func Weighted() func(*Traits) {
 	return func(t *Traits) {
 		t.IsWeighted = true

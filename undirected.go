@@ -28,19 +28,12 @@ func (u *undirected[K, T]) Traits() *Traits {
 	return u.traits
 }
 
-func (u *undirected[K, T]) Vertex(value T) {
+func (u *undirected[K, T]) AddVertex(value T) {
 	hash := u.hash(value)
 	u.vertices[hash] = value
 }
 
-func (u *undirected[K, T]) Edge(source, target T, options ...func(*EdgeProperties)) error {
-	sourceHash := u.hash(source)
-	targetHash := u.hash(target)
-
-	return u.EdgeByHashes(sourceHash, targetHash, options...)
-}
-
-func (u *undirected[K, T]) EdgeByHashes(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
+func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
 	source, ok := u.vertices[sourceHash]
 	if !ok {
 		return fmt.Errorf("could not find source vertex with hash %v", sourceHash)
@@ -51,13 +44,13 @@ func (u *undirected[K, T]) EdgeByHashes(sourceHash, targetHash K, options ...fun
 		return fmt.Errorf("could not find target vertex with hash %v", targetHash)
 	}
 
-	if _, ok := u.GetEdgeByHashes(sourceHash, targetHash); ok {
+	if _, ok := u.GetEdge(sourceHash, targetHash); ok {
 		return fmt.Errorf("an edge between vertices %v and %v already exists", sourceHash, targetHash)
 	}
 
 	// If the graph was declared to be acyclic, permit the creation of a cycle.
 	if u.traits.IsAcyclic {
-		createsCycle, err := u.CreatesCycleByHashes(sourceHash, targetHash)
+		createsCycle, err := u.CreatesCycle(sourceHash, targetHash)
 		if err != nil {
 			return fmt.Errorf("failed to check for cycles: %w", err)
 		}
@@ -83,14 +76,7 @@ func (u *undirected[K, T]) EdgeByHashes(sourceHash, targetHash K, options ...fun
 	return nil
 }
 
-func (u *undirected[K, T]) GetEdge(source, target T) (Edge[T], bool) {
-	sourceHash := u.hash(source)
-	targetHash := u.hash(target)
-
-	return u.GetEdgeByHashes(sourceHash, targetHash)
-}
-
-func (u *undirected[K, T]) GetEdgeByHashes(sourceHash, targetHash K) (Edge[T], bool) {
+func (u *undirected[K, T]) GetEdge(sourceHash, targetHash K) (Edge[T], bool) {
 	// In an undirected graph, since multigraphs aren't supported, the edge AB is the same as BA.
 	// Therefore, if source[target] cannot be found, this function also looks for target[source].
 	sourceEdges, ok := u.outEdges[sourceHash]
@@ -110,13 +96,7 @@ func (u *undirected[K, T]) GetEdgeByHashes(sourceHash, targetHash K) (Edge[T], b
 	return Edge[T]{}, false
 }
 
-func (u *undirected[K, T]) DFS(start T, visit func(value T) bool) error {
-	startHash := u.hash(start)
-
-	return u.DFSByHash(startHash, visit)
-}
-
-func (u *undirected[K, T]) DFSByHash(startHash K, visit func(value T) bool) error {
+func (u *undirected[K, T]) DFS(startHash K, visit func(value T) bool) error {
 	if _, ok := u.vertices[startHash]; !ok {
 		return fmt.Errorf("could not find start vertex with hash %v", startHash)
 	}
@@ -148,13 +128,7 @@ func (u *undirected[K, T]) DFSByHash(startHash K, visit func(value T) bool) erro
 	return nil
 }
 
-func (u *undirected[K, T]) BFS(start T, visit func(value T) bool) error {
-	startHash := u.hash(start)
-
-	return u.BFSByHash(startHash, visit)
-}
-
-func (u *undirected[K, T]) BFSByHash(startHash K, visit func(value T) bool) error {
+func (u *undirected[K, T]) BFS(startHash K, visit func(value T) bool) error {
 	if _, ok := u.vertices[startHash]; !ok {
 		return fmt.Errorf("could not find start vertex with hash %v", startHash)
 	}
@@ -188,14 +162,7 @@ func (u *undirected[K, T]) BFSByHash(startHash K, visit func(value T) bool) erro
 	return nil
 }
 
-func (u *undirected[K, T]) CreatesCycle(source, target T) (bool, error) {
-	sourceHash := u.hash(source)
-	targetHash := u.hash(target)
-
-	return u.CreatesCycleByHashes(sourceHash, targetHash)
-}
-
-func (u *undirected[K, T]) CreatesCycleByHashes(sourceHash, targetHash K) (bool, error) {
+func (u *undirected[K, T]) CreatesCycle(sourceHash, targetHash K) (bool, error) {
 	source, ok := u.vertices[sourceHash]
 	if !ok {
 		return false, fmt.Errorf("could not find source vertex with hash %v", source)
@@ -236,13 +203,7 @@ func (u *undirected[K, T]) CreatesCycleByHashes(sourceHash, targetHash K) (bool,
 	return false, nil
 }
 
-func (u *undirected[K, T]) Degree(vertex T) (int, error) {
-	sourceHash := u.hash(vertex)
-
-	return u.DegreeByHash(sourceHash)
-}
-
-func (u *undirected[K, T]) DegreeByHash(vertexHash K) (int, error) {
+func (u *undirected[K, T]) GetDegree(vertexHash K) (int, error) {
 	if _, ok := u.vertices[vertexHash]; !ok {
 		return 0, fmt.Errorf("could not find vertex with hash %v", vertexHash)
 	}
@@ -265,14 +226,7 @@ func (u *undirected[K, T]) StronglyConnectedComponents() ([][]K, error) {
 
 // ShortestPath computes the shortest path between two vertices and returns the hashes of the
 // vertices forming that path. The current implementation uses Dijkstra with a priority queue.
-func (u *undirected[K, T]) ShortestPath(source, target T) ([]K, error) {
-	sourceHash := u.hash(source)
-	targetHash := u.hash(target)
-
-	return u.ShortestPathByHashes(sourceHash, targetHash)
-}
-
-func (u *undirected[K, T]) ShortestPathByHashes(sourceHash, targetHash K) ([]K, error) {
+func (u *undirected[K, T]) ShortestPath(sourceHash, targetHash K) ([]K, error) {
 	weights := make(map[K]float64)
 	visited := make(map[K]bool)
 	predecessors := make(map[K]K)

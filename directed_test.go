@@ -29,7 +29,7 @@ func TestDirected_Traits(t *testing.T) {
 	}
 }
 
-func TestDirected_Vertex(t *testing.T) {
+func TestDirected_AddVertex(t *testing.T) {
 	tests := map[string]struct {
 		vertices         []int
 		expectedVertices []int
@@ -48,7 +48,7 @@ func TestDirected_Vertex(t *testing.T) {
 		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			graph.Vertex(vertex)
+			graph.AddVertex(vertex)
 		}
 
 		for _, vertex := range test.vertices {
@@ -60,17 +60,13 @@ func TestDirected_Vertex(t *testing.T) {
 	}
 }
 
-func TestDirected_Edge(t *testing.T) {
-	TestDirected_EdgeByHashes(t)
-}
-
-func TestDirected_EdgeByHashes(t *testing.T) {
+func TestDirected_AddEdge(t *testing.T) {
 	tests := map[string]struct {
 		vertices      []int
 		edges         []Edge[int]
 		traits        *Traits
 		expectedEdges []Edge[int]
-		// Even though some of the EdgeByHashes calls might work, at least one of them could fail,
+		// Even though some of the AddEdge calls might work, at least one of them could fail,
 		// for example if the last call would introduce a cycle.
 		shouldFinallyFail bool
 	}{
@@ -138,19 +134,19 @@ func TestDirected_EdgeByHashes(t *testing.T) {
 		graph := newDirected(IntHash, test.traits)
 
 		for _, vertex := range test.vertices {
-			graph.Vertex(vertex)
+			graph.AddVertex(vertex)
 		}
 
 		var err error
 
 		for _, edge := range test.edges {
 			if len(edge.Properties.Attributes) == 0 {
-				err = graph.EdgeByHashes(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight))
+				err = graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight))
 			}
 			// If there are edge attributes, iterate over them and call EdgeAttribute for each
-			// entry. An edge should only have one attribute so that EdgeByHashes is invoked once.
+			// entry. An edge should only have one attribute so that AddEdge is invoked once.
 			for key, value := range edge.Properties.Attributes {
-				err = graph.EdgeByHashes(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight), EdgeAttribute(key, value))
+				err = graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight), EdgeAttribute(key, value))
 			}
 			if err != nil {
 				break
@@ -200,10 +196,6 @@ func TestDirected_EdgeByHashes(t *testing.T) {
 }
 
 func TestDirected_GetEdge(t *testing.T) {
-	TestDirected_GetEdgeByHashes(t)
-}
-
-func TestDirected_GetEdgeByHashes(t *testing.T) {
 	tests := map[string]struct {
 		vertices      []int
 		getEdgeHashes [2]int
@@ -223,15 +215,15 @@ func TestDirected_GetEdgeByHashes(t *testing.T) {
 	for name, test := range tests {
 		graph := newDirected(IntHash, &Traits{})
 		for _, vertex := range test.vertices {
-			graph.Vertex(vertex)
+			graph.AddVertex(vertex)
 		}
 
 		sourceHash := graph.hash(test.vertices[0])
 		targetHash := graph.hash(test.vertices[1])
 
-		graph.EdgeByHashes(sourceHash, targetHash)
+		graph.AddEdge(sourceHash, targetHash)
 
-		_, ok := graph.GetEdgeByHashes(test.getEdgeHashes[0], test.getEdgeHashes[1])
+		_, ok := graph.GetEdge(test.getEdgeHashes[0], test.getEdgeHashes[1])
 
 		if test.exists != ok {
 			t.Fatalf("%s: result expectancy doesn't match: expected %v, got %v", name, test.exists, ok)
@@ -240,10 +232,6 @@ func TestDirected_GetEdgeByHashes(t *testing.T) {
 }
 
 func TestDirected_DFS(t *testing.T) {
-	TestDirected_DFSByHash(t)
-}
-
-func TestDirected_DFSByHash(t *testing.T) {
 	tests := map[string]struct {
 		vertices       []int
 		edges          []Edge[int]
@@ -299,11 +287,11 @@ func TestDirected_DFSByHash(t *testing.T) {
 		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			graph.Vertex(vertex)
+			graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
-			if err := graph.Edge(edge.Source, edge.Target); err != nil {
+			if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
 				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
 			}
 		}
@@ -321,7 +309,7 @@ func TestDirected_DFSByHash(t *testing.T) {
 			return false
 		}
 
-		_ = graph.DFSByHash(test.startHash, visit)
+		_ = graph.DFS(test.startHash, visit)
 
 		if len(visited) != len(test.expectedVisits) {
 			t.Fatalf("%s: numbers of visited vertices don't match: expected %v, got %v", name, len(test.expectedVisits), len(visited))
@@ -336,10 +324,6 @@ func TestDirected_DFSByHash(t *testing.T) {
 }
 
 func TestDirected_BFS(t *testing.T) {
-	TestDirected_BFSByHash(t)
-}
-
-func TestDirected_BFSByHash(t *testing.T) {
 	tests := map[string]struct {
 		vertices       []int
 		edges          []Edge[int]
@@ -386,11 +370,11 @@ func TestDirected_BFSByHash(t *testing.T) {
 		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			graph.Vertex(vertex)
+			graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
-			if err := graph.Edge(edge.Source, edge.Target); err != nil {
+			if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
 				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
 			}
 		}
@@ -408,7 +392,7 @@ func TestDirected_BFSByHash(t *testing.T) {
 			return false
 		}
 
-		_ = graph.BFSByHash(test.startHash, visit)
+		_ = graph.BFS(test.startHash, visit)
 
 		for _, expectedVisit := range test.expectedVisits {
 			if _, ok := visited[expectedVisit]; !ok {
@@ -419,10 +403,6 @@ func TestDirected_BFSByHash(t *testing.T) {
 }
 
 func TestDirected_CreatesCycle(t *testing.T) {
-	TestDirected_CreatesCycleByHashes(t)
-}
-
-func TestDirected_CreatesCycleByHashes(t *testing.T) {
 	tests := map[string]struct {
 		vertices     []int
 		edges        []Edge[int]
@@ -479,11 +459,11 @@ func TestDirected_CreatesCycleByHashes(t *testing.T) {
 		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			graph.Vertex(vertex)
+			graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
-			if err := graph.Edge(edge.Source, edge.Target); err != nil {
+			if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
 				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
 			}
 		}
@@ -500,10 +480,6 @@ func TestDirected_CreatesCycleByHashes(t *testing.T) {
 }
 
 func TestDirected_Degree(t *testing.T) {
-	TestDirected_DegreeByHash(t)
-}
-
-func TestDirected_DegreeByHash(t *testing.T) {
 	tests := map[string]struct {
 		vertices       []int
 		edges          []Edge[int]
@@ -549,16 +525,16 @@ func TestDirected_DegreeByHash(t *testing.T) {
 		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			graph.Vertex(vertex)
+			graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
-			if err := graph.Edge(edge.Source, edge.Target); err != nil {
+			if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
 				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
 			}
 		}
 
-		degree, err := graph.DegreeByHash(test.vertex)
+		degree, err := graph.GetDegree(test.vertex)
 
 		if test.shouldFail != (err != nil) {
 			t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, (err != nil), err)
@@ -602,11 +578,11 @@ func TestDirected_StronglyConnectedComponents(t *testing.T) {
 		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			graph.Vertex(vertex)
+			graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
-			if err := graph.Edge(edge.Source, edge.Target); err != nil {
+			if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
 				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
 			}
 		}
@@ -628,11 +604,7 @@ func TestDirected_StronglyConnectedComponents(t *testing.T) {
 	}
 }
 
-func TestDirected_ShortesPath(t *testing.T) {
-	TestDirected_ShortestPathByHashes(t)
-}
-
-func TestDirected_ShortestPathByHashes(t *testing.T) {
+func TestDirected_ShortestPath(t *testing.T) {
 	tests := map[string]struct {
 		vertices             []string
 		edges                []Edge[string]
@@ -700,16 +672,16 @@ func TestDirected_ShortestPathByHashes(t *testing.T) {
 		graph := newDirected(StringHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			graph.Vertex(vertex)
+			graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
-			if err := graph.Edge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
+			if err := graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
 				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
 			}
 		}
 
-		shortestPath, err := graph.ShortestPathByHashes(test.sourceHash, test.targetHash)
+		shortestPath, err := graph.ShortestPath(test.sourceHash, test.targetHash)
 
 		if test.shouldFail != (err != nil) {
 			t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, (err != nil), err)
@@ -781,11 +753,11 @@ func TestDirected_AdjacencyList(t *testing.T) {
 		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			graph.Vertex(vertex)
+			graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
-			if err := graph.Edge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
+			if err := graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
 				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
 			}
 		}
@@ -916,11 +888,11 @@ func TestDirected_predecessors(t *testing.T) {
 		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			graph.Vertex(vertex)
+			graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
-			if err := graph.Edge(edge.Source, edge.Target); err != nil {
+			if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
 				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
 			}
 		}

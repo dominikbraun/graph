@@ -37,9 +37,9 @@ type statement struct {
 //
 //	g := graph.New(graph.IntHash, graph.Directed())
 //
-//	g.Vertex(1)
-//	g.Vertex(2)
-//	g.Vertex(3)
+//	g.AddVertex(1)
+//	g.AddVertex(2)
+//	g.AddVertex(3)
 //
 //	_ = g.Edge(1, 2)
 //	_ = g.Edge(1, 3)

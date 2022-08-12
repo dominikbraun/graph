@@ -71,18 +71,18 @@ func TestGenerateDOT(t *testing.T) {
 
 	for name, test := range tests {
 		for _, vertex := range test.vertices {
-			test.graph.Vertex(vertex)
+			test.graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
 			var err error
 			if len(edge.Properties.Attributes) == 0 {
-				err = test.graph.EdgeByHashes(edge.Source, edge.Target, graph.EdgeWeight(edge.Properties.Weight))
+				err = test.graph.AddEdge(edge.Source, edge.Target, graph.EdgeWeight(edge.Properties.Weight))
 			}
 			// If there are edge attributes, iterate over them and call EdgeAttribute for each
-			// entry. An edge should only have one attribute so that EdgeByHashes is invoked once.
+			// entry. An edge should only have one attribute so that AddEdge is invoked once.
 			for key, value := range edge.Properties.Attributes {
-				err = test.graph.EdgeByHashes(edge.Source, edge.Target, graph.EdgeWeight(edge.Properties.Weight), graph.EdgeAttribute(key, value))
+				err = test.graph.AddEdge(edge.Source, edge.Target, graph.EdgeWeight(edge.Properties.Weight), graph.EdgeAttribute(key, value))
 			}
 			if err != nil {
 				t.Fatalf("%s: failed to add edge: %s", name, err.Error())

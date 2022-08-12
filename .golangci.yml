@@ -1,0 +1,17 @@
+run:
+  timeout: 5m
+
+linters:
+  disable-all: true
+  enable:
+    - govet
+    - gofumpt
+
+linters-settings:
+  govet:
+    disable:
+      - stdmethods
+
+  gofumpt:
+    extra-rules: true
+    module-path: github.com/dominikbraun/graph

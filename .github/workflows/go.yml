@@ -4,7 +4,6 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ]
 
 jobs:
   test:
@@ -24,10 +23,9 @@ jobs:
         run: |
           go get -v -t -d ./...
       - name: Lint
-        run: |
-          go vet -stdmethods=false $(go list ./...)
-          go install mvdan.cc/gofumpt@latest
-          test -z "$(gofumpt -l -extra .)" || echo "Please run 'gofumpt -l -w -extra .'"
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: 1.48
       - name: Test
         run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 

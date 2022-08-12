@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2022-08-16
+
+### Added
+* Added the `Graph.AddVertex` method for adding a vertex. This replaces `Graph.Vertex`.
+* Added the `Graph.AddEdge` method for creating an edge. This replaces `Graph.Edge`.
+* Added the `Graph.Vertex` method for retrieving a vertex by its hash. This is not to be confused with the old `Graph.Vertex` function for adding vertices that got replaced with `Graph.AddVertex`.
+* Added the `Graph.Edge` method for retrieving an edge. This is not to be confused with the old `Graph.Edge` function for creating an edge that got replaced with `Graph.AddEdge`.
+* Added the `DFS` function.
+* Added the `BFS` function.
+* Added the `CreatesCycle` function.
+* Added the `StronglyConnectedComponents` function.
+* Added the `ShortestPath` function.
+
+### Removed
+* Removed the `Graph.EdgeByHashes` method. Use `Graph.AddEdge` instead.
+* Removed the `Graph.GetEdgeByHashes` method. Use `Graph.Edge` instead.
+* Removed the `Graph.DegreeByHash` method. Use `Graph.Degree` instead.
+* Removed the `Graph.DFS` and `Graph.DFSByHash` methods. Use `DFS` instead.
+* Removed the `Graph.BFS` and `Graph.BFSByHash` methods. Use `BFS` instead.
+* Removed the `Graph.CreatesCycle` and `Graph.CreatesCycleByHashes` methods. Use `CreatesCycle` instead.
+* Removed the `Graph.StronglyConnectedComponents` method. Use `StronglyConnectedComponents` instead.
+* Removed the `Graph.ShortestPath` and `Graph.ShortestPathByHash` methods. Use `ShortestPath` instead.
+
 ## [0.8.0] - 2022-08-01
 
 ### Added

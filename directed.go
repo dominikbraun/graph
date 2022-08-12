@@ -221,9 +221,7 @@ func (d *directed[K, T]) CreatesCycleByHashes(sourceHash, targetHash K) (bool, e
 			}
 			visited[currentHash] = true
 
-			for _, predecessor := range d.predecessors(currentHash) {
-				stack = append(stack, predecessor)
-			}
+			stack = append(stack, d.predecessors(currentHash)...)
 		}
 	}
 
@@ -277,7 +275,7 @@ func (d *directed[K, T]) StronglyConnectedComponents() ([][]K, error) {
 	}
 
 	for hash := range d.vertices {
-		if ok, _ := state.visited[hash]; !ok {
+		if ok := state.visited[hash]; !ok {
 			d.findSCC(hash, state)
 		}
 	}
@@ -295,7 +293,7 @@ func (d *directed[K, T]) findSCC(vertexHash K, state *sccState[K]) {
 	state.time++
 
 	for adjancency := range d.outEdges[vertexHash] {
-		if ok, _ := state.visited[adjancency]; !ok {
+		if ok := state.visited[adjancency]; !ok {
 			d.findSCC(adjancency, state)
 
 			smallestLowlink := math.Min(
@@ -307,7 +305,7 @@ func (d *directed[K, T]) findSCC(vertexHash K, state *sccState[K]) {
 			// If the adjacent vertex already is on the stack, the edge joining the current and the
 			// adjacent vertex is a back edge. Therefore, update the vertex' lowlink value to the
 			// index of the adjacent vertex if it is smaller than the lowlink value.
-			if ok, _ := state.onStack[adjancency]; ok {
+			if ok := state.onStack[adjancency]; ok {
 				smallestLowlink := math.Min(
 					float64(state.lowlink[vertexHash]),
 					float64(state.index[adjancency]),

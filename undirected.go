@@ -226,10 +226,7 @@ func (u *undirected[K, T]) CreatesCycleByHashes(sourceHash, targetHash K) (bool,
 				return true, nil
 			}
 			visited[currentHash] = true
-
-			for _, adjacency := range u.adjacencies(currentHash) {
-				stack = append(stack, adjacency)
-			}
+			stack = append(stack, u.adjacencies(currentHash)...)
 		}
 	}
 

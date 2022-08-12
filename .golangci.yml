@@ -8,6 +8,7 @@ linters:
     - gofumpt
     - deadcode
     - errcheck
+    - gosimple
 
 linters-settings:
   govet:

@@ -9,6 +9,7 @@ linters:
     - deadcode
     - errcheck
     - gosimple
+    - ineffassign
 
 linters-settings:
   govet:

@@ -40,15 +40,6 @@ type Graph[K comparable, T any] interface {
 	// Note that the current implementation uses recursive function calls.
 	StronglyConnectedComponents() ([][]K, error)
 
-	// ShortestPath computes the shortest path between a source and a target vertex using the edge
-	// weights and returns the hash values of the vertices forming that path. This search runs in
-	// O(|V|+|E|log(|V|)) time.
-	//
-	// The returned path includes the source and target vertices. If the target cannot be reached
-	// from the source vertex, ShortestPath returns an error. If there are multiple shortest paths,
-	// an arbitrary one will be returned.
-	ShortestPath(sourceHash, targetHash K) ([]K, error)
-
 	// AdjacencyMap computes and returns an adjacency map containing all vertices in the graph.
 	//
 	// There is an entry for each vertex, and each of those entries is another map whose keys are

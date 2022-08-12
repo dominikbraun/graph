@@ -1,6 +1,9 @@
 package graph
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
 // CreatesCycle determines whether an edge between the given source and target vertices would
 // introduce a cycle. It won't create that edge in any case.
@@ -56,4 +59,68 @@ func CreatesCycle[K comparable, T any](g Graph[K, T], source, target K) (bool, e
 	}
 
 	return false, nil
+}
+
+// ShortestPath computes the shortest path between a source and a target vertex using the edge
+// weights and returns the hash values of the vertices forming that path. This search runs in
+// O(|V|+|E|log(|V|)) time.
+//
+// The returned path includes the source and target vertices. If the target cannot be reached
+// from the source vertex, ShortestPath returns an error. If there are multiple shortest paths,
+// an arbitrary one will be returned.
+func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, error) {
+	weights := make(map[K]float64)
+	visited := make(map[K]bool)
+	predecessors := make(map[K]K)
+
+	weights[source] = 0
+	visited[target] = true
+
+	queue := newPriorityQueue[K]()
+	adjacencyMap := g.AdjacencyMap()
+
+	for hash := range adjacencyMap {
+		if hash != source {
+			weights[hash] = math.Inf(1)
+			visited[hash] = false
+		}
+
+		queue.Push(hash, weights[hash])
+	}
+
+	for queue.Len() > 0 {
+		vertex, _ := queue.Pop()
+		hasInfiniteWeight := math.IsInf(weights[vertex], 1)
+
+		if vertex == target {
+			targetPredecessors, err := g.Predecessors(target)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get predecessors of %v: %w", target, err)
+			}
+			if len(targetPredecessors) == 0 {
+				return nil, fmt.Errorf("vertex %v is not reachable from vertex %v", target, source)
+			}
+		}
+
+		for adjacency, edge := range adjacencyMap[vertex] {
+			weight := weights[vertex] + float64(edge.Properties.Weight)
+
+			if weight < weights[adjacency] && !hasInfiniteWeight {
+				weights[adjacency] = weight
+				predecessors[adjacency] = vertex
+				queue.DecreasePriority(adjacency, weight)
+			}
+		}
+	}
+
+	// Backtrack the predecessors from target to source. These are the least-weighted edges.
+	path := []K{target}
+	hashCursor := target
+
+	for hashCursor != source {
+		hashCursor = predecessors[hashCursor]
+		path = append([]K{hashCursor}, path...)
+	}
+
+	return path, nil
 }

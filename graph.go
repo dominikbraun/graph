@@ -30,23 +30,6 @@ type Graph[K comparable, T any] interface {
 	// does match.
 	Edge(sourceHash, targetHash K) (Edge[T], bool)
 
-	// CreatesCycle determines whether an edge between the given source and target vertices would
-	// introduce a cycle. It won't create that edge in any case.
-	//
-	// A potential edge would create a cycle if the target vertex is also a parent of the source
-	// vertex. Given a graph A-B-C-D, adding an edge DA would introduce a cycle:
-	//
-	//	A -
-	//	|  |
-	//	B  |
-	//	|  |
-	//	C  |
-	//	|  |
-	//	D -
-	//
-	// CreatesCycle backtracks the ingoing edges of D, resulting in a reverse walk C-B-A.
-	CreatesCycle(sourceHash, targetHash K) (bool, error)
-
 	// Degree determines and returns the degree of a given vertex.
 	Degree(vertexHash K) (int, error)
 

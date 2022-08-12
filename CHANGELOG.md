@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added the `Graph.AddEdge` method for creating an edge. This replaces `Graph.Edge`.
 * Added the `Graph.Vertex` method for retrieving a vertex by its hash. This is not to be confused with the old `Graph.Vertex` function for adding vertices that got replaced with `Graph.AddVertex`.
 * Added the `Graph.Edge` method for retrieving an edge. This is not to be confused with the old `Graph.Edge` function for creating an edge that got replaced with `Graph.AddEdge`.
+* Added the `Graph.Predecessors` function for retrieving a vertex' predecessors.
 * Added the `DFS` function.
 * Added the `BFS` function.
 * Added the `CreatesCycle` function.

@@ -60,7 +60,7 @@ func (d *directed[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Edge
 
 	// If the graph was declared to be acyclic, permit the creation of a cycle.
 	if d.traits.IsAcyclic {
-		createsCycle, err := d.CreatesCycle(sourceHash, targetHash)
+		createsCycle, err := CreatesCycle[K, T](d, sourceHash, targetHash)
 		if err != nil {
 			return fmt.Errorf("failed to check for cycles: %w", err)
 		}
@@ -97,47 +97,6 @@ func (d *directed[K, T]) Edge(sourceHash, targetHash K) (Edge[T], bool) {
 	}
 
 	return Edge[T]{}, false
-}
-
-func (d *directed[K, T]) CreatesCycle(sourceHash, targetHash K) (bool, error) {
-	source, ok := d.vertices[sourceHash]
-	if !ok {
-		return false, fmt.Errorf("could not find source vertex with hash %v", source)
-	}
-
-	_, ok = d.vertices[targetHash]
-	if !ok {
-		return false, fmt.Errorf("could not find target vertex with hash %v", source)
-	}
-
-	if sourceHash == targetHash {
-		return true, nil
-	}
-
-	stack := make([]K, 0)
-	visited := make(map[K]bool)
-
-	stack = append(stack, sourceHash)
-
-	for len(stack) > 0 {
-		currentHash := stack[len(stack)-1]
-		stack = stack[:len(stack)-1]
-
-		if _, ok := visited[currentHash]; !ok {
-			// If the current vertex, e.g. a predecessor of the source vertex, also is the target
-			// vertex, an edge between these two would create a cycle.
-			if currentHash == targetHash {
-				return true, nil
-			}
-			visited[currentHash] = true
-
-			for _, predecessor := range d.predecessors(currentHash) {
-				stack = append(stack, predecessor)
-			}
-		}
-	}
-
-	return false, nil
 }
 
 func (d *directed[K, T]) Degree(vertexHash K) (int, error) {

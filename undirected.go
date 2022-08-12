@@ -95,7 +95,8 @@ func (u *undirected[K, T]) GetEdgeByHashes(sourceHash, targetHash K) (Edge[T], b
 	// Therefore, if source[target] cannot be found, this function also looks for target[source].
 	sourceEdges, ok := u.outEdges[sourceHash]
 	if ok {
-		if edge, ok := sourceEdges[targetHash]; ok {
+		var edge Edge[T]
+		if edge, ok = sourceEdges[targetHash]; ok {
 			return edge, true
 		}
 	}

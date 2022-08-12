@@ -12,6 +12,7 @@ linters:
 
 linters-settings:
   govet:
+    enable-all: true
     disable:
       - stdmethods
 

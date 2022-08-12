@@ -191,15 +191,12 @@ func TestUndirected_DFS(t *testing.T) {
 
 func TestUndirected_DFSByHash(t *testing.T) {
 	tests := map[string]struct {
-		vertices  []int
-		edges     []Edge[int]
-		startHash int
-		// It is not possible to expect a strict list of vertices to be visited. If stopAtVertex is
-		// a neighbor of another vertex, that other vertex might be visited before stopAtVertex.
+		vertices              []int
+		edges                 []Edge[int]
 		expectedMinimumVisits []int
-		// In case stopAtVertex has downstream neighbors, those neighbors musn't be visited.
-		forbiddenVisits []int
-		stopAtVertex    int
+		forbiddenVisits       []int
+		startHash             int
+		stopAtVertex          int
 	}{
 		"traverse entire graph with 3 vertices": {
 			vertices: []int{1, 2, 3},
@@ -341,8 +338,8 @@ func TestUndirected_BFSByHash(t *testing.T) {
 	tests := map[string]struct {
 		vertices       []int
 		edges          []Edge[int]
-		startHash      int
 		expectedVisits []int
+		startHash      int
 		stopAtVertex   int
 	}{
 		"traverse entire graph with 3 vertices": {
@@ -693,9 +690,9 @@ func TestUndirected_ShortestPathByHashes(t *testing.T) {
 
 func TestUndirected_AdjacencyList(t *testing.T) {
 	tests := map[string]struct {
+		expected map[int]map[int]Edge[int]
 		vertices []int
 		edges    []Edge[int]
-		expected map[int]map[int]Edge[int]
 	}{
 		"Y-shaped graph": {
 			vertices: []int{1, 2, 3, 4},
@@ -851,8 +848,8 @@ func TestUndirected_adjacencies(t *testing.T) {
 	tests := map[string]struct {
 		vertices             []int
 		edges                []Edge[int]
-		vertex               int
 		expectedAdjancencies []int
+		vertex               int
 	}{
 		"graph with 3 vertices": {
 			vertices: []int{1, 2, 3},

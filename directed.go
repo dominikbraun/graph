@@ -252,12 +252,12 @@ func (d *directed[K, T]) DegreeByHash(vertexHash K) (int, error) {
 }
 
 type sccState[K comparable] struct {
-	components [][]K
-	stack      []K
 	onStack    map[K]bool
 	visited    map[K]bool
 	lowlink    map[K]int
 	index      map[K]int
+	components [][]K
+	stack      []K
 	time       int
 }
 

@@ -249,8 +249,8 @@ func TestDirected_DFSByHash(t *testing.T) {
 	tests := map[string]struct {
 		vertices       []int
 		edges          []Edge[int]
-		startHash      int
 		expectedVisits []int
+		startHash      int
 		stopAtVertex   int
 	}{
 		"traverse entire graph with 3 vertices": {
@@ -345,8 +345,8 @@ func TestDirected_BFSByHash(t *testing.T) {
 	tests := map[string]struct {
 		vertices       []int
 		edges          []Edge[int]
-		startHash      int
 		expectedVisits []int
+		startHash      int
 		stopAtVertex   int
 	}{
 		"traverse entire graph with 3 vertices": {
@@ -731,9 +731,9 @@ func TestDirected_ShortestPathByHashes(t *testing.T) {
 
 func TestDirected_AdjacencyList(t *testing.T) {
 	tests := map[string]struct {
+		expected map[int]map[int]Edge[int]
 		vertices []int
 		edges    []Edge[int]
-		expected map[int]map[int]Edge[int]
 	}{
 		"Y-shaped graph": {
 			vertices: []int{1, 2, 3, 4},
@@ -878,8 +878,8 @@ func TestDirected_predecessors(t *testing.T) {
 	tests := map[string]struct {
 		vertices             []int
 		edges                []Edge[int]
-		vertex               int
 		expectedPredecessors []int
+		vertex               int
 	}{
 		"graph with 3 vertices": {
 			vertices: []int{1, 2, 3},

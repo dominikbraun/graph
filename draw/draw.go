@@ -26,8 +26,8 @@ type description struct {
 type statement struct {
 	Source     interface{}
 	Target     interface{}
-	Weight     int
 	Attributes map[string]string
+	Weight     int
 }
 
 // DOT renders the given graph structure in DOT language into an io.Writer, for example a file. The
@@ -56,44 +56,44 @@ type statement struct {
 //
 //	go run main.go | dot -Tsvg > output.svg
 func DOT[K comparable, T any](g graph.Graph[K, T], w io.Writer) error {
-	description := generateDOT(g)
+	desc := generateDOT(g)
 
-	return renderDOT(w, description)
+	return renderDOT(w, desc)
 }
 
 func generateDOT[K comparable, T any](g graph.Graph[K, T]) description {
-	description := description{
+	desc := description{
 		GraphType:    "graph",
 		EdgeOperator: "--",
 		Statements:   make([]statement, 0),
 	}
 
 	if g.Traits().IsDirected {
-		description.GraphType = "digraph"
-		description.EdgeOperator = "->"
+		desc.GraphType = "digraph"
+		desc.EdgeOperator = "->"
 	}
 
 	for vertex, adjacencies := range g.AdjacencyMap() {
 		if len(adjacencies) == 0 {
-			statement := statement{
+			stmt := statement{
 				Source: vertex,
 			}
-			description.Statements = append(description.Statements, statement)
+			desc.Statements = append(desc.Statements, stmt)
 			continue
 		}
 
 		for adjacency, edge := range adjacencies {
-			statement := statement{
+			stmt := statement{
 				Source:     vertex,
 				Target:     adjacency,
 				Weight:     edge.Properties.Weight,
 				Attributes: edge.Properties.Attributes,
 			}
-			description.Statements = append(description.Statements, statement)
+			desc.Statements = append(desc.Statements, stmt)
 		}
 	}
 
-	return description
+	return desc
 }
 
 func renderDOT(w io.Writer, d description) error {

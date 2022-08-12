@@ -192,8 +192,8 @@ type Edge[T any] struct {
 //
 // The example above will create an edge with weight 2 and a "color" atttribute with value "red".
 type EdgeProperties struct {
-	Weight     int
 	Attributes map[string]string
+	Weight     int
 }
 
 // Hash is a hashing function that takes a vertex of type T and returns a hash value of type K.

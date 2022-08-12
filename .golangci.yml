@@ -12,6 +12,7 @@ linters:
     - ineffassign
     - staticcheck
     - typecheck
+    - unused
 
 linters-settings:
   govet:

@@ -34,6 +34,15 @@ func (d *directed[K, T]) AddVertex(value T) {
 	d.vertices[hash] = value
 }
 
+func (d *directed[K, T]) Vertex(hash K) (T, error) {
+	vertex, ok := d.vertices[hash]
+	if !ok {
+		return vertex, fmt.Errorf("vertex with hash %v doesn't exist", hash)
+	}
+
+	return vertex, nil
+}
+
 func (d *directed[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
 	source, ok := d.vertices[sourceHash]
 	if !ok {

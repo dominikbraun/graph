@@ -33,6 +33,15 @@ func (u *undirected[K, T]) AddVertex(value T) {
 	u.vertices[hash] = value
 }
 
+func (u *undirected[K, T]) Vertex(hash K) (T, error) {
+	vertex, ok := u.vertices[hash]
+	if !ok {
+		return vertex, fmt.Errorf("vertex with hash %v doesn't exist", hash)
+	}
+
+	return vertex, nil
+}
+
 func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
 	source, ok := u.vertices[sourceHash]
 	if !ok {

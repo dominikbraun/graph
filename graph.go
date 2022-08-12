@@ -11,6 +11,9 @@ type Graph[K comparable, T any] interface {
 	// This function is idempotent, but overwrites an existing vertex if the hash already exists.
 	AddVertex(value T)
 
+	// Vertex returns the vertex with the given hash or an error if the vertex doesn't exist.
+	Vertex(hash K) (T, error)
+
 	// AddEdge creates an edge between the source and the target vertex. If the Directed option has
 	// been called on the graph, this is a directed edge. Returns an error if either vertex doesn't
 	// exist or the edge already exists.

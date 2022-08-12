@@ -13,6 +13,7 @@ linters:
     - staticcheck
     - typecheck
     - unused
+    - varcheck
 
 linters-settings:
   govet:

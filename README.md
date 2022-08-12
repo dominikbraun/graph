@@ -36,18 +36,18 @@ go get github.com/dominikbraun/graph
 ```go
 g := graph.New(graph.IntHash)
 
-g.Vertex(1)
-g.Vertex(2)
-g.Vertex(3)
-g.Vertex(4)
-g.Vertex(5)
+g.AddVertex(1)
+g.AddVertex(2)
+g.AddVertex(3)
+g.AddVertex(4)
+g.AddVertex(5)
 
-_ = g.Edge(1, 2)
-_ = g.Edge(1, 4)
-_ = g.Edge(2, 3)
-_ = g.Edge(2, 4)
-_ = g.Edge(2, 5)
-_ = g.Edge(3, 5)
+_ = g.AddEdge(1, 2)
+_ = g.AddEdge(1, 4)
+_ = g.AddEdge(2, 3)
+_ = g.AddEdge(2, 4)
+_ = g.AddEdge(2, 5)
+_ = g.AddEdge(3, 5)
 ```
 
 ## Create a directed acyclic graph of integers
@@ -57,16 +57,16 @@ _ = g.Edge(3, 5)
 ```go
 g := graph.New(graph.IntHash, graph.Directed(), graph.Acyclic())
 
-g.Vertex(1)
-g.Vertex(2)
-g.Vertex(3)
-g.Vertex(4)
+g.AddVertex(1)
+g.AddVertex(2)
+g.AddVertex(3)
+g.AddVertex(4)
 
-_ = g.Edge(1, 2)
-_ = g.Edge(1, 3)
-_ = g.Edge(2, 3)
-_ = g.Edge(2, 4)
-_ = g.Edge(3, 4)
+_ = g.AddEdge(1, 2)
+_ = g.AddEdge(1, 3)
+_ = g.AddEdge(2, 3)
+_ = g.AddEdge(2, 4)
+_ = g.AddEdge(3, 4)
 ```
 
 ## Create a graph of a custom type
@@ -84,7 +84,7 @@ cityHash := func(c City) string {
 
 g := graph.New(cityHash)
 
-g.Vertex(london)
+g.AddVertex(london)
 ```
 
 ## Create a weighted graph
@@ -94,17 +94,17 @@ g.Vertex(london)
 ```go
 g := graph.New(cityHash, graph.Weighted())
 
-g.Vertex(london)
-g.Vertex(munich)
-g.Vertex(paris)
-g.Vertex(madrid)
+g.AddVertex(london)
+g.AddVertex(munich)
+g.AddVertex(paris)
+g.AddVertex(madrid)
 
-_ = g.Edge(london, munich, graph.EdgeWeight(3))
-_ = g.Edge(london, paris, graph.EdgeWeight(2))
-_ = g.Edge(london, madrid, graph.EdgeWeight(5))
-_ = g.Edge(munich, madrid, graph.EdgeWeight(6))
-_ = g.Edge(munich, paris, graph.EdgeWeight(2))
-_ = g.Edge(paris, madrid, graph.EdgeWeight(4))
+_ = g.AddEdge("london", "munich", graph.EdgeWeight(3))
+_ = g.AddEdge("london", "paris", graph.EdgeWeight(2))
+_ = g.AddEdge("london", "madrid", graph.EdgeWeight(5))
+_ = g.AddEdge("munich", "madrid", graph.EdgeWeight(6))
+_ = g.AddEdge("munich", "paris", graph.EdgeWeight(2))
+_ = g.AddEdge("paris", "madrid", graph.EdgeWeight(4))
 ```
 
 ## Perform a Depth-First Search
@@ -116,16 +116,16 @@ This example traverses and prints all vertices in the graph in DFS order.
 ```go
 g := graph.New(graph.IntHash, graph.Directed())
 
-g.Vertex(1)
-g.Vertex(2)
-g.Vertex(3)
-g.Vertex(4)
+g.AddVertex(1)
+g.AddVertex(2)
+g.AddVertex(3)
+g.AddVertex(4)
 
-_ = g.Edge(1, 2)
-_ = g.Edge(1, 3)
-_ = g.Edge(3, 4)
+_ = g.AddEdge(1, 2)
+_ = g.AddEdge(1, 3)
+_ = g.AddEdge(3, 4)
 
-_ = g.DFS(1, func(value int) bool {
+_ = graph.DFS(g, 1, func(value int) bool {
     fmt.Println(value)
     return false
 })
@@ -144,7 +144,7 @@ g := graph.New(graph.IntHash)
 
 // Add vertices and edges ...
 
-scc, _ := g.StronglyConnectedComponents()
+scc, _ := graph.StronglyConnectedComponents(g)
 
 fmt.Println(scc)
 ```
@@ -162,7 +162,7 @@ g := graph.New(graph.StringHash, graph.Weighted())
 
 // Add vertices and weighted edges ...
 
-path, _ := g.ShortestPath("A", "B")
+path, _ := graph.ShortestPath(g, "A", "B")
 
 fmt.Println(path)
 ```
@@ -178,12 +178,12 @@ fmt.Println(path)
 ```go
 g := graph.New(graph.IntHash, graph.Acyclic())
 
-g.Vertex(1)
-g.Vertex(2)
-g.Vertex(3)
+g.AddVertex(1)
+g.AddVertex(2)
+g.AddVertex(3)
 
-_ = g.Edge(1, 2)
-_ = g.Edge(1, 3)
+_ = g.AddEdge(1, 2)
+_ = g.AddEdge(1, 3)
 
 if err := g.Edge(2, 3); err != nil {
     panic(err)
@@ -201,12 +201,12 @@ The following example will generate a DOT description for `g` and write it into 
 ```go
 g := graph.New(graph.IntHash, graph.Directed())
 
-g.Vertex(1)
-g.Vertex(2)
-g.Vertex(3)
+g.AddVertex(1)
+g.AddVertex(2)
+g.AddVertex(3)
 
-_ = g.Edge(1, 2)
-_ = g.Edge(1, 3)
+_ = g.AddEdge(1, 2)
+_ = g.AddEdge(1, 3)
 
 file, _ := os.Create("./mygraph.gv")
 _ = draw.DOT(g, file)
@@ -225,7 +225,7 @@ into account when [visualizing a graph](#visualize-a-graph-using-graphviz). For 
 will be rendered in red color:
 
 ```go
-_ = g.Edge(1, 2, graph.EdgeAttribute("color", "red"))
+_ = g.AddEdge(1, 2, graph.EdgeAttribute("color", "red"))
 ```
 
 To get an overview of all supported attributes, take a look at the

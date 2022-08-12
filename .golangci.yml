@@ -11,6 +11,7 @@ linters:
     - gosimple
     - ineffassign
     - staticcheck
+    - typecheck
 
 linters-settings:
   govet:

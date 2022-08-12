@@ -195,7 +195,7 @@ func TestDirected_AddEdge(t *testing.T) {
 	}
 }
 
-func TestDirected_GetEdge(t *testing.T) {
+func TestDirected_Edge(t *testing.T) {
 	tests := map[string]struct {
 		vertices      []int
 		getEdgeHashes [2]int
@@ -221,9 +221,9 @@ func TestDirected_GetEdge(t *testing.T) {
 		sourceHash := graph.hash(test.vertices[0])
 		targetHash := graph.hash(test.vertices[1])
 
-		graph.AddEdge(sourceHash, targetHash)
+		_ = graph.AddEdge(sourceHash, targetHash)
 
-		_, ok := graph.GetEdge(test.getEdgeHashes[0], test.getEdgeHashes[1])
+		_, ok := graph.Edge(test.getEdgeHashes[0], test.getEdgeHashes[1])
 
 		if test.exists != ok {
 			t.Fatalf("%s: result expectancy doesn't match: expected %v, got %v", name, test.exists, ok)

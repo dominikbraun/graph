@@ -44,7 +44,7 @@ func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Ed
 		return fmt.Errorf("could not find target vertex with hash %v", targetHash)
 	}
 
-	if _, ok := u.GetEdge(sourceHash, targetHash); ok {
+	if _, ok := u.Edge(sourceHash, targetHash); ok {
 		return fmt.Errorf("an edge between vertices %v and %v already exists", sourceHash, targetHash)
 	}
 
@@ -76,7 +76,7 @@ func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Ed
 	return nil
 }
 
-func (u *undirected[K, T]) GetEdge(sourceHash, targetHash K) (Edge[T], bool) {
+func (u *undirected[K, T]) Edge(sourceHash, targetHash K) (Edge[T], bool) {
 	// In an undirected graph, since multigraphs aren't supported, the edge AB is the same as BA.
 	// Therefore, if source[target] cannot be found, this function also looks for target[source].
 	sourceEdges, ok := u.outEdges[sourceHash]

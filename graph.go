@@ -22,10 +22,10 @@ type Graph[K comparable, T any] interface {
 	//
 	AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error
 
-	// GetEdge returns the edge between two vertices. The second return value indicates whether the
+	// Edge returns the edge between two vertices. The second return value indicates whether the
 	// edge exists. If the graph is undirected, an edge with swapped source and target vertices
 	// does match.
-	GetEdge(sourceHash, targetHash K) (Edge[T], bool)
+	Edge(sourceHash, targetHash K) (Edge[T], bool)
 
 	// DFS performs a Depth-First Search on the graph, starting from the given vertex. The visit
 	// function will be invoked for each visited vertex. If it returns false, DFS will continue
@@ -95,7 +95,7 @@ type Graph[K comparable, T any] interface {
 	// introduce a cycle. It won't create that edge in any case.
 	//
 	// A potential edge would create a cycle if the target vertex is also a parent of the source
-	// vertex. Given a graoh A-B-C-D, adding an edge DA would introduce a cycle:
+	// vertex. Given a graph A-B-C-D, adding an edge DA would introduce a cycle:
 	//
 	//	A -
 	//	|  |
@@ -155,12 +155,12 @@ type Edge[T any] struct {
 	Properties EdgeProperties
 }
 
-// EdgeProperties represents a set of properties that each edge posesses. They can be set when
+// EdgeProperties represents a set of properties that each edge possesses. They can be set when
 // adding a new edge using the functional options provided by this library:
 //
 //	g.Edge("A", "B", graph.EdgeWeight(2), graph.EdgeAttribute("color", "red"))
 //
-// The example above will create an edge with weight 2 and a "color" atttribute with value "red".
+// The example above will create an edge with weight 2 and a "color" attribute with value "red".
 type EdgeProperties struct {
 	Weight     int
 	Attributes map[string]string

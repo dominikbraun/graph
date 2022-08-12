@@ -45,7 +45,7 @@ func (d *directed[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Edge
 		return fmt.Errorf("could not find target vertex with hash %v", targetHash)
 	}
 
-	if _, ok := d.GetEdge(sourceHash, targetHash); ok {
+	if _, ok := d.Edge(sourceHash, targetHash); ok {
 		return fmt.Errorf("an edge between vertices %v and %v already exists", sourceHash, targetHash)
 	}
 
@@ -77,7 +77,7 @@ func (d *directed[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Edge
 	return nil
 }
 
-func (d *directed[K, T]) GetEdge(sourceHash, targetHash K) (Edge[T], bool) {
+func (d *directed[K, T]) Edge(sourceHash, targetHash K) (Edge[T], bool) {
 	sourceEdges, ok := d.edges[sourceHash]
 	if !ok {
 		return Edge[T]{}, false

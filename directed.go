@@ -324,6 +324,24 @@ func (d *directed[K, T]) AdjacencyMap() map[K]map[K]Edge[K] {
 	return adjacencyMap
 }
 
+func (d *directed[K, T]) Predecessors(vertex K) (map[K]Edge[K], error) {
+	if _, ok := d.vertices[vertex]; !ok {
+		return nil, fmt.Errorf("vertex with hash %v doesn't exist", vertex)
+	}
+
+	predecessors := make(map[K]Edge[K])
+
+	for predecessor, edge := range d.inEdges[vertex] {
+		predecessors[predecessor] = Edge[K]{
+			Source:     vertex,
+			Target:     predecessor,
+			Properties: edge.Properties,
+		}
+	}
+
+	return predecessors, nil
+}
+
 func (d *directed[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	aSourceHash := d.hash(a.Source)
 	aTargetHash := d.hash(a.Target)

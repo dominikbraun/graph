@@ -6,6 +6,7 @@ linters:
   enable:
     - govet
     - gofumpt
+    - deadcode
 
 linters-settings:
   govet:

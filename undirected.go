@@ -105,72 +105,6 @@ func (u *undirected[K, T]) Edge(sourceHash, targetHash K) (Edge[T], bool) {
 	return Edge[T]{}, false
 }
 
-func (u *undirected[K, T]) DFS(startHash K, visit func(value T) bool) error {
-	if _, ok := u.vertices[startHash]; !ok {
-		return fmt.Errorf("could not find start vertex with hash %v", startHash)
-	}
-
-	stack := make([]K, 0)
-	visited := make(map[K]bool)
-
-	stack = append(stack, startHash)
-
-	for len(stack) > 0 {
-		currentHash := stack[len(stack)-1]
-		currentVertex := u.vertices[currentHash]
-
-		stack = stack[:len(stack)-1]
-
-		if _, ok := visited[currentHash]; !ok {
-			// Stop traversing the graph if the visit function returns true.
-			if visit(currentVertex) {
-				break
-			}
-			visited[currentHash] = true
-
-			for adjacency := range u.outEdges[currentHash] {
-				stack = append(stack, adjacency)
-			}
-		}
-	}
-
-	return nil
-}
-
-func (u *undirected[K, T]) BFS(startHash K, visit func(value T) bool) error {
-	if _, ok := u.vertices[startHash]; !ok {
-		return fmt.Errorf("could not find start vertex with hash %v", startHash)
-	}
-
-	queue := make([]K, 0)
-	visited := make(map[K]bool)
-
-	visited[startHash] = true
-	queue = append(queue, startHash)
-
-	for len(queue) > 0 {
-		currentHash := queue[0]
-		currentVertex := u.vertices[currentHash]
-
-		queue = queue[1:]
-
-		// Stop traversing the graph if the visit function returns true.
-		if visit(currentVertex) {
-			break
-		}
-
-		for adjacency := range u.outEdges[currentHash] {
-			if _, ok := visited[adjacency]; !ok {
-				visited[adjacency] = true
-				queue = append(queue, adjacency)
-			}
-		}
-
-	}
-
-	return nil
-}
-
 func (u *undirected[K, T]) CreatesCycle(sourceHash, targetHash K) (bool, error) {
 	source, ok := u.vertices[sourceHash]
 	if !ok {
@@ -212,7 +146,7 @@ func (u *undirected[K, T]) CreatesCycle(sourceHash, targetHash K) (bool, error) 
 	return false, nil
 }
 
-func (u *undirected[K, T]) GetDegree(vertexHash K) (int, error) {
+func (u *undirected[K, T]) Degree(vertexHash K) (int, error) {
 	if _, ok := u.vertices[vertexHash]; !ok {
 		return 0, fmt.Errorf("could not find vertex with hash %v", vertexHash)
 	}

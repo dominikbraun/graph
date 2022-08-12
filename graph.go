@@ -30,70 +30,6 @@ type Graph[K comparable, T any] interface {
 	// does match.
 	Edge(sourceHash, targetHash K) (Edge[T], bool)
 
-	// DFS performs a Depth-First Search on the graph, starting from the given vertex. The visit
-	// function will be invoked for each visited vertex. If it returns false, DFS will continue
-	// traversing the path, and if it returns true, the traversal will be stopped. In case the
-	// graph is diconnected, only the vertices joined with the starting vertex will be traversed.
-	//
-	// This example prints all vertices of the graph in DFS-order:
-	//
-	//	g := graph.New(graph.IntHash)
-	//
-	//	g.AddVertex(1)
-	//	g.AddVertex(2)
-	//	g.AddVertex(3)
-	//
-	//	_ = g.AddEdge(1, 2)
-	//	_ = g.AddEdge(2, 3)
-	//	_ = g.AddEdge(3, 1)
-	//
-	//	_ = g.DFS(1, func(value int) bool {
-	//		fmt.Println(value)
-	//		return false
-	//	})
-	//
-	// Similarily, if you have a graph of City vertices and the traversal should stop at London,
-	// the visit function would look as follows:
-	//
-	//	func(city City) bool {
-	//		return city.Name == "London"
-	//	}
-	//
-	// DFS is non-recursive and maintains a stack instead.
-	DFS(startHash K, visit func(value T) bool) error
-
-	// BFS performs a Breadth-First Search on the graph, starting from the given vertex. The visit
-	// function will be invoked for each visited vertex. If it returns false, BFS will continue
-	// traversing the path, and if it returns true, the traversal will be stopped. In case the
-	// graph is diconnected, only the vertices joined with the starting vertex will be traversed.
-	//
-	// This example prints all vertices of the graph in BFS-order:
-	//
-	//	g := graph.New(graph.IntHash)
-	//
-	//	g.AddVertex(1)
-	//	g.AddVertex(2)
-	//	g.AddVertex(3)
-	//
-	//	_ = g.AddEdge(1, 2)
-	//	_ = g.AddEdge(2, 3)
-	//	_ = g.AddEdge(3, 1)
-	//
-	//	_ = g.BFS(1, func(value int) bool {
-	//		fmt.Println(value)
-	//		return false
-	//	})
-	//
-	// Similarly, if you have a graph of City vertices and the traversal should stop at London, the
-	// visit function would look as follows:
-	//
-	//	func(city City) bool {
-	//		return city.Name == "London"
-	//	}
-	//
-	// BFS is non-recursive and maintains a stack instead.
-	BFS(startHash K, visit func(value T) bool) error
-
 	// CreatesCycle determines whether an edge between the given source and target vertices would
 	// introduce a cycle. It won't create that edge in any case.
 	//
@@ -111,8 +47,8 @@ type Graph[K comparable, T any] interface {
 	// CreatesCycle backtracks the ingoing edges of D, resulting in a reverse walk C-B-A.
 	CreatesCycle(sourceHash, targetHash K) (bool, error)
 
-	// GetDegree determines and returns the degree of a given vertex.
-	GetDegree(vertexHash K) (int, error)
+	// Degree determines and returns the degree of a given vertex.
+	Degree(vertexHash K) (int, error)
 
 	// StronglyConnectedComponents detects all strongly connected components within the graph and
 	// returns the hash values of the respective vertices for each component. This only works for

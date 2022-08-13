@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"errors"
 	"fmt"
 	"math"
 )
@@ -123,4 +124,95 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 	}
 
 	return path, nil
+}
+
+type sccState[K comparable] struct {
+	adjacencyMap map[K]map[K]Edge[K]
+	components   [][]K
+	stack        []K
+	onStack      map[K]bool
+	visited      map[K]bool
+	lowlink      map[K]int
+	index        map[K]int
+	time         int
+}
+
+// StronglyConnectedComponents detects all strongly connected components within the given graph
+// and returns the hashes of the vertices shaping these components, so each component is a []K.
+//
+// The current implementation uses Tarjan's algorithm and runs recursively.
+func StronglyConnectedComponents[K comparable, T any](g Graph[K, T]) ([][]K, error) {
+	if !g.Traits().IsDirected {
+		return nil, errors.New("SCCs can only be detected in directed graphs")
+	}
+
+	adjacencyMap := g.AdjacencyMap()
+
+	state := &sccState[K]{
+		adjacencyMap: adjacencyMap,
+		components:   make([][]K, 0),
+		stack:        make([]K, 0),
+		onStack:      make(map[K]bool),
+		visited:      make(map[K]bool),
+		lowlink:      make(map[K]int),
+		index:        make(map[K]int),
+	}
+
+	for hash := range state.adjacencyMap {
+		if ok, _ := state.visited[hash]; !ok {
+			findSCC[K](hash, state)
+		}
+	}
+
+	return state.components, nil
+}
+
+func findSCC[K comparable](vertexHash K, state *sccState[K]) {
+	state.stack = append(state.stack, vertexHash)
+	state.onStack[vertexHash] = true
+	state.visited[vertexHash] = true
+	state.index[vertexHash] = state.time
+	state.lowlink[vertexHash] = state.time
+
+	state.time++
+
+	for adjacency := range state.adjacencyMap[vertexHash] {
+		if ok, _ := state.visited[adjacency]; !ok {
+			findSCC(adjacency, state)
+
+			smallestLowlink := math.Min(
+				float64(state.lowlink[vertexHash]),
+				float64(state.lowlink[adjacency]),
+			)
+			state.lowlink[vertexHash] = int(smallestLowlink)
+		} else {
+			// If the adjacent vertex already is on the stack, the edge joining the current and the
+			// adjacent vertex is a back edge. Therefore, update the vertex' lowlink value to the
+			// index of the adjacent vertex if it is smaller than the lowlink value.
+			if ok, _ := state.onStack[adjacency]; ok {
+				smallestLowlink := math.Min(
+					float64(state.lowlink[vertexHash]),
+					float64(state.index[adjacency]),
+				)
+				state.lowlink[vertexHash] = int(smallestLowlink)
+			}
+		}
+	}
+
+	// If the lowlink value of the vertex is equal to its DFS index, this is th head vertex of a
+	// strongly connected component, shaped by this vertex and the vertices on the stack.
+	if state.lowlink[vertexHash] == state.index[vertexHash] {
+		var hash K
+		var component []K
+
+		for hash != vertexHash {
+			hash = state.stack[len(state.stack)-1]
+			state.stack = state.stack[:len(state.stack)-1]
+			state.onStack[hash] = false
+
+			component = append(component, hash)
+		}
+
+		state.components = append(state.components, component)
+	}
 }

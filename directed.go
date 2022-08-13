@@ -116,16 +116,6 @@ func (d *directed[K, T]) Degree(vertexHash K) (int, error) {
 	return degree, nil
 }
 
-type sccState[K comparable] struct {
-	components [][]K
-	stack      []K
-	onStack    map[K]bool
-	visited    map[K]bool
-	lowlink    map[K]int
-	index      map[K]int
-	time       int
-}
-
 // StronglyConnectedComponents searches strongly connected components within the graph, and returns
 // the hashes of the vertices shaping these components. The current implementation of this function
 // uses Tarjan's algorithm and runs recursively.

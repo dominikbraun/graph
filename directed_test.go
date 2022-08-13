@@ -298,64 +298,6 @@ func TestDirected_Degree(t *testing.T) {
 	}
 }
 
-func TestDirected_StronglyConnectedComponents(t *testing.T) {
-	tests := map[string]struct {
-		vertices     []int
-		edges        []Edge[int]
-		expectedSCCs [][]int
-	}{
-		"graph with SCCs as on img/scc.svg": {
-			vertices: []int{1, 2, 3, 4, 5, 6, 7, 8},
-			edges: []Edge[int]{
-				{Source: 1, Target: 2},
-				{Source: 2, Target: 3},
-				{Source: 2, Target: 5},
-				{Source: 2, Target: 6},
-				{Source: 3, Target: 4},
-				{Source: 3, Target: 7},
-				{Source: 4, Target: 3},
-				{Source: 4, Target: 8},
-				{Source: 5, Target: 1},
-				{Source: 5, Target: 6},
-				{Source: 6, Target: 7},
-				{Source: 7, Target: 6},
-				{Source: 8, Target: 4},
-				{Source: 8, Target: 7},
-			},
-			expectedSCCs: [][]int{{1, 2, 5}, {3, 4, 8}, {6, 7}},
-		},
-	}
-
-	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{})
-
-		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
-		}
-
-		for _, edge := range test.edges {
-			if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
-				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
-			}
-		}
-
-		sccs, _ := graph.StronglyConnectedComponents()
-		matchedSCCs := 0
-
-		for _, scc := range sccs {
-			for _, expectedSCC := range test.expectedSCCs {
-				if slicesAreEqual(scc, expectedSCC) {
-					matchedSCCs++
-				}
-			}
-		}
-
-		if matchedSCCs != len(test.expectedSCCs) {
-			t.Errorf("%s: expected SCCs don't match: expected %v, got %v", name, test.expectedSCCs, sccs)
-		}
-	}
-}
-
 func TestDirected_AdjacencyList(t *testing.T) {
 	tests := map[string]struct {
 		vertices []int

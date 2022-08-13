@@ -343,3 +343,87 @@ func TestUndirectedShortestPath(t *testing.T) {
 		}
 	}
 }
+
+func TestDirectedStronglyConnectedComponents(t *testing.T) {
+	tests := map[string]struct {
+		vertices     []int
+		edges        []Edge[int]
+		expectedSCCs [][]int
+	}{
+		"graph with SCCs as on img/scc.svg": {
+			vertices: []int{1, 2, 3, 4, 5, 6, 7, 8},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 2, Target: 3},
+				{Source: 2, Target: 5},
+				{Source: 2, Target: 6},
+				{Source: 3, Target: 4},
+				{Source: 3, Target: 7},
+				{Source: 4, Target: 3},
+				{Source: 4, Target: 8},
+				{Source: 5, Target: 1},
+				{Source: 5, Target: 6},
+				{Source: 6, Target: 7},
+				{Source: 7, Target: 6},
+				{Source: 8, Target: 4},
+				{Source: 8, Target: 7},
+			},
+			expectedSCCs: [][]int{{1, 2, 5}, {3, 4, 8}, {6, 7}},
+		},
+	}
+
+	for name, test := range tests {
+		graph := New(IntHash, Directed())
+
+		for _, vertex := range test.vertices {
+			graph.AddVertex(vertex)
+		}
+
+		for _, edge := range test.edges {
+			if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
+		}
+
+		sccs, _ := StronglyConnectedComponents(graph)
+		matchedSCCs := 0
+
+		for _, scc := range sccs {
+			for _, expectedSCC := range test.expectedSCCs {
+				if slicesAreEqual(scc, expectedSCC) {
+					matchedSCCs++
+				}
+			}
+		}
+
+		if matchedSCCs != len(test.expectedSCCs) {
+			t.Errorf("%s: expected SCCs don't match: expected %v, got %v", name, test.expectedSCCs, sccs)
+		}
+	}
+}
+
+func TestUndirectedStronglyConnectedComponents(t *testing.T) {
+	tests := map[string]struct {
+		expectedSCCs [][]int
+		shouldFail   bool
+	}{
+		"return error": {
+			expectedSCCs: nil,
+			shouldFail:   true,
+		},
+	}
+
+	for name, test := range tests {
+		graph := New(IntHash)
+
+		sccs, err := StronglyConnectedComponents(graph)
+
+		if test.shouldFail != (err != nil) {
+			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, (err != nil), err)
+		}
+
+		if test.expectedSCCs == nil && sccs != nil {
+			t.Errorf("%s: SCC expectancy doesn't match: expcted %v, got %v", name, test.expectedSCCs, sccs)
+		}
+	}
+}

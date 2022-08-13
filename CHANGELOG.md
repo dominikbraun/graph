@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Removed the `Graph.EdgeByHashes` method. Use `Graph.AddEdge` instead.
 * Removed the `Graph.GetEdgeByHashes` method. Use `Graph.Edge` instead.
 * Removed the `Graph.DegreeByHash` method. Use `Graph.Degree` instead.
+* Removed the `Graph.Degree` method.
 * Removed the `Graph.DFS` and `Graph.DFSByHash` methods. Use `DFS` instead.
 * Removed the `Graph.BFS` and `Graph.BFSByHash` methods. Use `BFS` instead.
 * Removed the `Graph.CreatesCycle` and `Graph.CreatesCycleByHashes` methods. Use `CreatesCycle` instead.

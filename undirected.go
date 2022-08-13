@@ -1,7 +1,6 @@
 package graph
 
 import (
-	"errors"
 	"fmt"
 )
 
@@ -102,27 +101,6 @@ func (u *undirected[K, T]) Edge(sourceHash, targetHash K) (Edge[T], bool) {
 	}
 
 	return Edge[T]{}, false
-}
-
-func (u *undirected[K, T]) Degree(vertexHash K) (int, error) {
-	if _, ok := u.vertices[vertexHash]; !ok {
-		return 0, fmt.Errorf("could not find vertex with hash %v", vertexHash)
-	}
-
-	degree := 0
-
-	// Adding the number of ingoing edges is sufficient for undirected graphs, because all edges
-	// exist twice (as two directed edges in opposite directions). Either dividing the number of
-	// ingoing + outgoing edges by 2 or just using the number of ingoing edges is appropriate.
-	if inEdges, ok := u.inEdges[vertexHash]; ok {
-		degree += len(inEdges)
-	}
-
-	return degree, nil
-}
-
-func (u *undirected[K, T]) StronglyConnectedComponents() ([][]K, error) {
-	return nil, errors.New("strongly connected components may only be detected in directed graphs")
 }
 
 func (u *undirected[K, T]) AdjacencyMap() map[K]map[K]Edge[K] {

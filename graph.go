@@ -30,9 +30,6 @@ type Graph[K comparable, T any] interface {
 	// does match.
 	Edge(sourceHash, targetHash K) (Edge[T], bool)
 
-	// Degree determines and returns the degree of a given vertex.
-	Degree(vertexHash K) (int, error)
-
 	// AdjacencyMap computes and returns an adjacency map containing all vertices in the graph.
 	//
 	// There is an entry for each vertex, and each of those entries is another map whose keys are

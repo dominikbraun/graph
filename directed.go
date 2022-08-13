@@ -28,9 +28,11 @@ func (d *directed[K, T]) Traits() *Traits {
 	return d.traits
 }
 
-func (d *directed[K, T]) AddVertex(value T) {
+func (d *directed[K, T]) AddVertex(value T) error {
 	hash := d.hash(value)
 	d.vertices[hash] = value
+
+	return nil
 }
 
 func (d *directed[K, T]) Vertex(hash K) (T, error) {

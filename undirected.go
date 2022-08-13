@@ -26,9 +26,11 @@ func (u *undirected[K, T]) Traits() *Traits {
 	return u.traits
 }
 
-func (u *undirected[K, T]) AddVertex(value T) {
+func (u *undirected[K, T]) AddVertex(value T) error {
 	hash := u.hash(value)
 	u.vertices[hash] = value
+
+	return nil
 }
 
 func (u *undirected[K, T]) Vertex(hash K) (T, error) {

@@ -71,7 +71,7 @@ func TestGenerateDOT(t *testing.T) {
 
 	for name, test := range tests {
 		for _, vertex := range test.vertices {
-			test.graph.AddVertex(vertex)
+			_ = test.graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {

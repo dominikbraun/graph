@@ -8,8 +8,11 @@ type Graph[K comparable, T any] interface {
 	Traits() *Traits
 
 	// AddVertex creates a new vertex in the graph, which won't be connected to another vertex yet.
-	// This function is idempotent, but overwrites an existing vertex if the hash already exists.
-	AddVertex(value T)
+	//
+	// Whether AddVertex is idempotent depends on the underlying vertex store implementation. By
+	// default, when using the in-memory store, an existing vertex will be overwritten, whereas
+	// other stores might return an error.
+	AddVertex(value T) error
 
 	// Vertex returns the vertex with the given hash or an error if the vertex doesn't exist.
 	Vertex(hash K) (T, error)

@@ -60,7 +60,7 @@ func TestDirectedDFS(t *testing.T) {
 		graph := New(IntHash, Directed())
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
@@ -196,7 +196,7 @@ func TestUndirectedDFS(t *testing.T) {
 		graph := New(IntHash)
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
@@ -287,7 +287,7 @@ func TestDirectedBFS(t *testing.T) {
 		graph := New(IntHash, Directed())
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
@@ -366,7 +366,7 @@ func TestUndirectedBFS(t *testing.T) {
 		graph := New(IntHash)
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {

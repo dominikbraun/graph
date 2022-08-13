@@ -59,7 +59,7 @@ func TestDirectedCreatesCycle(t *testing.T) {
 		graph := New(IntHash, Directed())
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
@@ -134,7 +134,7 @@ func TestUndirectedCreatesCycle(t *testing.T) {
 		graph := New(IntHash)
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
@@ -222,7 +222,7 @@ func TestDirectedShortestPath(t *testing.T) {
 		graph := New(StringHash, Directed())
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
@@ -317,7 +317,7 @@ func TestUndirectedShortestPath(t *testing.T) {
 		graph := New(StringHash)
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
@@ -376,7 +376,7 @@ func TestDirectedStronglyConnectedComponents(t *testing.T) {
 		graph := New(IntHash, Directed())
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {

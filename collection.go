@@ -6,14 +6,14 @@ import (
 )
 
 // priorityQueue is a priority queue implementation for minimum priorities, meaning that smaller
-// values will be prioritized. It maintains an descendently ordered list of priority items.
+// values will be prioritized. It maintains a descendingly ordered list of priority items.
 //
 // This is still a naive implementation, which is to be replaced with a binary heap implementation.
 type priorityQueue[T comparable] struct {
 	items []priorityItem[T]
 }
 
-// priorityItem is an item in the priority queue, consiting of a priority and an actual value.
+// priorityItem is an item in the priority queue, consisting of a priority and an actual value.
 type priorityItem[T comparable] struct {
 	value    T
 	priority float64

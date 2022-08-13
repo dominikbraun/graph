@@ -19,9 +19,9 @@ type Graph[K comparable, T any] interface {
 	// exist or the edge already exists.
 	//
 	// AddEdge accepts a variety of functional options to set further edge details such as the
-	// weightor an attribute:
+	// weight or an attribute:
 	//
-	//	_ = graph.Edge("A", "B", graph.EdgeWeight(4), graph.EdgeAttribute("label", "mylabel"))
+	//	_ = graph.Edge("A", "B", graph.EdgeWeight(4), graph.EdgeAttribute("label", "my-label"))
 	//
 	AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error
 

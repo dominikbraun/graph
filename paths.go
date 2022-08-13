@@ -78,7 +78,10 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 	visited[target] = true
 
 	queue := newPriorityQueue[K]()
-	adjacencyMap := g.AdjacencyMap()
+	adjacencyMap, err := g.AdjacencyMap()
+	if err != nil {
+		return nil, fmt.Errorf("could not get adjacency map: %w", err)
+	}
 
 	for hash := range adjacencyMap {
 		if hash != source {
@@ -146,7 +149,10 @@ func StronglyConnectedComponents[K comparable, T any](g Graph[K, T]) ([][]K, err
 		return nil, errors.New("SCCs can only be detected in directed graphs")
 	}
 
-	adjacencyMap := g.AdjacencyMap()
+	adjacencyMap, err := g.AdjacencyMap()
+	if err != nil {
+		return nil, fmt.Errorf("could not get adjacency map: %w", err)
+	}
 
 	state := &sccState[K]{
 		adjacencyMap: adjacencyMap,

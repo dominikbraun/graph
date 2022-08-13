@@ -33,7 +33,10 @@ import "fmt"
 //
 // DFS is non-recursive and maintains a stack instead.
 func DFS[K comparable, T any](g Graph[K, T], start K, visit func(T) bool) error {
-	adjacencyMap := g.AdjacencyMap()
+	adjacencyMap, err := g.AdjacencyMap()
+	if err != nil {
+		return fmt.Errorf("could not get adjacency map: %w", err)
+	}
 
 	if _, ok := adjacencyMap[start]; !ok {
 		return fmt.Errorf("could not find start vertex with hash %v", start)
@@ -97,7 +100,10 @@ func DFS[K comparable, T any](g Graph[K, T], start K, visit func(T) bool) error 
 //
 // BFS is non-recursive and maintains a stack instead.
 func BFS[K comparable, T any](g Graph[K, T], start K, visit func(T) bool) error {
-	adjacencyMap := g.AdjacencyMap()
+	adjacencyMap, err := g.AdjacencyMap()
+	if err != nil {
+		return fmt.Errorf("could not get adjacency map: %w", err)
+	}
 
 	if _, ok := adjacencyMap[start]; !ok {
 		return fmt.Errorf("could not find start vertex with hash %v", start)

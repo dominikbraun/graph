@@ -46,7 +46,7 @@ type Graph[K comparable, T any] interface {
 	//	}
 	//
 	// This design makes AdjacencyMap suitable for a wide variety of scenarios and demands.
-	AdjacencyMap() map[K]map[K]Edge[K]
+	AdjacencyMap() (map[K]map[K]Edge[K], error)
 
 	// Predecessors determines and returns the predecessors of the vertex with the given hash.
 	//

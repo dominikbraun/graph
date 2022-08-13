@@ -247,7 +247,7 @@ func TestUndirected_AdjacencyList(t *testing.T) {
 			}
 		}
 
-		adjacencyMap := graph.AdjacencyMap()
+		adjacencyMap, _ := graph.AdjacencyMap()
 
 		for expectedVertex, expectedAdjacencies := range test.expected {
 			adjacencies, ok := adjacencyMap[expectedVertex]

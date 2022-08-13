@@ -89,7 +89,7 @@ func TestGenerateDOT(t *testing.T) {
 			}
 		}
 
-		description := generateDOT(test.graph)
+		description, _ := generateDOT(test.graph)
 
 		if description.GraphType != test.expected.GraphType {
 			t.Errorf("%s: graph type expectancy doesn't match: expected %v, got %v", name, test.expected.GraphType, description.GraphType)
@@ -162,7 +162,7 @@ func TestRenderDOT(t *testing.T) {
 
 	for name, test := range tests {
 		buf := new(bytes.Buffer)
-		renderDOT(buf, test.description)
+		_ = renderDOT(buf, test.description)
 
 		output := normalizeOutput(buf.String())
 		expected := normalizeOutput(test.expected)

@@ -98,7 +98,7 @@ func (d *directed[K, T]) Edge(sourceHash, targetHash K) (Edge[T], bool) {
 	return Edge[T]{}, false
 }
 
-func (d *directed[K, T]) AdjacencyMap() map[K]map[K]Edge[K] {
+func (d *directed[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {
 	adjacencyMap := make(map[K]map[K]Edge[K])
 
 	// Create an entry for each vertex to guarantee that all vertices are contained and its
@@ -120,7 +120,7 @@ func (d *directed[K, T]) AdjacencyMap() map[K]map[K]Edge[K] {
 		}
 	}
 
-	return adjacencyMap
+	return adjacencyMap, nil
 }
 
 func (d *directed[K, T]) Predecessors(vertex K) (map[K]Edge[K], error) {

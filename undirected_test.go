@@ -138,6 +138,7 @@ func TestUndirected_AddEdge(t *testing.T) {
 	}
 }
 
+// ToDo(dominikbraun): Rewrite this test and its structure.
 func TestUndirected_Edge(t *testing.T) {
 	tests := map[string]struct {
 		vertices      []int
@@ -159,7 +160,7 @@ func TestUndirected_Edge(t *testing.T) {
 		graph := newUndirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		sourceHash := graph.hash(test.vertices[0])
@@ -167,10 +168,10 @@ func TestUndirected_Edge(t *testing.T) {
 
 		_ = graph.AddEdge(sourceHash, targetHash)
 
-		_, ok := graph.Edge(test.getEdgeHashes[0], test.getEdgeHashes[1])
+		_, err := graph.Edge(test.getEdgeHashes[0], test.getEdgeHashes[1])
 
-		if test.exists != ok {
-			t.Fatalf("%s: result expectancy doesn't match: expected %v, got %v", name, test.exists, ok)
+		if test.exists != (err == nil) {
+			t.Fatalf("%s: result expectancy doesn't match: expected %v, got %v", name, test.exists, err)
 		}
 	}
 }

@@ -215,7 +215,7 @@ func TestDirected_Edge(t *testing.T) {
 	for name, test := range tests {
 		graph := newDirected(IntHash, &Traits{})
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		sourceHash := graph.hash(test.vertices[0])
@@ -223,10 +223,10 @@ func TestDirected_Edge(t *testing.T) {
 
 		_ = graph.AddEdge(sourceHash, targetHash)
 
-		_, ok := graph.Edge(test.getEdgeHashes[0], test.getEdgeHashes[1])
+		_, err := graph.Edge(test.getEdgeHashes[0], test.getEdgeHashes[1])
 
-		if test.exists != ok {
-			t.Fatalf("%s: result expectancy doesn't match: expected %v, got %v", name, test.exists, ok)
+		if test.exists != (err == nil) {
+			t.Fatalf("%s: result expectancy doesn't match: expected %v, got %v", name, test.exists, err)
 		}
 	}
 }

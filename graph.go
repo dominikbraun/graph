@@ -1,5 +1,12 @@
 package graph
 
+import "errors"
+
+var (
+	// ErrEdgeNotFound will be returned when a desired edge cannot be found.
+	ErrEdgeNotFound = errors.New("edge not found")
+)
+
 // Graph represents a generic graph data structure consisting of vertices and edges. Its vertices
 // are of type T, and each vertex is identified by a hash of type K.
 type Graph[K comparable, T any] interface {
@@ -28,10 +35,9 @@ type Graph[K comparable, T any] interface {
 	//
 	AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error
 
-	// Edge returns the edge between two vertices. The second return value indicates whether the
-	// edge exists. If the graph is undirected, an edge with swapped source and target vertices
-	// does match.
-	Edge(sourceHash, targetHash K) (Edge[T], bool)
+	// Edge returns the edge joining two given vertices or an error if the edge doesn't exist. In an
+	// undirected graph, an edge with swapped source and target vertices does match.
+	Edge(sourceHash, targetHash K) (Edge[T], error)
 
 	// AdjacencyMap computes and returns an adjacency map containing all vertices in the graph.
 	//

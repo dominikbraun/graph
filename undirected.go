@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -53,7 +54,7 @@ func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Ed
 		return fmt.Errorf("could not find target vertex with hash %v", targetHash)
 	}
 
-	if _, ok := u.Edge(sourceHash, targetHash); ok {
+	if _, err := u.Edge(sourceHash, targetHash); !errors.Is(err, ErrEdgeNotFound) {
 		return fmt.Errorf("an edge between vertices %v and %v already exists", sourceHash, targetHash)
 	}
 
@@ -85,24 +86,24 @@ func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Ed
 	return nil
 }
 
-func (u *undirected[K, T]) Edge(sourceHash, targetHash K) (Edge[T], bool) {
+func (u *undirected[K, T]) Edge(sourceHash, targetHash K) (Edge[T], error) {
 	// In an undirected graph, since multigraphs aren't supported, the edge AB is the same as BA.
 	// Therefore, if source[target] cannot be found, this function also looks for target[source].
 	sourceEdges, ok := u.outEdges[sourceHash]
 	if ok {
 		if edge, ok := sourceEdges[targetHash]; ok {
-			return edge, true
+			return edge, nil
 		}
 	}
 
 	targetEdges, ok := u.outEdges[targetHash]
 	if ok {
 		if edge, ok := targetEdges[sourceHash]; ok {
-			return edge, ok
+			return edge, nil
 		}
 	}
 
-	return Edge[T]{}, false
+	return Edge[T]{}, ErrEdgeNotFound
 }
 
 func (u *undirected[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {

@@ -134,7 +134,7 @@ type sccState[K comparable] struct {
 	components   [][]K
 	stack        []K
 	onStack      map[K]bool
-	visited      map[K]bool
+	visited      map[K]struct{}
 	lowlink      map[K]int
 	index        map[K]int
 	time         int
@@ -159,13 +159,13 @@ func StronglyConnectedComponents[K comparable, T any](g Graph[K, T]) ([][]K, err
 		components:   make([][]K, 0),
 		stack:        make([]K, 0),
 		onStack:      make(map[K]bool),
-		visited:      make(map[K]bool),
+		visited:      make(map[K]struct{}),
 		lowlink:      make(map[K]int),
 		index:        make(map[K]int),
 	}
 
 	for hash := range state.adjacencyMap {
-		if ok, _ := state.visited[hash]; !ok {
+		if _, ok := state.visited[hash]; !ok {
 			findSCC[K](hash, state)
 		}
 	}
@@ -176,14 +176,14 @@ func StronglyConnectedComponents[K comparable, T any](g Graph[K, T]) ([][]K, err
 func findSCC[K comparable](vertexHash K, state *sccState[K]) {
 	state.stack = append(state.stack, vertexHash)
 	state.onStack[vertexHash] = true
-	state.visited[vertexHash] = true
+	state.visited[vertexHash] = struct{}{}
 	state.index[vertexHash] = state.time
 	state.lowlink[vertexHash] = state.time
 
 	state.time++
 
 	for adjacency := range state.adjacencyMap[vertexHash] {
-		if ok, _ := state.visited[adjacency]; !ok {
+		if _, ok := state.visited[adjacency]; !ok {
 			findSCC(adjacency, state)
 
 			smallestLowlink := math.Min(
@@ -195,7 +195,7 @@ func findSCC[K comparable](vertexHash K, state *sccState[K]) {
 			// If the adjacent vertex already is on the stack, the edge joining the current and the
 			// adjacent vertex is a back edge. Therefore, update the vertex' lowlink value to the
 			// index of the adjacent vertex if it is smaller than the lowlink value.
-			if ok, _ := state.onStack[adjacency]; ok {
+			if state.onStack[adjacency] {
 				smallestLowlink := math.Min(
 					float64(state.lowlink[vertexHash]),
 					float64(state.index[adjacency]),

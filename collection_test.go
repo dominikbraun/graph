@@ -90,9 +90,9 @@ func TestPriorityQueue_Pop(t *testing.T) {
 func TestPriorityQueue_DecreasePriority(t *testing.T) {
 	tests := map[string]struct {
 		items                 []priorityItem[int]
+		expectedPriorityItems []priorityItem[int]
 		decreaseItem          int
 		decreasePriority      float64
-		expectedPriorityItems []priorityItem[int]
 	}{
 		"decrease 30 to priority 5": {
 			items: []priorityItem[int]{
@@ -188,10 +188,10 @@ func TestPriorityQueue_Len(t *testing.T) {
 func TestPriorityQueue_insertItemAt(t *testing.T) {
 	tests := map[string]struct {
 		items                 []priorityItem[int]
+		expectedPriorityItems []priorityItem[int]
 		insertItem            int
 		insertPriority        float64
 		insertIndex           int
-		expectedPriorityItems []priorityItem[int]
 	}{
 		"insert in the middle of the queue": {
 			items: []priorityItem[int]{

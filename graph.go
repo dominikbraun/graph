@@ -10,7 +10,6 @@ var (
 // Graph represents a generic graph data structure consisting of vertices and edges. Its vertices
 // are of type T, and each vertex is identified by a hash of type K.
 type Graph[K comparable, T any] interface {
-
 	// Traits returns the graph's traits. Those traits must be set when creating a graph using New.
 	Traits() *Traits
 
@@ -82,8 +81,8 @@ type Edge[T any] struct {
 //
 // The example above will create an edge with weight 2 and a "color" attribute with value "red".
 type EdgeProperties struct {
-	Weight     int
 	Attributes map[string]string
+	Weight     int
 }
 
 // Hash is a hashing function that takes a vertex of type T and returns a hash value of type K.

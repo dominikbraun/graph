@@ -1,0 +1,26 @@
+run:
+  timeout: 5m
+
+linters:
+  disable-all: true
+  enable:
+    - govet
+    - gofumpt
+    - deadcode
+    - errcheck
+    - gosimple
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - varcheck
+
+linters-settings:
+  govet:
+    enable-all: true
+    disable:
+      - stdmethods
+
+  gofumpt:
+    extra-rules: true
+    module-path: github.com/dominikbraun/graph

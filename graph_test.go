@@ -10,8 +10,8 @@ func TestNew(t *testing.T) {
 	undirectedType := reflect.TypeOf(&undirected[int, int]{})
 
 	tests := map[string]struct {
-		options      []func(*Traits)
 		expectedType reflect.Type
+		options      []func(*Traits)
 	}{
 		"no options": {
 			options:      []func(*Traits){},
@@ -75,8 +75,8 @@ func TestIntHash(t *testing.T) {
 
 func TestEdgeWeight(t *testing.T) {
 	tests := map[string]struct {
-		weight   int
 		expected EdgeProperties
+		weight   int
 	}{
 		"weight 4": {
 			weight: 4,

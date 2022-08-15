@@ -2,10 +2,8 @@ package graph
 
 import "errors"
 
-var (
-	// ErrEdgeNotFound will be returned when a desired edge cannot be found.
-	ErrEdgeNotFound = errors.New("edge not found")
-)
+// ErrEdgeNotFound will be returned when a desired edge cannot be found.
+var ErrEdgeNotFound = errors.New("edge not found")
 
 // Graph represents a generic graph data structure consisting of vertices and edges. Its vertices
 // are of type T, and each vertex is identified by a hash of type K.

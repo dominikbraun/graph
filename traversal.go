@@ -60,7 +60,7 @@ func DFS[K comparable, T any](g Graph[K, T], start K, visit func(T) bool) error 
 			}
 			visited[currentHash] = true
 
-			for adjacency, _ := range adjacencyMap[currentHash] {
+			for adjacency := range adjacencyMap[currentHash] {
 				stack = append(stack, adjacency)
 			}
 		}

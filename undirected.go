@@ -89,8 +89,7 @@ func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Ed
 func (u *undirected[K, T]) Edge(sourceHash, targetHash K) (Edge[T], error) {
 	// In an undirected graph, since multigraphs aren't supported, the edge AB is the same as BA.
 	// Therefore, if source[target] cannot be found, this function also looks for target[source].
-	sourceEdges, ok := u.outEdges[sourceHash]
-	if ok {
+	if sourceEdges, ok := u.outEdges[sourceHash]; ok {
 		if edge, ok := sourceEdges[targetHash]; ok {
 			return edge, nil
 		}

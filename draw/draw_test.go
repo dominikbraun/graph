@@ -89,18 +89,18 @@ func TestGenerateDOT(t *testing.T) {
 			}
 		}
 
-		description, _ := generateDOT(test.graph)
+		desc, _ := generateDOT(test.graph)
 
-		if description.GraphType != test.expected.GraphType {
-			t.Errorf("%s: graph type expectancy doesn't match: expected %v, got %v", name, test.expected.GraphType, description.GraphType)
+		if desc.GraphType != test.expected.GraphType {
+			t.Errorf("%s: graph type expectancy doesn't match: expected %v, got %v", name, test.expected.GraphType, desc.GraphType)
 		}
 
-		if description.EdgeOperator != test.expected.EdgeOperator {
-			t.Errorf("%s: edge operator expectancy doesn't match: expected %v, got %v", name, test.expected.EdgeOperator, description.EdgeOperator)
+		if desc.EdgeOperator != test.expected.EdgeOperator {
+			t.Errorf("%s: edge operator expectancy doesn't match: expected %v, got %v", name, test.expected.EdgeOperator, desc.EdgeOperator)
 		}
 
-		if !slicesAreEqual(description.Statements, test.expected.Statements, statementsAreEqual) {
-			t.Errorf("%s: statements expectancy doesn't match: expected %v, got %v", name, test.expected.Statements, description.Statements)
+		if !slicesAreEqual(desc.Statements, test.expected.Statements, statementsAreEqual) {
+			t.Errorf("%s: statements expectancy doesn't match: expected %v, got %v", name, test.expected.Statements, desc.Statements)
 		}
 	}
 }
@@ -173,7 +173,7 @@ func TestRenderDOT(t *testing.T) {
 	}
 }
 
-func slicesAreEqual[T any](a []T, b []T, equals func(a, b T) bool) bool {
+func slicesAreEqual[T any](a, b []T, equals func(a, b T) bool) bool {
 	if len(a) != len(b) {
 		return false
 	}

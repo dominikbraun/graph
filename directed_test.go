@@ -437,7 +437,7 @@ func TestDirected_predecessors(t *testing.T) {
 	}
 }
 
-func slicesAreEqual[T comparable](a []T, b []T) bool {
+func slicesAreEqual[T comparable](a, b []T) bool {
 	if len(a) != len(b) {
 		return false
 	}

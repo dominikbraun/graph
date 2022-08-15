@@ -48,7 +48,7 @@ func TestUndirected_AddVertex(t *testing.T) {
 		graph := newUndirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		for _, vertex := range test.vertices {
@@ -99,7 +99,7 @@ func TestUndirected_AddEdge(t *testing.T) {
 		graph := newUndirected(IntHash, test.traits)
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		var err error
@@ -239,7 +239,7 @@ func TestUndirected_AdjacencyList(t *testing.T) {
 		graph := newUndirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
@@ -408,7 +408,7 @@ func TestUndirected_adjacencies(t *testing.T) {
 		graph := newUndirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {

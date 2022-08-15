@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added the `CreatesCycle` function.
 * Added the `StronglyConnectedComponents` function.
 * Added the `ShortestPath` function.
+* Added the `ErrEdgeNotFound` error indicating that a desired edge could not be found.
 
 ### Removed
 * Removed the `Graph.EdgeByHashes` method. Use `Graph.AddEdge` instead.

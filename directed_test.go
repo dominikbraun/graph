@@ -48,7 +48,7 @@ func TestDirected_AddVertex(t *testing.T) {
 		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		for _, vertex := range test.vertices {
@@ -134,7 +134,7 @@ func TestDirected_AddEdge(t *testing.T) {
 		graph := newDirected(IntHash, test.traits)
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		var err error
@@ -285,7 +285,7 @@ func TestDirected_AdjacencyList(t *testing.T) {
 		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
@@ -420,7 +420,7 @@ func TestDirected_predecessors(t *testing.T) {
 		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {

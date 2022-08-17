@@ -71,25 +71,25 @@ func TestGenerateDOT(t *testing.T) {
 
 	for name, test := range tests {
 		for _, vertex := range test.vertices {
-			test.graph.Vertex(vertex)
+			_ = test.graph.AddVertex(vertex)
 		}
 
 		for _, edge := range test.edges {
 			var err error
 			if len(edge.Properties.Attributes) == 0 {
-				err = test.graph.EdgeByHashes(edge.Source, edge.Target, graph.EdgeWeight(edge.Properties.Weight))
+				err = test.graph.AddEdge(edge.Source, edge.Target, graph.EdgeWeight(edge.Properties.Weight))
 			}
 			// If there are edge attributes, iterate over them and call EdgeAttribute for each
-			// entry. An edge should only have one attribute so that EdgeByHashes is invoked once.
+			// entry. An edge should only have one attribute so that AddEdge is invoked once.
 			for key, value := range edge.Properties.Attributes {
-				err = test.graph.EdgeByHashes(edge.Source, edge.Target, graph.EdgeWeight(edge.Properties.Weight), graph.EdgeAttribute(key, value))
+				err = test.graph.AddEdge(edge.Source, edge.Target, graph.EdgeWeight(edge.Properties.Weight), graph.EdgeAttribute(key, value))
 			}
 			if err != nil {
 				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
 			}
 		}
 
-		desc := generateDOT(test.graph)
+		desc, _ := generateDOT(test.graph)
 
 		if desc.GraphType != test.expected.GraphType {
 			t.Errorf("%s: graph type expectancy doesn't match: expected %v, got %v", name, test.expected.GraphType, desc.GraphType)
@@ -107,8 +107,8 @@ func TestGenerateDOT(t *testing.T) {
 
 func TestRenderDOT(t *testing.T) {
 	tests := map[string]struct {
-		expected    string
 		description description
+		expected    string
 	}{
 		"3-vertex directed graph": {
 			description: description{
@@ -162,9 +162,7 @@ func TestRenderDOT(t *testing.T) {
 
 	for name, test := range tests {
 		buf := new(bytes.Buffer)
-		if err := renderDOT(buf, test.description); err != nil {
-			t.Fatal("unexpected error", err)
-		}
+		_ = renderDOT(buf, test.description)
 
 		output := normalizeOutput(buf.String())
 		expected := normalizeOutput(test.expected)

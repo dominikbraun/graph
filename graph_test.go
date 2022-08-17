@@ -103,12 +103,12 @@ func TestEdgeAttribute(t *testing.T) {
 		value    string
 		expected EdgeProperties
 	}{
-		"attribute label=mylabel": {
+		"attribute label=my-label": {
 			key:   "label",
-			value: "mylabel",
+			value: "my-label",
 			expected: EdgeProperties{
 				Attributes: map[string]string{
-					"label": "mylabel",
+					"label": "my-label",
 				},
 			},
 		},

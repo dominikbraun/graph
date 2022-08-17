@@ -166,7 +166,7 @@ func StronglyConnectedComponents[K comparable, T any](g Graph[K, T]) ([][]K, err
 
 	for hash := range state.adjacencyMap {
 		if _, ok := state.visited[hash]; !ok {
-			findSCC[K](hash, state)
+			findSCC(hash, state)
 		}
 	}
 

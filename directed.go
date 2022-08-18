@@ -6,24 +6,16 @@ import (
 )
 
 type directed[K comparable, T any] struct {
-	hash             Hash[K, T]
-	traits           *Traits
-	vertices         map[K]T
-	vertexProperties map[K]*VertexProperties
-	edges            map[K]map[K]Edge[T]
-	outEdges         map[K]map[K]Edge[T]
-	inEdges          map[K]map[K]Edge[T]
+	hash   Hash[K, T]
+	traits *Traits
+	store  Store[K, T]
 }
 
-func newDirected[K comparable, T any](hash Hash[K, T], traits *Traits) *directed[K, T] {
+func newDirected[K comparable, T any](hash Hash[K, T], traits *Traits, store Store[K, T]) *directed[K, T] {
 	return &directed[K, T]{
-		hash:             hash,
-		traits:           traits,
-		vertices:         make(map[K]T),
-		vertexProperties: make(map[K]*VertexProperties),
-		edges:            make(map[K]map[K]Edge[T]),
-		outEdges:         make(map[K]map[K]Edge[T]),
-		inEdges:          make(map[K]map[K]Edge[T]),
+		hash:   hash,
+		traits: traits,
+		store:  store,
 	}
 }
 
@@ -33,55 +25,40 @@ func (d *directed[K, T]) Traits() *Traits {
 
 func (d *directed[K, T]) AddVertex(value T, options ...func(*VertexProperties)) error {
 	hash := d.hash(value)
-
-	if _, ok := d.vertices[hash]; ok {
-		return ErrVertexAlreadyExists
-	}
-
-	d.vertices[hash] = value
-	d.vertexProperties[hash] = &VertexProperties{
+	properties := VertexProperties{
 		Weight:     0,
 		Attributes: make(map[string]string),
 	}
 
 	for _, option := range options {
-		option(d.vertexProperties[hash])
+		option(&properties)
 	}
 
-	return nil
+	return d.store.AddVertex(hash, value, properties)
 }
 
 func (d *directed[K, T]) Vertex(hash K) (T, error) {
-	vertex, ok := d.vertices[hash]
-	if !ok {
-		return vertex, ErrVertexNotFound
-	}
-
-	return vertex, nil
+	vertex, _, err := d.store.Vertex(hash)
+	return vertex, err
 }
 
 func (d *directed[K, T]) VertexWithProperties(hash K) (T, VertexProperties, error) {
-	vertex, err := d.Vertex(hash)
+	vertex, properties, err := d.store.Vertex(hash)
 	if err != nil {
 		return vertex, VertexProperties{}, err
 	}
 
-	properties, ok := d.vertexProperties[hash]
-	if !ok {
-		return vertex, *properties, ErrVertexNotFound
-	}
-
-	return vertex, *properties, nil
+	return vertex, properties, nil
 }
 
 func (d *directed[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
-	source, ok := d.vertices[sourceHash]
-	if !ok {
+	_, _, err := d.store.Vertex(sourceHash)
+	if err != nil {
 		return fmt.Errorf("source vertex %v: %w", sourceHash, ErrVertexNotFound)
 	}
 
-	target, ok := d.vertices[targetHash]
-	if !ok {
+	_, _, err = d.store.Vertex(targetHash)
+	if err != nil {
 		return fmt.Errorf("target vertex %v: %w", targetHash, ErrVertexNotFound)
 	}
 
@@ -100,9 +77,9 @@ func (d *directed[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Edge
 		}
 	}
 
-	edge := Edge[T]{
-		Source: source,
-		Target: target,
+	edge := Edge[K]{
+		Source: sourceHash,
+		Target: targetHash,
 		Properties: EdgeProperties{
 			Attributes: make(map[string]string),
 		},
@@ -112,23 +89,33 @@ func (d *directed[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Edge
 		option(&edge.Properties)
 	}
 
-	d.addEdge(sourceHash, targetHash, edge)
-
-	return nil
+	return d.addEdge(sourceHash, targetHash, edge)
 }
 
 func (d *directed[K, T]) Edge(sourceHash, targetHash K) (Edge[T], error) {
-	sourceEdges, ok := d.edges[sourceHash]
-	if !ok {
-		return Edge[T]{}, ErrEdgeNotFound
+	edge, err := d.store.Edge(sourceHash, targetHash)
+	if err != nil {
+		return Edge[T]{}, err
 	}
 
-	edge, ok := sourceEdges[targetHash]
-	if !ok {
-		return Edge[T]{}, ErrEdgeNotFound
+	sourceVertex, _, err := d.store.Vertex(sourceHash)
+	if err != nil {
+		return Edge[T]{}, err
 	}
 
-	return edge, nil
+	targetVertex, _, err := d.store.Vertex(targetHash)
+	if err != nil {
+		return Edge[T]{}, err
+	}
+
+	return Edge[T]{
+		Source: sourceVertex,
+		Target: targetVertex,
+		Properties: EdgeProperties{
+			Weight:     edge.Properties.Weight,
+			Attributes: edge.Properties.Attributes,
+		},
+	}, nil
 }
 
 func (d *directed[K, T]) RemoveEdge(source, target K) error {
@@ -136,61 +123,23 @@ func (d *directed[K, T]) RemoveEdge(source, target K) error {
 		return err
 	}
 
-	delete(d.edges[source], target)
-	delete(d.inEdges[target], source)
-	delete(d.outEdges[source], target)
+	if err := d.store.RemoveEdge(source, target); err != nil {
+		return fmt.Errorf("failed to remove edge from %v to %v: %w", source, target, err)
+	}
 
 	return nil
 }
 
 func (d *directed[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {
-	adjacencyMap := make(map[K]map[K]Edge[K])
-
-	// Create an entry for each vertex to guarantee that all vertices are contained and its
-	// adjacent vertices can be safely accessed without a preceding check.
-	for vertexHash := range d.vertices {
-		adjacencyMap[vertexHash] = make(map[K]Edge[K])
-	}
-
-	for vertexHash, outEdges := range d.outEdges {
-		for adjacencyHash, edge := range outEdges {
-			adjacencyMap[vertexHash][adjacencyHash] = Edge[K]{
-				Source: vertexHash,
-				Target: adjacencyHash,
-				Properties: EdgeProperties{
-					Weight:     edge.Properties.Weight,
-					Attributes: edge.Properties.Attributes,
-					Data:       edge.Properties.Data,
-				},
-			}
-		}
-	}
-
-	return adjacencyMap, nil
+	return d.store.AdjacencyMap()
 }
 
 func (d *directed[K, T]) PredecessorMap() (map[K]map[K]Edge[K], error) {
-	predecessors := make(map[K]map[K]Edge[K])
+	return d.store.PredecessorMap()
+}
 
-	for vertexHash := range d.vertices {
-		predecessors[vertexHash] = make(map[K]Edge[K])
-	}
-
-	for vertexHash, inEdges := range d.inEdges {
-		for predecessorHash, edge := range inEdges {
-			predecessors[vertexHash][predecessorHash] = Edge[K]{
-				Source: predecessorHash,
-				Target: vertexHash,
-				Properties: EdgeProperties{
-					Attributes: edge.Properties.Attributes,
-					Weight:     edge.Properties.Weight,
-					Data:       edge.Properties.Data,
-				},
-			}
-		}
-	}
-
-	return predecessors, nil
+func (d *directed[K, T]) addEdge(sourceHash, targetHash K, edge Edge[K]) error {
+	return d.store.AddEdge(sourceHash, targetHash, edge)
 }
 
 func (d *directed[K, T]) Clone() (Graph[K, T], error) {
@@ -201,38 +150,29 @@ func (d *directed[K, T]) Clone() (Graph[K, T], error) {
 		IsRooted:   d.traits.IsRooted,
 	}
 
-	vertices := make(map[K]T)
-	vertexProperties := make(map[K]*VertexProperties)
-
-	for hash, vertex := range d.vertices {
-		vertices[hash] = vertex
-		vertexProperties[hash] = &VertexProperties{
-			Weight:     d.vertexProperties[hash].Weight,
-			Attributes: d.vertexProperties[hash].Attributes,
-		}
-	}
-
 	return &directed[K, T]{
-		hash:             d.hash,
-		traits:           traits,
-		vertices:         vertices,
-		vertexProperties: vertexProperties,
-		edges:            cloneEdges(d.edges),
-		outEdges:         cloneEdges(d.outEdges),
-		inEdges:          cloneEdges(d.inEdges),
+		hash:   d.hash,
+		traits: traits,
+		store:  d.store,
 	}, nil
 }
 
-func (d *directed[K, T]) Order() int {
-	return len(d.vertices)
+func (d *directed[K, T]) Order() (int, error) {
+	return d.store.CountVertices()
 }
 
-func (d *directed[K, T]) Size() int {
+func (d *directed[K, T]) Size() (int, error) {
 	size := 0
-	for _, outEdges := range d.outEdges {
+	outEdges, err := d.store.AdjacencyMap()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get adjacency map: %w", err)
+	}
+
+	for _, outEdges := range outEdges {
 		size += len(outEdges)
 	}
-	return size
+
+	return size, nil
 }
 
 func (d *directed[K, T]) edgesAreEqual(a, b Edge[T]) bool {
@@ -242,67 +182,4 @@ func (d *directed[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	bTargetHash := d.hash(b.Target)
 
 	return aSourceHash == bSourceHash && aTargetHash == bTargetHash
-}
-
-func (d *directed[K, T]) addEdge(sourceHash, targetHash K, edge Edge[T]) {
-	if _, ok := d.edges[sourceHash]; !ok {
-		d.edges[sourceHash] = make(map[K]Edge[T])
-	}
-
-	d.edges[sourceHash][targetHash] = edge
-
-	if _, ok := d.outEdges[sourceHash]; !ok {
-		d.outEdges[sourceHash] = make(map[K]Edge[T])
-	}
-
-	d.outEdges[sourceHash][targetHash] = edge
-
-	if _, ok := d.inEdges[targetHash]; !ok {
-		d.inEdges[targetHash] = make(map[K]Edge[T])
-	}
-
-	d.inEdges[targetHash][sourceHash] = edge
-}
-
-func (d *directed[K, T]) predecessors(vertexHash K) []K {
-	var predecessorHashes []K
-
-	inEdges, ok := d.inEdges[vertexHash]
-	if !ok {
-		return predecessorHashes
-	}
-
-	for hash := range inEdges {
-		predecessorHashes = append(predecessorHashes, hash)
-	}
-
-	return predecessorHashes
-}
-
-func cloneEdges[K comparable, T any](input map[K]map[K]Edge[T]) map[K]map[K]Edge[T] {
-	edges := make(map[K]map[K]Edge[T])
-
-	for hash, neighbours := range input {
-		edges[hash] = make(map[K]Edge[T])
-
-		for neighbourHash, edge := range neighbours {
-			attributes := make(map[string]string)
-
-			for key, value := range edge.Properties.Attributes {
-				attributes[key] = value
-			}
-
-			edges[hash][neighbourHash] = Edge[T]{
-				Source: edge.Source,
-				Target: edge.Target,
-				Properties: EdgeProperties{
-					Attributes: attributes,
-					Weight:     edge.Properties.Weight,
-					Data:       edge.Properties.Data,
-				},
-			}
-		}
-	}
-
-	return edges
 }

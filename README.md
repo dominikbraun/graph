@@ -185,7 +185,7 @@ g.AddVertex(3)
 _ = g.AddEdge(1, 2)
 _ = g.AddEdge(1, 3)
 
-if err := g.Edge(2, 3); err != nil {
+if err := g.AddEdge(2, 3); err != nil {
     panic(err)
 }
 ```

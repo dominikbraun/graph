@@ -34,6 +34,11 @@ func CreatesCycle[K comparable, T any](g Graph[K, T], source, target K) (bool, e
 		return true, nil
 	}
 
+	predecessors, err := g.Predecessors()
+	if err != nil {
+		return false, fmt.Errorf("failed to get predecessors: %w", err)
+	}
+
 	stack := make([]K, 0)
 	visited := make(map[K]bool)
 
@@ -51,9 +56,7 @@ func CreatesCycle[K comparable, T any](g Graph[K, T], source, target K) (bool, e
 			}
 			visited[currentHash] = true
 
-			predecessors, _ := g.Predecessors(currentHash)
-
-			for adjacency := range predecessors {
+			for adjacency := range predecessors[currentHash] {
 				stack = append(stack, adjacency)
 			}
 		}
@@ -72,7 +75,7 @@ func CreatesCycle[K comparable, T any](g Graph[K, T], source, target K) (bool, e
 func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, error) {
 	weights := make(map[K]float64)
 	visited := make(map[K]bool)
-	predecessors := make(map[K]K)
+	bestPredecessors := make(map[K]K)
 
 	weights[source] = 0
 	visited[target] = true
@@ -81,6 +84,11 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 	adjacencyMap, err := g.AdjacencyMap()
 	if err != nil {
 		return nil, fmt.Errorf("could not get adjacency map: %w", err)
+	}
+
+	predecessors, err := g.Predecessors()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get predecessors: %w", err)
 	}
 
 	for hash := range adjacencyMap {
@@ -97,10 +105,8 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 		hasInfiniteWeight := math.IsInf(weights[vertex], 1)
 
 		if vertex == target {
-			targetPredecessors, err := g.Predecessors(target)
-			if err != nil {
-				return nil, fmt.Errorf("failed to get predecessors of %v: %w", target, err)
-			}
+			targetPredecessors := predecessors[target]
+
 			if len(targetPredecessors) == 0 {
 				return nil, fmt.Errorf("vertex %v is not reachable from vertex %v", target, source)
 			}
@@ -111,7 +117,7 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 
 			if weight < weights[adjacency] && !hasInfiniteWeight {
 				weights[adjacency] = weight
-				predecessors[adjacency] = vertex
+				bestPredecessors[adjacency] = vertex
 				queue.DecreasePriority(adjacency, weight)
 			}
 		}
@@ -122,7 +128,7 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 	hashCursor := target
 
 	for hashCursor != source {
-		hashCursor = predecessors[hashCursor]
+		hashCursor = bestPredecessors[hashCursor]
 		path = append([]K{hashCursor}, path...)
 	}
 

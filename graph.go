@@ -54,13 +54,15 @@ type Graph[K comparable, T any] interface {
 	// This design makes AdjacencyMap suitable for a wide variety of scenarios and demands.
 	AdjacencyMap() (map[K]map[K]Edge[K], error)
 
-	// Predecessors determines and returns the predecessors of the vertex with the given hash.
+	// Predecessors computes and returns a predecessors map containing all vertices in the graph.
 	//
-	// In a directed graph, these are the directed predecessors with an outgoing edge to the given
-	// edge whereas in an undirected graph, all adjacent vertices are considered as predecessors.
+	// The map layout is the same as for Adjacencies.
 	//
-	// Consequently, Predecessors returns a subset of AdjacencyMap for the given vertex.
-	Predecessors(vertex K) (map[K]Edge[K], error)
+	// For an undirected graph, Predecessors is the same as Adjacencies. For a directed graph,
+	// Predecessors is the complement of Adjacencies. This is because in a directed graph, only
+	// vertices joined by an outgoing edge are considered adjacent to the current vertex, whereas
+	// predecessors are the vertices joined by an ingoing edge.
+	Predecessors() (map[K]map[K]Edge[K], error)
 }
 
 // Edge represents a graph edge with a source and target vertex as well as a weight, which has the

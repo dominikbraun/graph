@@ -315,6 +315,89 @@ func TestDirected_AdjacencyList(t *testing.T) {
 	}
 }
 
+func TestDirected_Predecessors(t *testing.T) {
+	tests := map[string]struct {
+		vertices []int
+		edges    []Edge[int]
+		expected map[int]map[int]Edge[int]
+	}{
+		"Y-shaped graph": {
+			vertices: []int{1, 2, 3, 4},
+			edges: []Edge[int]{
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 3},
+				{Source: 3, Target: 4},
+			},
+			expected: map[int]map[int]Edge[int]{
+				1: {},
+				2: {},
+				3: {
+					1: {Source: 1, Target: 3},
+					2: {Source: 2, Target: 3},
+				},
+				4: {
+					3: {Source: 3, Target: 4},
+				},
+			},
+		},
+		"diamond-shaped graph": {
+			vertices: []int{1, 2, 3, 4},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 3, Target: 4},
+			},
+			expected: map[int]map[int]Edge[int]{
+				1: {},
+				2: {
+					1: {Source: 1, Target: 2},
+				},
+				3: {
+					1: {Source: 1, Target: 3},
+				},
+				4: {
+					2: {Source: 2, Target: 4},
+					3: {Source: 3, Target: 4},
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		graph := newDirected(IntHash, &Traits{})
+
+		for _, vertex := range test.vertices {
+			_ = graph.AddVertex(vertex)
+		}
+
+		for _, edge := range test.edges {
+			if err := graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
+		}
+
+		predecessors, _ := graph.Predecessors()
+
+		for expectedVertex, expectedPredecessors := range test.expected {
+			predecessors, ok := predecessors[expectedVertex]
+			if !ok {
+				t.Errorf("%s: expected vertex %v does not exist in adjacency map", name, expectedVertex)
+			}
+
+			for expectedPredecessor, expectedEdge := range expectedPredecessors {
+				edge, ok := predecessors[expectedPredecessor]
+				if !ok {
+					t.Errorf("%s: expected adjacency %v does not exist in map of %v", name, expectedPredecessor, expectedVertex)
+				}
+				if edge.Source != expectedEdge.Source || edge.Target != expectedEdge.Target {
+					t.Errorf("%s: edge expectancy doesn't match: expected %v, got %v", name, expectedEdge, edge)
+				}
+			}
+		}
+	}
+}
+
 func TestDirected_edgesAreEqual(t *testing.T) {
 	tests := map[string]struct {
 		a             Edge[int]

@@ -130,22 +130,8 @@ func (u *undirected[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {
 	return adjacencyMap, nil
 }
 
-func (u *undirected[K, T]) Predecessors(vertex K) (map[K]Edge[K], error) {
-	if _, ok := u.vertices[vertex]; !ok {
-		return nil, fmt.Errorf("vertex with hash %v doesn't exist", vertex)
-	}
-
-	predecessors := make(map[K]Edge[K])
-
-	for predecessor, edge := range u.inEdges[vertex] {
-		predecessors[predecessor] = Edge[K]{
-			Source:     vertex,
-			Target:     predecessor,
-			Properties: edge.Properties,
-		}
-	}
-
-	return predecessors, nil
+func (u *undirected[K, T]) Predecessors() (map[K]map[K]Edge[K], error) {
+	return u.AdjacencyMap()
 }
 
 func (u *undirected[K, T]) edgesAreEqual(a, b Edge[T]) bool {

@@ -180,7 +180,7 @@ g := graph.New(graph.IntHash, graph.Directed(), graph.Acyclic())
 
 // Add vertices and weighted edges ...
 
-order, _ := graph.TopologicalSort
+order, _ := graph.TopologicalSort(g)
 
 fmt.Println(order)
 ```

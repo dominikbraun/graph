@@ -13,6 +13,7 @@ func TestDirectedTopologicalSort(t *testing.T) {
 			edges: []Edge[int]{
 				{Source: 1, Target: 2},
 				{Source: 1, Target: 3},
+				{Source: 2, Target: 3},
 				{Source: 2, Target: 4},
 				{Source: 2, Target: 5},
 				{Source: 3, Target: 4},

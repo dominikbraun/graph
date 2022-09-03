@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * Added the `PredecessorMap` method for obtaining a map with all predecessors of each vertex.
+* Added the `TopologicalSort` function for obtaining the topological order of the vertices in the graph.
 
 ### Removed
 * Removed the `Predecessors` function. Use `PredecessorMap` instead and look up the respective vertex.

@@ -9,7 +9,8 @@ import (
 // topological order. A topological order is a non-unique order of the vertices in a directed graph
 // where an edge from vertex A to vertex B implies that vertex A appears before vertex B.
 //
-// TopologicalSort only works for directed acyclic graphs.
+// TopologicalSort only works for directed acyclic graphs. The current implementation works non-
+// recursively and uses Kahn's algorithm.
 func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 	if !g.Traits().IsDirected || !g.Traits().IsAcyclic {
 		return nil, errors.New("topological sort can only be performed to DAGs")

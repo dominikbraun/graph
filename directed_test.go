@@ -315,7 +315,7 @@ func TestDirected_AdjacencyList(t *testing.T) {
 	}
 }
 
-func TestDirected_Predecessors(t *testing.T) {
+func TestDirected_PredecessorMap(t *testing.T) {
 	tests := map[string]struct {
 		vertices []int
 		edges    []Edge[int]
@@ -377,7 +377,7 @@ func TestDirected_Predecessors(t *testing.T) {
 			}
 		}
 
-		predecessors, _ := graph.Predecessors()
+		predecessors, _ := graph.PredecessorMap()
 
 		for expectedVertex, expectedPredecessors := range test.expected {
 			predecessors, ok := predecessors[expectedVertex]

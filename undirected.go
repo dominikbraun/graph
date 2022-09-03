@@ -130,7 +130,7 @@ func (u *undirected[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {
 	return adjacencyMap, nil
 }
 
-func (u *undirected[K, T]) Predecessors() (map[K]map[K]Edge[K], error) {
+func (u *undirected[K, T]) PredecessorMap() (map[K]map[K]Edge[K], error) {
 	return u.AdjacencyMap()
 }
 

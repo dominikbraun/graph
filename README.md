@@ -167,6 +167,24 @@ fmt.Println(path)
 [A C E B]
 ```
 
+## Perform a topological sort
+
+![topological sort](img/topological-sort.svg)
+
+```go
+g := graph.New(graph.IntHash, graph.Directed(), graph.Acyclic())
+
+// Add vertices and weighted edges ...
+
+order, _ := graph.TopologicalSort(g)
+
+fmt.Println(order)
+```
+
+```
+[1 2 3 4 5]
+```
+
 ## Cycle checks for acyclic graphs
 
 ![cycle checks](img/cycles.svg)

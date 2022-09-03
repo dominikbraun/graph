@@ -5,19 +5,15 @@ It supports different kinds of graphs such as directed graphs, acyclic graphs, o
 
 # Features
 
-* Vertices of any data type, such as `int` or `City`.
-* Edges with optional data, such as weights or attributes.
+* Generic vertices of any type, such as `int` or `City`.
+* Edges with optional data, such as weights or custom attributes.
 * Optionally combinable graph types and traits.
-* Validations considering the graph type, such as cycle detection in acyclic graphs.
+* Validations considering the graph traits, such as cycle detection in acyclic graphs.
 * Determination of graph and vertex properties, such as degree or tree-depth.
-* Non-recursive walks, DFS, and BFS.
-* Pathfinding algorithms, considering edge weights where appropriate:
-  * [ ] Hamiltonian paths and cycles
-  * [ ] Eulerian paths and cycles
-  * [x] Shortest path (Dijkstra)
-  * [x] Strongly connected components (Tarjan)
+* Various algorithms for finding particular paths, components, circuits, and trees.
+* Non-recursive graph traversal, such as DFS or BFS.
 * Visualization of graphs using Graphviz.
-* Extensive tests with ~90% coverage.
+* Extensive tests with over 90% coverage.
 
 > Status: Because `graph` is in version 0, the public API shouldn't be considered stable.
 

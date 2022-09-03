@@ -127,7 +127,7 @@ func (d *directed[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {
 	return adjacencyMap, nil
 }
 
-func (d *directed[K, T]) Predecessors() (map[K]map[K]Edge[K], error) {
+func (d *directed[K, T]) PredecessorMap() (map[K]map[K]Edge[K], error) {
 	predecessors := make(map[K]map[K]Edge[K])
 
 	for vertexHash := range d.vertices {

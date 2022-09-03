@@ -34,9 +34,9 @@ func CreatesCycle[K comparable, T any](g Graph[K, T], source, target K) (bool, e
 		return true, nil
 	}
 
-	predecessors, err := g.Predecessors()
+	predecessorMap, err := g.PredecessorMap()
 	if err != nil {
-		return false, fmt.Errorf("failed to get predecessors: %w", err)
+		return false, fmt.Errorf("failed to get predecessor map: %w", err)
 	}
 
 	stack := make([]K, 0)
@@ -56,7 +56,7 @@ func CreatesCycle[K comparable, T any](g Graph[K, T], source, target K) (bool, e
 			}
 			visited[currentHash] = true
 
-			for adjacency := range predecessors[currentHash] {
+			for adjacency := range predecessorMap[currentHash] {
 				stack = append(stack, adjacency)
 			}
 		}
@@ -86,9 +86,9 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 		return nil, fmt.Errorf("could not get adjacency map: %w", err)
 	}
 
-	predecessors, err := g.Predecessors()
+	predecessorMap, err := g.PredecessorMap()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get predecessors: %w", err)
+		return nil, fmt.Errorf("failed to get predecessor map: %w", err)
 	}
 
 	for hash := range adjacencyMap {
@@ -105,7 +105,7 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 		hasInfiniteWeight := math.IsInf(weights[vertex], 1)
 
 		if vertex == target {
-			targetPredecessors := predecessors[target]
+			targetPredecessors := predecessorMap[target]
 
 			if len(targetPredecessors) == 0 {
 				return nil, fmt.Errorf("vertex %v is not reachable from vertex %v", target, source)

@@ -8,9 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.10.0] - 2022-09-10
 
 ### Added
+* Added the `PredecessorMap` method for obtaining a map with all predecessors of each vertex.
 
-### Changed
-* Changed the `Predecessors` method signature and behavior towards returning a predecessor map containing all vertices.
+### Removed
+* Removed the `Predecessors` function. Use `PredecessorMap` instead and look up the respective vertex.
 
 ## [0.9.0] - 2022-08-17
 

@@ -13,7 +13,7 @@ import (
 // recursively and uses Kahn's algorithm.
 func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 	if !g.Traits().IsDirected || !g.Traits().IsAcyclic {
-		return nil, errors.New("topological sort can only be performed to DAGs")
+		return nil, errors.New("topological sort can only be performed on DAGs")
 	}
 
 	predecessorMap, err := g.PredecessorMap()
@@ -36,13 +36,12 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 		currentVertex := queue[0]
 		queue = queue[1:]
 
-		if _, ok := visited[currentVertex]; !ok {
-			visited[currentVertex] = struct{}{}
-		} else {
+		if _, ok := visited[currentVertex]; ok {
 			continue
 		}
 
 		order = append(order, currentVertex)
+		visited[currentVertex] = struct{}{}
 
 		for vertex, predecessors := range predecessorMap {
 			delete(predecessors, currentVertex)

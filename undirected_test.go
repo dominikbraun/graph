@@ -176,6 +176,60 @@ func TestUndirected_Edge(t *testing.T) {
 	}
 }
 
+func TestUndirected_RemoveEdge(t *testing.T) {
+	tests := map[string]struct {
+		vertices    []int
+		edges       []Edge[int]
+		removeEdges []Edge[int]
+	}{
+		"two-vertices graph": {
+			vertices: []int{1, 2},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+			},
+			removeEdges: []Edge[int]{
+				{Source: 1, Target: 2},
+			},
+		},
+		"remove 2 edges from triangle": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 3},
+			},
+			removeEdges: []Edge[int]{
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 3},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		graph := New(IntHash)
+
+		for _, vertex := range test.vertices {
+			_ = graph.AddVertex(vertex)
+		}
+
+		for _, edge := range test.edges {
+			if err := graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
+		}
+
+		for _, removeEdge := range test.removeEdges {
+			if err := graph.RemoveEdge(removeEdge.Source, removeEdge.Target); err != nil {
+				t.Fatalf("%s: failed to remove edge: %s", name, err.Error())
+			}
+			// After removing the edge, verify that it can't be retrieved using Edge anymore.
+			if _, err := graph.Edge(removeEdge.Source, removeEdge.Target); err != ErrEdgeNotFound {
+				t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v", name, ErrEdgeNotFound, err)
+			}
+		}
+	}
+}
+
 func TestUndirected_Adjacencies(t *testing.T) {
 	tests := map[string]struct {
 		vertices []int

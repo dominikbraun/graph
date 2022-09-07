@@ -105,6 +105,19 @@ func (u *undirected[K, T]) Edge(sourceHash, targetHash K) (Edge[T], error) {
 	return Edge[T]{}, ErrEdgeNotFound
 }
 
+func (u *undirected[K, T]) RemoveEdge(source, target K) error {
+	if _, err := u.Edge(source, target); err != nil {
+		return fmt.Errorf("failed to find edge from %v to %v: %w", source, target, err)
+	}
+
+	delete(u.inEdges[source], target)
+	delete(u.inEdges[target], source)
+	delete(u.outEdges[source], target)
+	delete(u.outEdges[target], source)
+
+	return nil
+}
+
 func (u *undirected[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {
 	adjacencyMap := make(map[K]map[K]Edge[K])
 

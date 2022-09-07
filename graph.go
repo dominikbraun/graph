@@ -36,6 +36,10 @@ type Graph[K comparable, T any] interface {
 	// undirected graph, an edge with swapped source and target vertices does match.
 	Edge(sourceHash, targetHash K) (Edge[T], error)
 
+	// RemoveEdge removes the edge between the given source and target vertices. If the edge doesn't
+	// exist, ErrEdgeNotFound will be returned.
+	RemoveEdge(source, target K) error
+
 	// AdjacencyMap computes and returns an adjacency map containing all vertices in the graph.
 	//
 	// There is an entry for each vertex, and each of those entries is another map whose keys are

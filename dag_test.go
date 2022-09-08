@@ -141,6 +141,26 @@ func TestDirectedTransitiveReduction(t *testing.T) {
 	}
 }
 
+func TestUndirectedTransitiveReduction(t *testing.T) {
+	tests := map[string]struct {
+		shouldFail bool
+	}{
+		"return error": {
+			shouldFail: true,
+		},
+	}
+
+	for name, test := range tests {
+		graph := New(StringHash)
+
+		err := TransitiveReduction(graph)
+
+		if test.shouldFail != (err != nil) {
+			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, err != nil, err)
+		}
+	}
+}
+
 func slicesAreEqualWithFunc[T any](a, b []T, equals func(a, b T) bool) bool {
 	if len(a) != len(b) {
 		return false

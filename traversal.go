@@ -98,7 +98,7 @@ func DFS[K comparable, T any](g Graph[K, T], start K, visit func(K) bool) error 
 //	}
 //
 // BFS is non-recursive and maintains a stack instead.
-func BFS[K comparable, T any](g Graph[K, T], start K, visit func(T) bool) error {
+func BFS[K comparable, T any](g Graph[K, T], start K, visit func(K) bool) error {
 	adjacencyMap, err := g.AdjacencyMap()
 	if err != nil {
 		return fmt.Errorf("could not get adjacency map: %w", err)
@@ -116,12 +116,11 @@ func BFS[K comparable, T any](g Graph[K, T], start K, visit func(T) bool) error 
 
 	for len(queue) > 0 {
 		currentHash := queue[0]
-		currentVertex, _ := g.Vertex(currentHash)
 
 		queue = queue[1:]
 
 		// Stop traversing the graph if the visit function returns true.
-		if stop := visit(currentVertex); stop {
+		if stop := visit(currentHash); stop {
 			break
 		}
 

@@ -3,9 +3,9 @@ package graph
 import "fmt"
 
 // DFS performs a depth-first search on the graph, starting from the given vertex. The visit
-// function will be invoked for each visited vertex. If it returns false, DFS will continue
-// traversing the path, and if it returns true, the traversal will be stopped. In case the graph is
-// disconnected, only the vertices joined with the starting vertex will be traversed.
+// function will be invoked with the hash of the vertex currently visited. If it returns false, DFS
+// will continue traversing the graph, and if it returns true, the traversal will be stopped. In
+// case the graph is disconnected, only the vertices joined with the starting vertex are visited.
 //
 // This example prints all vertices of the graph in DFS-order:
 //
@@ -32,7 +32,7 @@ import "fmt"
 //	}
 //
 // DFS is non-recursive and maintains a stack instead.
-func DFS[K comparable, T any](g Graph[K, T], start K, visit func(T) bool) error {
+func DFS[K comparable, T any](g Graph[K, T], start K, visit func(K) bool) error {
 	adjacencyMap, err := g.AdjacencyMap()
 	if err != nil {
 		return fmt.Errorf("could not get adjacency map: %w", err)
@@ -49,13 +49,12 @@ func DFS[K comparable, T any](g Graph[K, T], start K, visit func(T) bool) error 
 
 	for len(stack) > 0 {
 		currentHash := stack[len(stack)-1]
-		currentVertex, _ := g.Vertex(currentHash)
 
 		stack = stack[:len(stack)-1]
 
 		if _, ok := visited[currentHash]; !ok {
 			// Stop traversing the graph if the visit function returns true.
-			if stop := visit(currentVertex); stop {
+			if stop := visit(currentHash); stop {
 				break
 			}
 			visited[currentHash] = true
@@ -69,10 +68,10 @@ func DFS[K comparable, T any](g Graph[K, T], start K, visit func(T) bool) error 
 	return nil
 }
 
-// BFS performs a Breadth-First Search on the graph, starting from the given vertex. The visit
-// function will be invoked for each visited vertex. If it returns false, BFS will continue
-// traversing the path, and if it returns true, the traversal will be stopped. In case the graph is
-// disconnected, only the vertices joined with the starting vertex will be traversed.
+// BFS performs a depth-first search on the graph, starting from the given vertex. The visit
+// function will be invoked with the hash of the vertex currently visited. If it returns false, BFS
+// will continue traversing the graph, and if it returns true, the traversal will be stopped. In
+// case the graph is disconnected, only the vertices joined with the starting vertex are visited.
 //
 // This example prints all vertices of the graph in BFS-order:
 //

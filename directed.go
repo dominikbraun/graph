@@ -108,6 +108,8 @@ func (d *directed[K, T]) RemoveEdge(source, target K) error {
 	}
 
 	delete(d.edges[source], target)
+	delete(d.inEdges[target], source)
+	delete(d.outEdges[source], target)
 
 	return nil
 }

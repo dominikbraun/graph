@@ -1,7 +1,6 @@
 # ![dominikbraun/graph](img/logo.svg)
 
-`graph` is a generic library for creating graph data structures and performing operations on them.
-It supports different kinds of graphs such as directed graphs, acyclic graphs, or trees.
+A library for creating generic graph data structures and modifying, analyzing, and visualizing them.
 
 # Features
 

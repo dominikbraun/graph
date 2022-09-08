@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Added the `PredecessorMap` method for obtaining a map with all predecessors of each vertex.
 * Added the `RemoveEdge` method for removing the edge between two vertices.
 * Added the `TopologicalSort` function for obtaining the topological order of the vertices in the graph.
+* Added the `TransitiveReduction` function for transforming the graph into its transitive reduction.
+
+### Changed
+* Changed the `visit` function of `DFS` to accept a vertex hash instead of the vertex value (i.e. `K` instead of `T`).
+* Changed the `visit` function of `BFS` to accept a vertex hash instead of the vertex value (i.e. `K` instead of `T`).
 
 ### Removed
 * Removed the `Predecessors` function. Use `PredecessorMap` instead and look up the respective vertex.

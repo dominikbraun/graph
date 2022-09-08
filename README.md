@@ -6,14 +6,13 @@ It supports different kinds of graphs such as directed graphs, acyclic graphs, o
 # Features
 
 * Generic vertices of any type, such as `int` or `City`.
-* Edges with optional data, such as weights or custom attributes.
-* Optionally combinable graph types and traits.
-* Validations considering the graph traits, such as cycle detection in acyclic graphs.
-* Determination of graph and vertex properties, such as degree or tree-depth.
-* Various algorithms for finding particular paths, components, circuits, and trees.
-* Non-recursive graph traversal, such as DFS or BFS.
-* Visualization of graphs using Graphviz.
-* Extensive tests with over 90% coverage.
+* Graph traits with corresponding validations, such as cycle checks in acyclic graphs.
+* Algorithms for finding paths or components, such as shortest paths or strongly connected components.
+* Algorithms for transformations and representations, such as transitive reduction or topological order.
+* Algorithms for non-recursive graph traversal, such as DFS or BFS.
+* Edges with optional metadata, such as weights or custom attributes.
+* Visualization of graphs using the DOT language and Graphviz.
+* Extensive unit tests with over 90% code coverage.
 
 > Status: Because `graph` is in version 0, the public API shouldn't be considered stable.
 
@@ -174,7 +173,7 @@ fmt.Println(path)
 ```go
 g := graph.New(graph.IntHash, graph.Directed(), graph.Acyclic())
 
-// Add vertices and weighted edges ...
+// Add vertices and edges ...
 
 order, _ := graph.TopologicalSort(g)
 
@@ -183,6 +182,18 @@ fmt.Println(order)
 
 ```
 [1 2 3 4 5]
+```
+
+## Perform a transitive reduction
+
+![transitive reduction](img/transitive-reduction.svg)
+
+```go
+g := graph.New(graph.StringHash, graph.Directed(), graph.Acyclic())
+
+// Add vertices and edges ...
+
+_ := graph.TransitiveReduction(g)
 ```
 
 ## Cycle checks for acyclic graphs

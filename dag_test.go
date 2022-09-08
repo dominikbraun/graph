@@ -78,3 +78,105 @@ func TestUndirectedTopologicalSort(t *testing.T) {
 		}
 	}
 }
+
+func TestDirectedTransitiveReduction(t *testing.T) {
+	tests := map[string]struct {
+		vertices      []string
+		edges         []Edge[string]
+		expectedEdges []Edge[string]
+	}{
+		"graph as on img/transitive-reduction.svg": {
+			vertices: []string{"A", "B", "C", "D", "E"},
+			edges: []Edge[string]{
+				{Source: "A", Target: "B"},
+				{Source: "A", Target: "C"},
+				{Source: "A", Target: "D"},
+				{Source: "A", Target: "E"},
+				{Source: "B", Target: "D"},
+				{Source: "C", Target: "D"},
+				{Source: "C", Target: "E"},
+				{Source: "D", Target: "E"},
+			},
+			expectedEdges: []Edge[string]{
+				{Source: "A", Target: "B"},
+				{Source: "A", Target: "C"},
+				{Source: "B", Target: "D"},
+				{Source: "C", Target: "D"},
+				{Source: "D", Target: "E"},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		graph := New(StringHash, Directed(), Acyclic())
+
+		for _, vertex := range test.vertices {
+			_ = graph.AddVertex(vertex)
+		}
+
+		for _, edge := range test.edges {
+			if err := graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
+		}
+
+		if err := TransitiveReduction(graph); err != nil {
+			t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+		}
+
+		actualEdges := make([]Edge[string], 0)
+		adjacencyMap, _ := graph.AdjacencyMap()
+
+		for _, adjacencies := range adjacencyMap {
+			for _, edge := range adjacencies {
+				actualEdges = append(actualEdges, edge)
+			}
+		}
+
+		equalsFunc := graph.(*directed[string, string]).edgesAreEqual
+
+		if !slicesAreEqualWithFunc(actualEdges, test.expectedEdges, equalsFunc) {
+			t.Errorf("%s: edge expectancy doesn't match: expected %v, got %v", name, test.expectedEdges, actualEdges)
+		}
+	}
+}
+
+func TestUndirectedTransitiveReduction(t *testing.T) {
+	tests := map[string]struct {
+		shouldFail bool
+	}{
+		"return error": {
+			shouldFail: true,
+		},
+	}
+
+	for name, test := range tests {
+		graph := New(StringHash)
+
+		err := TransitiveReduction(graph)
+
+		if test.shouldFail != (err != nil) {
+			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, err != nil, err)
+		}
+	}
+}
+
+func slicesAreEqualWithFunc[T any](a, b []T, equals func(a, b T) bool) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for _, aValue := range a {
+		found := false
+		for _, bValue := range b {
+			if equals(aValue, bValue) {
+				found = true
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+
+	return true
+}

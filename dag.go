@@ -12,7 +12,7 @@ import (
 // TopologicalSort only works for directed acyclic graphs. The current implementation works non-
 // recursively and uses Kahn's algorithm.
 func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
-	if !g.Traits().IsDirected || !g.Traits().IsAcyclic {
+	if !isDAG(g) {
 		return nil, errors.New("topological sort can only be performed on DAGs")
 	}
 
@@ -53,4 +53,49 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 	}
 
 	return order, nil
+}
+
+// TransitiveReduction transforms the graph into its own transitive reduction. The transitive
+// reduction of the given graph is another graph with the same vertices and the same reachability,
+// but with as few edges as possible. This greatly reduces the complexity of the graph.
+//
+// With a time complexity of O(V(V+E)), TransitiveReduction is a very costly operation.
+func TransitiveReduction[K comparable, T any](g Graph[K, T]) error {
+	if !isDAG(g) {
+		return errors.New("topological sort can only be performed on DAGs")
+	}
+
+	adjacencyMap, err := g.AdjacencyMap()
+	if err != nil {
+		return fmt.Errorf("failed to get adajcency map: %w", err)
+	}
+
+	for vertex, successors := range adjacencyMap {
+		// For each direct successor of the current vertex, run a DFS starting from that successor.
+		// Then, for each vertex visited in the DFS, inspect all of its edges. Remove the edges that
+		// also appear in the edges of the top-level iteration vertex.
+		//
+		// These edges are redundant because their targets obviously are reachable via DFS, i.e.
+		// they aren't needed in the top-level vertex anymore and can be removed from there.
+		for successor := range successors {
+			err := DFS(g, successor, func(current K) bool {
+				for _, edge := range adjacencyMap[current] {
+					if _, ok := adjacencyMap[vertex][edge.Target]; ok {
+						_ = g.RemoveEdge(vertex, edge.Target)
+					}
+				}
+
+				return false
+			})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func isDAG[K comparable, T any](g Graph[K, T]) bool {
+	return g.Traits().IsDirected && g.Traits().IsAcyclic
 }

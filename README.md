@@ -173,7 +173,7 @@ fmt.Println(path)
 ```go
 g := graph.New(graph.IntHash, graph.Directed(), graph.Acyclic())
 
-// Add vertices and weighted edges ...
+// Add vertices and edges ...
 
 order, _ := graph.TopologicalSort(g)
 
@@ -191,7 +191,7 @@ fmt.Println(order)
 ```go
 g := graph.New(graph.StringHash, graph.Directed(), graph.Acyclic())
 
-// Add vertices and weighted edges ...
+// Add vertices and edges ...
 
 _ := graph.TransitiveReduction(g)
 ```

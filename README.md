@@ -11,7 +11,7 @@ A library for creating generic graph data structures and modifying, analyzing, a
 * Algorithms for non-recursive graph traversal, such as DFS or BFS.
 * Edges with optional metadata, such as weights or custom attributes.
 * Visualization of graphs using the DOT language and Graphviz.
-* Extensive unit tests with over 90% code coverage.
+* Extensive tests with ~90% coverage, and zero dependencies.
 
 > Status: Because `graph` is in version 0, the public API shouldn't be considered stable.
 

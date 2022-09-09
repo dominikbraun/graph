@@ -147,6 +147,29 @@ func (u *undirected[K, T]) PredecessorMap() (map[K]map[K]Edge[K], error) {
 	return u.AdjacencyMap()
 }
 
+func (u *undirected[K, T]) Clone() (Graph[K, T], error) {
+	traits := &Traits{
+		IsDirected: u.traits.IsDirected,
+		IsAcyclic:  u.traits.IsAcyclic,
+		IsWeighted: u.traits.IsWeighted,
+		IsRooted:   u.traits.IsRooted,
+	}
+
+	vertices := make(map[K]T)
+
+	for hash, vertex := range u.vertices {
+		vertices[hash] = vertex
+	}
+
+	return &undirected[K, T]{
+		hash:     u.hash,
+		traits:   traits,
+		vertices: vertices,
+		outEdges: cloneEdges(u.outEdges),
+		inEdges:  cloneEdges(u.inEdges),
+	}, nil
+}
+
 func (u *undirected[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	aSourceHash := u.hash(a.Source)
 	aTargetHash := u.hash(a.Target)

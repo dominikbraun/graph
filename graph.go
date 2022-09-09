@@ -67,6 +67,9 @@ type Graph[K comparable, T any] interface {
 	// vertices joined by an outgoing edge are considered adjacent to the current vertex, whereas
 	// predecessors are the vertices joined by an ingoing edge.
 	PredecessorMap() (map[K]map[K]Edge[K], error)
+
+	// Clone creates an independent deep copy of the graph and returns that cloned graph.
+	Clone() (Graph[K, T], error)
 }
 
 // Edge represents a graph edge with a source and target vertex as well as a weight, which has the

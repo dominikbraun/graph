@@ -162,6 +162,30 @@ func (d *directed[K, T]) PredecessorMap() (map[K]map[K]Edge[K], error) {
 	return predecessors, nil
 }
 
+func (d *directed[K, T]) Clone() (Graph[K, T], error) {
+	traits := &Traits{
+		IsDirected: d.traits.IsDirected,
+		IsAcyclic:  d.traits.IsAcyclic,
+		IsWeighted: d.traits.IsWeighted,
+		IsRooted:   d.traits.IsRooted,
+	}
+
+	vertices := make(map[K]T)
+
+	for hash, vertex := range d.vertices {
+		vertices[hash] = vertex
+	}
+
+	return &directed[K, T]{
+		hash:     d.hash,
+		traits:   traits,
+		vertices: vertices,
+		edges:    cloneEdges(d.edges),
+		outEdges: cloneEdges(d.outEdges),
+		inEdges:  cloneEdges(d.inEdges),
+	}, nil
+}
+
 func (d *directed[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	aSourceHash := d.hash(a.Source)
 	aTargetHash := d.hash(a.Target)
@@ -204,4 +228,31 @@ func (d *directed[K, T]) predecessors(vertexHash K) []K {
 	}
 
 	return predecessorHashes
+}
+
+func cloneEdges[K comparable, T any](input map[K]map[K]Edge[T]) map[K]map[K]Edge[T] {
+	edges := make(map[K]map[K]Edge[T])
+
+	for hash, neighbours := range input {
+		edges[hash] = make(map[K]Edge[T])
+
+		for neighbourHash, edge := range neighbours {
+			attributes := make(map[string]string)
+
+			for key, value := range edge.Properties.Attributes {
+				attributes[key] = value
+			}
+
+			edges[hash][neighbourHash] = Edge[T]{
+				Source: edge.Source,
+				Target: edge.Target,
+				Properties: EdgeProperties{
+					Attributes: attributes,
+					Weight:     edge.Properties.Weight,
+				},
+			}
+		}
+	}
+
+	return edges
 }

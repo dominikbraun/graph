@@ -452,6 +452,85 @@ func TestDirected_PredecessorMap(t *testing.T) {
 	}
 }
 
+func TestDirected_Clone(t *testing.T) {
+	tests := map[string]struct {
+		vertices []int
+		edges    []Edge[int]
+	}{
+		"Y-shaped graph": {
+			vertices: []int{1, 2, 3, 4},
+			edges: []Edge[int]{
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 3},
+				{Source: 3, Target: 4},
+			},
+		},
+		"diamond-shaped graph": {
+			vertices: []int{1, 2, 3, 4},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 3, Target: 4},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		graph := New(IntHash, Directed())
+
+		for _, vertex := range test.vertices {
+			_ = graph.AddVertex(vertex)
+		}
+
+		for _, edge := range test.edges {
+			if err := graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
+		}
+
+		clonedGraph, err := graph.Clone()
+		if err != nil {
+			t.Fatalf("%s: failed to clone graph: %s", name, err.Error())
+		}
+
+		expected := graph.(*directed[int, int])
+		actual := clonedGraph.(*directed[int, int])
+
+		if actual.hash(5) != expected.hash(5) {
+			t.Errorf("%s: hash expectancy doesn't match: expected %v, got %v", name, expected.hash, actual.hash)
+		}
+
+		if !traitsAreEqual(actual.traits, expected.traits) {
+			t.Errorf("%s: traits expectancy doesn't match: expected %v, got %v", name, expected.traits, actual.traits)
+		}
+
+		if len(actual.vertices) != len(expected.vertices) {
+			t.Fatalf("%s: vertices length expectancy doesn't match: expected %v, got %v", name, len(expected.vertices), len(actual.vertices))
+		}
+
+		for expectedHash, expectedVertex := range expected.vertices {
+			actualVertex, ok := actual.vertices[expectedHash]
+			if !ok {
+				t.Errorf("%s: vertex expectancy doesn't match: expected vertex %v doesn't exist", name, expectedVertex)
+			}
+			if actualVertex != expectedVertex {
+				t.Errorf("%s: vertex expectancy doesn't match: expected %v, got %v", name, expectedVertex, actualVertex)
+			}
+		}
+
+		if len(actual.edges) != len(expected.edges) {
+			t.Errorf("%s: number of edges doesn't match: expected %v, got %v", name, len(expected.edges), len(actual.edges))
+		}
+		if len(actual.inEdges) != len(expected.inEdges) {
+			t.Errorf("%s: number of inEdges doesn't match: expected %v, got %v", name, len(expected.inEdges), len(actual.inEdges))
+		}
+		if len(actual.outEdges) != len(expected.outEdges) {
+			t.Errorf("%s: number of outEdges doesn't match: expected %v, got %v", name, len(expected.outEdges), len(actual.outEdges))
+		}
+	}
+}
+
 func TestDirected_edgesAreEqual(t *testing.T) {
 	tests := map[string]struct {
 		a             Edge[int]

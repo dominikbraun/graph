@@ -10,6 +10,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 * Added the `PredecessorMap` method for obtaining a map with all predecessors of each vertex.
 * Added the `RemoveEdge` method for removing the edge between two vertices.
+* Added the `Clone` method for retrieving a deep copy of the graph.
 * Added the `TopologicalSort` function for obtaining the topological order of the vertices in the graph.
 * Added the `TransitiveReduction` function for transforming the graph into its transitive reduction.
 

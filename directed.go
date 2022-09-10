@@ -186,6 +186,18 @@ func (d *directed[K, T]) Clone() (Graph[K, T], error) {
 	}, nil
 }
 
+func (d *directed[K, T]) Order() int {
+	return len(d.vertices)
+}
+
+func (d *directed[K, T]) Size() int {
+	size := 0
+	for _, outEdges := range d.outEdges {
+		size += len(outEdges)
+	}
+	return size
+}
+
 func (d *directed[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	aSourceHash := d.hash(a.Source)
 	aTargetHash := d.hash(a.Target)

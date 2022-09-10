@@ -170,6 +170,20 @@ func (u *undirected[K, T]) Clone() (Graph[K, T], error) {
 	}, nil
 }
 
+func (u *undirected[K, T]) Order() int {
+	return len(u.vertices)
+}
+
+func (u *undirected[K, T]) Size() int {
+	size := 0
+	for _, outEdges := range u.outEdges {
+		size += len(outEdges)
+	}
+
+	// Divide by 2 since every add edge operation on undirected graph is counted twice.
+	return size / 2
+}
+
 func (u *undirected[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	aSourceHash := u.hash(a.Source)
 	aTargetHash := u.hash(a.Target)

@@ -492,6 +492,77 @@ func TestUndirected_Clone(t *testing.T) {
 	}
 }
 
+func TestUndirected_OrderAndSize(t *testing.T) {
+	tests := map[string]struct {
+		vertices      []int
+		edges         []Edge[int]
+		expectedOrder int
+		expectedSize  int
+	}{
+		"Y-shaped graph": {
+			vertices: []int{1, 2, 3, 4},
+			edges: []Edge[int]{
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 3},
+				{Source: 3, Target: 4},
+			},
+			expectedOrder: 4,
+			expectedSize:  3,
+		},
+		"diamond-shaped graph": {
+			vertices: []int{1, 2, 3, 4},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 3, Target: 4},
+			},
+			expectedOrder: 4,
+			expectedSize:  4,
+		},
+		"two-vertices graph": {
+			vertices: []int{1, 2},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+			},
+			expectedOrder: 2,
+			expectedSize:  1,
+		},
+		"edgeless graph": {
+			vertices:      []int{1, 2},
+			edges:         []Edge[int]{},
+			expectedOrder: 2,
+			expectedSize:  0,
+		},
+	}
+
+	for name, test := range tests {
+		graph := newUndirected(IntHash, &Traits{})
+
+		for _, vertex := range test.vertices {
+			_ = graph.AddVertex(vertex)
+		}
+
+		for _, edge := range test.edges {
+			if err := graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
+		}
+
+		order := graph.Order()
+		size := graph.Size()
+
+		if order != test.expectedOrder {
+			t.Errorf("%s: order expectancy doesn't match: expected %d, got %d", name, test.expectedOrder, order)
+		}
+
+		if size != test.expectedSize {
+			t.Errorf("%s: size expectancy doesn't match: expected %d, got %d", name, test.expectedSize, size)
+		}
+
+	}
+}
+
 func TestUndirected_edgesAreEqual(t *testing.T) {
 	tests := map[string]struct {
 		a             Edge[int]

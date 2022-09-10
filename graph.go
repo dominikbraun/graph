@@ -51,7 +51,7 @@ type Graph[K comparable, T any] interface {
 	//	map[string]map[string]Edge[string]{
 	//		"A": map[string]Edge[string]{
 	//			"B": {Source: "A", Target: "B"}
-	//			"C": {Source: "A", Target: "B"}
+	//			"C": {Source: "A", Target: "C"}
 	//		}
 	//	}
 	//
@@ -70,6 +70,12 @@ type Graph[K comparable, T any] interface {
 
 	// Clone creates an independent deep copy of the graph and returns that cloned graph.
 	Clone() (Graph[K, T], error)
+
+	// Order computes and returns the number of vertices in the graph.
+	Order() int
+
+	// Size computes and returns the number of edges in the graph.
+	Size() int
 }
 
 // Edge represents a graph edge with a source and target vertex as well as a weight, which has the

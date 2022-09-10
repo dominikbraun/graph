@@ -180,7 +180,7 @@ func (u *undirected[K, T]) Size() int {
 		size += len(outEdges)
 	}
 
-	// divide by 2 since every add edge operation on undirected graph is counted twice.
+	// Divide by 2 since every add edge operation on undirected graph is counted twice.
 	return size / 2
 }
 

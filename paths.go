@@ -118,7 +118,7 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 			if weight < weights[adjacency] && !hasInfiniteWeight {
 				weights[adjacency] = weight
 				bestPredecessors[adjacency] = vertex
-				queue.DecreasePriority(adjacency, weight)
+				queue.UpdatePriority(adjacency, weight)
 			}
 		}
 	}

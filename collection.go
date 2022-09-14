@@ -8,7 +8,8 @@ import (
 // priorityQueue is a priority queue implementation for minimum priorities, meaning that smaller
 // values will be prioritized. It maintains a descendingly ordered list of priority items.
 //
-// This implementation is built on top heap.Interface with some adjustments to comply with our generic usage.
+// This implementation is built on top of heap.Interface with some adjustments to comply with our
+// generic usage.
 type priorityQueue[T comparable] struct {
 	items *priorityItems[T]
 
@@ -24,7 +25,8 @@ type priorityItem[T comparable] struct {
 	value    T
 	priority float64
 
-	// The index field used and operated internally by heap.Interface to re-organize item on the queue.
+	// The index field is used and operated internally by heap.Interface to re-organize items in the
+	// queue.
 	index int
 }
 
@@ -104,5 +106,6 @@ func (pi *priorityItems[T]) Pop() interface{} {
 	old := *pi
 	item := old[len(old)-1]
 	*pi = old[0 : len(old)-1]
+
 	return item
 }

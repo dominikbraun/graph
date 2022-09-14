@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),  and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2022-09-15
+
+### Added
+* Added the `Order` method for retrieving the number of vertices in the graph.
+* Added the `Size` method for retrieving the number of edges in the graph.
+
+### Changed
+* Changed an internal operation of `ShortestPath` from O(n) to O(log(n)) by implementing the priority queue as a binary heap. Note that the actual complexity might still be defined by `ShortestPath` itself.
+
 ## [0.10.0] - 2022-09-09
 
 ### Added

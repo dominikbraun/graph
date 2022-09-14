@@ -12,7 +12,7 @@ import (
 
 const dotTemplate = `strict {{.GraphType}} {
 {{range $s := .Statements}}
-	{{.Source}} {{if .Target}}{{$.EdgeOperator}} {{.Target}} [ {{range $k, $v := .Attributes}}{{$k}}="{{$v}}", {{end}} weight={{.Weight}} ]{{end}};
+	"{{.Source}}" {{if .Target}}{{$.EdgeOperator}} "{{.Target}}" [ {{range $k, $v := .Attributes}}{{$k}}="{{$v}}", {{end}} weight={{.Weight}} ]{{end}};
 {{end}}
 }
 `

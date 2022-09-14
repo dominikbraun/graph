@@ -6,34 +6,27 @@ import (
 )
 
 // priorityQueue is a priority queue implementation for minimum priorities, meaning that smaller
-// values will be prioritized. It maintains a descendingly ordered list of priority items.
+// values will be prioritized. It maintains a list of priority items in descending order.
 //
-// This implementation is built on top of heap.Interface with some adjustments to comply with our
-// generic usage.
+// This implementation is built on top of heap.Interface with some adjustments to comply with the
+// usage of generics.
 type priorityQueue[T comparable] struct {
-	items *priorityItems[T]
-
-	// The map used to look up item that already pushed to the queue. Especially useful when we do
-	// UpdatePriority operation.
-	lookup map[T]*priorityItem[T]
+	items *minHeap[T]
+	cache map[T]*priorityItem[T]
 }
-
-type priorityItems[T comparable] []*priorityItem[T]
 
 // priorityItem is an item in the priority queue, consisting of a priority and an actual value.
 type priorityItem[T comparable] struct {
 	value    T
 	priority float64
-
-	// The index field is used and operated internally by heap.Interface to re-organize items in the
-	// queue.
+	// index is used internally by heap.Interface to re-organize items in the queue.
 	index int
 }
 
 func newPriorityQueue[T comparable]() *priorityQueue[T] {
 	return &priorityQueue[T]{
-		items:  &priorityItems[T]{},
-		lookup: map[T]*priorityItem[T]{},
+		items: &minHeap[T]{},
+		cache: map[T]*priorityItem[T]{},
 	}
 }
 
@@ -43,7 +36,7 @@ func (p *priorityQueue[T]) Len() int {
 
 // Push pushes a new item with the given priority into the queue.
 func (p *priorityQueue[T]) Push(item T, priority float64) {
-	if _, ok := p.lookup[item]; ok {
+	if _, ok := p.cache[item]; ok {
 		return
 	}
 
@@ -54,25 +47,26 @@ func (p *priorityQueue[T]) Push(item T, priority float64) {
 	}
 
 	heap.Push(p.items, newItem)
-	p.lookup[item] = newItem
+	p.cache[item] = newItem
 }
 
 // Pop returns the item with the smallest priority from the queue and removes that item.
 func (p *priorityQueue[T]) Pop() (T, error) {
 	if len(*p.items) == 0 {
-		var zeroVal T
-		return zeroVal, errors.New("priority queue is empty")
+		var empty T
+		return empty, errors.New("priority queue is empty")
 	}
 
 	item := heap.Pop(p.items).(*priorityItem[T])
-	delete(p.lookup, item.value)
+	delete(p.cache, item.value)
+
 	return item.value, nil
 }
 
 // UpdatePriority updates the priority of a given item to the given priority. The item must be
 // pushed into the queue first. If the item doesn't exist, nothing happens.
 func (p *priorityQueue[T]) UpdatePriority(item T, priority float64) {
-	targetItem, ok := p.lookup[item]
+	targetItem, ok := p.cache[item]
 	if !ok {
 		return
 	}
@@ -81,31 +75,33 @@ func (p *priorityQueue[T]) UpdatePriority(item T, priority float64) {
 	heap.Fix(p.items, targetItem.index)
 }
 
-// Len and the rest methods below are required to implement priority queue on top of heap.Interface.
-func (pi *priorityItems[T]) Len() int {
-	return len(*pi)
+// minHeap is a binary min heap that implements heap.Interface.
+type minHeap[T comparable] []*priorityItem[T]
+
+func (m *minHeap[T]) Len() int {
+	return len(*m)
 }
 
-func (pi *priorityItems[T]) Less(i, j int) bool {
-	return (*pi)[i].priority < (*pi)[j].priority
+func (m *minHeap[T]) Less(i, j int) bool {
+	return (*m)[i].priority < (*m)[j].priority
 }
 
-func (pi *priorityItems[T]) Swap(i, j int) {
-	(*pi)[i], (*pi)[j] = (*pi)[j], (*pi)[i]
-	(*pi)[i].index = i
-	(*pi)[j].index = j
+func (m *minHeap[T]) Swap(i, j int) {
+	(*m)[i], (*m)[j] = (*m)[j], (*m)[i]
+	(*m)[i].index = i
+	(*m)[j].index = j
 }
 
-func (pi *priorityItems[T]) Push(x interface{}) {
-	it := x.(*priorityItem[T])
-	it.index = len(*pi)
-	*pi = append(*pi, it)
+func (m *minHeap[T]) Push(item interface{}) {
+	i := item.(*priorityItem[T])
+	i.index = len(*m)
+	*m = append(*m, i)
 }
 
-func (pi *priorityItems[T]) Pop() interface{} {
-	old := *pi
+func (m *minHeap[T]) Pop() interface{} {
+	old := *m
 	item := old[len(old)-1]
-	*pi = old[:len(old)-1]
+	*m = old[:len(old)-1]
 
 	return item
 }

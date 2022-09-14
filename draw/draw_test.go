@@ -10,36 +10,36 @@ import (
 
 func TestGenerateDOT(t *testing.T) {
 	tests := map[string]struct {
-		graph    graph.Graph[int, int]
-		vertices []int
-		edges    []graph.Edge[int]
+		graph    graph.Graph[string, string]
+		vertices []string
+		edges    []graph.Edge[string]
 		expected description
 	}{
 		"3-vertex directed graph": {
-			graph:    graph.New(graph.IntHash, graph.Directed()),
-			vertices: []int{1, 2, 3},
-			edges: []graph.Edge[int]{
-				{Source: 1, Target: 2},
-				{Source: 1, Target: 3},
+			graph:    graph.New(graph.StringHash, graph.Directed()),
+			vertices: []string{"1", "2", "3"},
+			edges: []graph.Edge[string]{
+				{Source: "1", Target: "2"},
+				{Source: "1", Target: "3"},
 			},
 			expected: description{
 				GraphType:    "digraph",
 				EdgeOperator: "->",
 				Statements: []statement{
-					{Source: 1, Target: 2},
-					{Source: 1, Target: 3},
-					{Source: 2},
-					{Source: 3},
+					{Source: "1", Target: "2"},
+					{Source: "1", Target: "3"},
+					{Source: "2"},
+					{Source: "3"},
 				},
 			},
 		},
 		"3-vertex directed, weighted graph with weights and attributes": {
-			graph:    graph.New(graph.IntHash, graph.Directed(), graph.Weighted()),
-			vertices: []int{1, 2, 3},
-			edges: []graph.Edge[int]{
+			graph:    graph.New(graph.StringHash, graph.Directed(), graph.Weighted()),
+			vertices: []string{"1", "2", "3"},
+			edges: []graph.Edge[string]{
 				{
-					Source: 1,
-					Target: 2,
+					Source: "1",
+					Target: "2",
 					Properties: graph.EdgeProperties{
 						Weight: 10,
 						Attributes: map[string]string{
@@ -47,23 +47,23 @@ func TestGenerateDOT(t *testing.T) {
 						},
 					},
 				},
-				{Source: 1, Target: 3},
+				{Source: "1", Target: "3"},
 			},
 			expected: description{
 				GraphType:    "digraph",
 				EdgeOperator: "->",
 				Statements: []statement{
 					{
-						Source: 1,
-						Target: 2,
+						Source: "1",
+						Target: "2",
 						Weight: 10,
 						Attributes: map[string]string{
 							"color": "red",
 						},
 					},
-					{Source: 1, Target: 3},
-					{Source: 2},
-					{Source: 3},
+					{Source: "1", Target: "3"},
+					{Source: "2"},
+					{Source: "3"},
 				},
 			},
 		},
@@ -122,10 +122,10 @@ func TestRenderDOT(t *testing.T) {
 				},
 			},
 			expected: `strict digraph {
-				1 -> 2 [ weight=0 ];
-				1 -> 3 [ weight=0 ];
-				2 ;
-				3 ;
+				"1" -> "2" [ weight=0 ];
+				"1" -> "3" [ weight=0 ];
+				"2" ;
+				"3" ;
 			}`,
 		},
 		"custom edge attributes": {
@@ -152,10 +152,26 @@ func TestRenderDOT(t *testing.T) {
 				},
 			},
 			expected: `strict digraph {
-				1 -> 2 [ color="red", weight=0 ];
-				1 -> 3 [ color="blue", weight=0 ];
-				2 ;
-				3 ;
+				"1" -> "2" [ color="red", weight=0 ];
+				"1" -> "3" [ color="blue", weight=0 ];
+				"2" ;
+				"3" ;
+			}`,
+		},
+		"vertices containing special characters": {
+			description: description{
+				GraphType:    "digraph",
+				EdgeOperator: "->",
+				Statements: []statement{
+					{Source: "/home", Target: "projects/graph"},
+					{Source: "/home", Target: ".config"},
+					{Source: ".config", Target: "my file.txt"},
+				},
+			},
+			expected: `strict digraph {
+				"/home" -> "projects/graph" [ weight=0 ];
+				"/home" -> ".config" [ weight=0 ];
+				".config" -> "my file.txt" [ weight=0 ];
 			}`,
 		},
 	}

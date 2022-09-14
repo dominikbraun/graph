@@ -14,6 +14,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 * Changed an internal operation of `ShortestPath` from O(n) to O(log(n)) by implementing the priority queue as a binary heap. Note that the actual complexity might still be defined by `ShortestPath` itself.
 
+### Fixed
+* Fixed the DOT rendering for string vertices containing special characters and whitespaces. 
+
 ## [0.10.0] - 2022-09-09
 
 ### Added

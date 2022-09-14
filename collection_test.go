@@ -4,16 +4,38 @@ import (
 	"testing"
 )
 
+func assertPriorityQueue[T comparable](t *testing.T, testName string, q *priorityQueue[T], expectedItems []*priorityItem[T]) {
+	if q.Len() != len(expectedItems) {
+		t.Fatalf("%s: item length expectancy doesn't match: expected %v, got %v", testName, len(expectedItems), q.Len())
+	}
+
+	poppedList := make([]T, q.Len())
+	for q.Len() > 0 {
+		poppedItem, _ := q.Pop()
+		poppedList = append(poppedList, poppedItem)
+	}
+
+	// Each time we pop from the given queue, it will return the item with the smallest priority.
+	// So we compare the expected item with popped list from the other direction.
+	n := len(poppedList)
+	for i, expectedItem := range expectedItems {
+		comparedToItem := poppedList[n-1-i]
+		if comparedToItem != expectedItem.value {
+			t.Errorf("%s: item doesn't match: expected %v at index %d, got %v", testName, expectedItem.value, i, comparedToItem)
+		}
+	}
+}
+
 func TestPriorityQueue_Push(t *testing.T) {
 	tests := map[string]struct {
 		items                 []int
 		priorities            []float64
-		expectedPriorityItems []priorityItem[int]
+		expectedPriorityItems []*priorityItem[int]
 	}{
 		"queue with 5 elements": {
 			items:      []int{10, 20, 30, 40, 50},
 			priorities: []float64{6, 8, 2, 7, 5},
-			expectedPriorityItems: []priorityItem[int]{
+			expectedPriorityItems: []*priorityItem[int]{
 				{value: 20, priority: 8},
 				{value: 40, priority: 7},
 				{value: 10, priority: 6},
@@ -30,15 +52,7 @@ func TestPriorityQueue_Push(t *testing.T) {
 			queue.Push(item, test.priorities[i])
 		}
 
-		if len(queue.items) != len(test.expectedPriorityItems) {
-			t.Fatalf("%s: item length expectancy doesn't match: expected %v, got %v", name, len(test.expectedPriorityItems), len(queue.items))
-		}
-
-		for i, expectedPriorityItem := range test.expectedPriorityItems {
-			if queue.items[i] != expectedPriorityItem {
-				t.Errorf("%s: item doesn't match: expected %v at index %d, got %v", name, expectedPriorityItem, i, queue.items[i])
-			}
-		}
+		assertPriorityQueue(t, name, queue, test.expectedPriorityItems)
 	}
 }
 
@@ -87,15 +101,15 @@ func TestPriorityQueue_Pop(t *testing.T) {
 	}
 }
 
-func TestPriorityQueue_DecreasePriority(t *testing.T) {
+func TestPriorityQueue_UpdatePriority(t *testing.T) {
 	tests := map[string]struct {
-		items                 []priorityItem[int]
-		expectedPriorityItems []priorityItem[int]
+		items                 []*priorityItem[int]
+		expectedPriorityItems []*priorityItem[int]
 		decreaseItem          int
 		decreasePriority      float64
 	}{
 		"decrease 30 to priority 5": {
-			items: []priorityItem[int]{
+			items: []*priorityItem[int]{
 				{value: 40, priority: 40},
 				{value: 30, priority: 30},
 				{value: 20, priority: 20},
@@ -103,7 +117,7 @@ func TestPriorityQueue_DecreasePriority(t *testing.T) {
 			},
 			decreaseItem:     30,
 			decreasePriority: 5,
-			expectedPriorityItems: []priorityItem[int]{
+			expectedPriorityItems: []*priorityItem[int]{
 				{value: 40, priority: 40},
 				{value: 20, priority: 20},
 				{value: 10, priority: 10},
@@ -111,7 +125,7 @@ func TestPriorityQueue_DecreasePriority(t *testing.T) {
 			},
 		},
 		"decrease a non-existent item": {
-			items: []priorityItem[int]{
+			items: []*priorityItem[int]{
 				{value: 40, priority: 40},
 				{value: 30, priority: 30},
 				{value: 20, priority: 20},
@@ -119,31 +133,41 @@ func TestPriorityQueue_DecreasePriority(t *testing.T) {
 			},
 			decreaseItem:     50,
 			decreasePriority: 10,
-			expectedPriorityItems: []priorityItem[int]{
+			expectedPriorityItems: []*priorityItem[int]{
 				{value: 40, priority: 40},
 				{value: 30, priority: 30},
 				{value: 20, priority: 20},
 				{value: 10, priority: 10},
 			},
 		},
+		"increase 10 to priority 100": {
+			items: []*priorityItem[int]{
+				{value: 40, priority: 40},
+				{value: 30, priority: 30},
+				{value: 20, priority: 20},
+				{value: 10, priority: 10},
+			},
+			decreaseItem:     10,
+			decreasePriority: 100,
+			expectedPriorityItems: []*priorityItem[int]{
+				{value: 10, priority: 100},
+				{value: 40, priority: 40},
+				{value: 30, priority: 30},
+				{value: 20, priority: 20},
+			},
+		},
 	}
 
 	for name, test := range tests {
-		queue := &priorityQueue[int]{
-			items: test.items,
+		queue := newPriorityQueue[int]()
+
+		for _, item := range test.items {
+			queue.Push(item.value, item.priority)
 		}
 
-		queue.DecreasePriority(test.decreaseItem, test.decreasePriority)
+		queue.UpdatePriority(test.decreaseItem, test.decreasePriority)
 
-		if len(queue.items) != len(test.expectedPriorityItems) {
-			t.Fatalf("%s: item length expectancy doesn't match: expected %v, got %v", name, len(test.expectedPriorityItems), len(queue.items))
-		}
-
-		for i, expectedPriorityItem := range test.expectedPriorityItems {
-			if queue.items[i] != expectedPriorityItem {
-				t.Errorf("%s: item doesn't match: expected %v at index %d, got %v", name, expectedPriorityItem, i, queue.items[i])
-			}
-		}
+		assertPriorityQueue(t, name, queue, test.expectedPriorityItems)
 	}
 }
 
@@ -177,93 +201,10 @@ func TestPriorityQueue_Len(t *testing.T) {
 			queue.Push(item, test.priorities[i])
 		}
 
-		len := queue.Len()
+		n := queue.Len()
 
-		if len != test.expectedLen {
-			t.Errorf("%s: length expectancy doesn't match: expected %v, got %v", name, test.expectedLen, len)
-		}
-	}
-}
-
-func TestPriorityQueue_insertItemAt(t *testing.T) {
-	tests := map[string]struct {
-		items                 []priorityItem[int]
-		expectedPriorityItems []priorityItem[int]
-		insertItem            int
-		insertPriority        float64
-		insertIndex           int
-	}{
-		"insert in the middle of the queue": {
-			items: []priorityItem[int]{
-				{value: 10, priority: 10},
-				{value: 20, priority: 20},
-				{value: 30, priority: 30},
-				{value: 40, priority: 40},
-			},
-			insertItem:     25,
-			insertPriority: 25,
-			insertIndex:    2,
-			expectedPriorityItems: []priorityItem[int]{
-				{value: 10, priority: 10},
-				{value: 20, priority: 20},
-				{value: 25, priority: 25},
-				{value: 30, priority: 30},
-				{value: 40, priority: 40},
-			},
-		},
-		"insert at the start of the queue": {
-			items: []priorityItem[int]{
-				{value: 10, priority: 10},
-				{value: 20, priority: 20},
-				{value: 30, priority: 30},
-				{value: 40, priority: 40},
-			},
-			insertItem:     5,
-			insertPriority: 5,
-			insertIndex:    0,
-			expectedPriorityItems: []priorityItem[int]{
-				{value: 5, priority: 5},
-				{value: 10, priority: 10},
-				{value: 20, priority: 20},
-				{value: 30, priority: 30},
-				{value: 40, priority: 40},
-			},
-		},
-		"insert at the end of the queue": {
-			items: []priorityItem[int]{
-				{value: 10, priority: 10},
-				{value: 20, priority: 20},
-				{value: 30, priority: 30},
-				{value: 40, priority: 40},
-			},
-			insertItem:     50,
-			insertPriority: 50,
-			insertIndex:    4,
-			expectedPriorityItems: []priorityItem[int]{
-				{value: 10, priority: 10},
-				{value: 20, priority: 20},
-				{value: 30, priority: 30},
-				{value: 40, priority: 40},
-				{value: 50, priority: 50},
-			},
-		},
-	}
-
-	for name, test := range tests {
-		queue := &priorityQueue[int]{
-			items: test.items,
-		}
-
-		queue.insertItemAt(test.insertItem, test.insertPriority, test.insertIndex)
-
-		if len(queue.items) != len(test.expectedPriorityItems) {
-			t.Fatalf("%s: item length expectancy doesn't match: expected %v, got %v", name, len(test.expectedPriorityItems), len(queue.items))
-		}
-
-		for i, expectedPriorityItem := range test.expectedPriorityItems {
-			if queue.items[i] != expectedPriorityItem {
-				t.Errorf("%s: item doesn't match: expected %v at index %d, got %v", name, expectedPriorityItem, i, queue.items[i])
-			}
+		if n != test.expectedLen {
+			t.Errorf("%s: length expectancy doesn't match: expected %v, got %v", name, test.expectedLen, n)
 		}
 	}
 }

@@ -43,8 +43,7 @@ func (p *priorityQueue[T]) Len() int {
 
 // Push pushes a new item with the given priority into the queue.
 func (p *priorityQueue[T]) Push(item T, priority float64) {
-	_, ok := p.lookup[item]
-	if ok {
+	if _, ok := p.lookup[item]; ok {
 		return
 	}
 
@@ -53,6 +52,7 @@ func (p *priorityQueue[T]) Push(item T, priority float64) {
 		priority: priority,
 		index:    0,
 	}
+
 	heap.Push(p.items, newItem)
 	p.lookup[item] = newItem
 }
@@ -105,7 +105,7 @@ func (pi *priorityItems[T]) Push(x interface{}) {
 func (pi *priorityItems[T]) Pop() interface{} {
 	old := *pi
 	item := old[len(old)-1]
-	*pi = old[0 : len(old)-1]
+	*pi = old[:len(old)-1]
 
 	return item
 }

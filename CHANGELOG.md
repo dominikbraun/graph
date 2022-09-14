@@ -12,6 +12,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Added the `Size` method for retrieving the number of edges in the graph.
 
 ### Changed
+* Changed the `graph` logo.
 * Changed an internal operation of `ShortestPath` from O(n) to O(log(n)) by implementing the priority queue as a binary heap. Note that the actual complexity might still be defined by `ShortestPath` itself.
 
 ### Fixed

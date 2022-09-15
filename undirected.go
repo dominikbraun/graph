@@ -58,8 +58,8 @@ func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Ed
 		return fmt.Errorf("an edge between vertices %v and %v already exists", sourceHash, targetHash)
 	}
 
-	// If the graph was declared to be acyclic, permit the creation of a cycle.
-	if u.traits.IsAcyclic {
+	// If the user opted in to permitting cycles, run a cycle check.
+	if u.traits.PermitCycles {
 		createsCycle, err := CreatesCycle[K, T](u, sourceHash, targetHash)
 		if err != nil {
 			return fmt.Errorf("failed to check for cycles: %w", err)

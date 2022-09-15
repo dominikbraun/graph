@@ -89,7 +89,7 @@ func TestUndirected_AddEdge(t *testing.T) {
 			vertices:   []int{1, 2, 3},
 			edgeHashes: [][3]int{{1, 2, 0}, {2, 3, 0}, {3, 1, 0}},
 			traits: &Traits{
-				IsAcyclic: true,
+				PermitCycles: true,
 			},
 			shouldFinallyFail: true,
 		},

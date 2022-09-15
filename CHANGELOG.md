@@ -8,8 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [0.12.0] - 2022-09-18
 
 ### Added
+* Added the `PermitCycles` option to explicitly prevent the creation of cycles.
 
 ### Changed
+* Changed the `Acyclic` option to not implicitly impose cycle checks for operations like `AddEdge`. To prevent the creation of cycles, use `PermitCycles`. 
 
 ## [0.11.0] - 2022-09-15
 

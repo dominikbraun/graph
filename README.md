@@ -195,12 +195,12 @@ g := graph.New(graph.StringHash, graph.Directed(), graph.Acyclic())
 _ := graph.TransitiveReduction(g)
 ```
 
-## Cycle checks for acyclic graphs
+## Prevent the creation of cycles
 
 ![cycle checks](img/cycles.svg)
 
 ```go
-g := graph.New(graph.IntHash, graph.Acyclic())
+g := graph.New(graph.IntHash, graph.PermitCycles())
 
 g.AddVertex(1)
 g.AddVertex(2)

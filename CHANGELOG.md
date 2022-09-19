@@ -11,7 +11,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Added the `PermitCycles` option to explicitly prevent the creation of cycles.
 
 ### Changed
-* Changed the `Acyclic` option to not implicitly impose cycle checks for operations like `AddEdge`. To prevent the creation of cycles, use `PermitCycles`. 
+* Changed the `Acyclic` option to not implicitly impose cycle checks for operations like `AddEdge`. To prevent the creation of cycles, use `PermitCycles`.
+* Changed `TopologicalSort` to only work for graphs created with `PermitCycles`. This is temporary.
+* Changed `TransitiveReduction` to only work for graphs created with `PermitCycles`. This is temporary.
 
 ## [0.11.0] - 2022-09-15
 

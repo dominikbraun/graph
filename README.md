@@ -170,7 +170,7 @@ fmt.Println(path)
 ![topological sort](img/topological-sort.svg)
 
 ```go
-g := graph.New(graph.IntHash, graph.Directed(), graph.Acyclic())
+g := graph.New(graph.IntHash, graph.Directed(), graph.PermitCycles())
 
 // Add vertices and edges ...
 
@@ -188,7 +188,7 @@ fmt.Println(order)
 ![transitive reduction](img/transitive-reduction.svg)
 
 ```go
-g := graph.New(graph.StringHash, graph.Directed(), graph.Acyclic())
+g := graph.New(graph.StringHash, graph.Directed(), graph.PermitCycles())
 
 // Add vertices and edges ...
 

@@ -90,7 +90,10 @@ func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Ed
 		option(&edge.Properties)
 	}
 
-	u.addEdge(sourceHash, targetHash, edge)
+	err = u.addEdge(sourceHash, targetHash, edge)
+	if err != nil {
+		return fmt.Errorf("failed to add edge: %w", err)
+	}
 
 	return nil
 }

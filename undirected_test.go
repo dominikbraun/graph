@@ -358,9 +358,12 @@ func TestUndirected_Edge(t *testing.T) {
 		sourceHash := graph.hash(test.vertices[0])
 		targetHash := graph.hash(test.vertices[1])
 
-		_ = graph.AddEdge(sourceHash, targetHash)
+		err := graph.AddEdge(sourceHash, targetHash)
+		if err != nil {
+			t.Fatalf("%s: error adding edge: %v", name, err)
+		}
 
-		_, err := graph.Edge(test.getEdgeHashes[0], test.getEdgeHashes[1])
+		_, err = graph.Edge(test.getEdgeHashes[0], test.getEdgeHashes[1])
 
 		if test.exists != (err == nil) {
 			t.Fatalf("%s: result expectancy doesn't match: expected %v, got %v", name, test.exists, err)
@@ -800,7 +803,10 @@ func TestUndirected_addEdge(t *testing.T) {
 		for _, edge := range test.edges {
 			sourceHash := graph.hash(edge.Source)
 			TargetHash := graph.hash(edge.Target)
-			graph.addEdge(sourceHash, TargetHash, edge)
+			err := graph.addEdge(sourceHash, TargetHash, edge)
+			if err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
 		}
 
 		outEdges := graph.store.(*memoryStore[int, int]).outEdges

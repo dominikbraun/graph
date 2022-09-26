@@ -47,7 +47,7 @@ func (s *memoryStore[K, T]) ListVertices() ([]K, error) {
 	return hashes, nil
 }
 
-func (s *memoryStore[K, T]) CountVertices() (int, error) {
+func (s *memoryStore[K, T]) VertexCount() (int, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 

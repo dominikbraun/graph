@@ -174,7 +174,7 @@ func (u *undirected[K, T]) Clone() (Graph[K, T], error) {
 }
 
 func (u *undirected[K, T]) Order() (int, error) {
-	return u.store.CountVertices()
+	return u.store.VertexCount()
 }
 
 func (u *undirected[K, T]) Size() (int, error) {

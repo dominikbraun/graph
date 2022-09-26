@@ -158,7 +158,7 @@ func (d *directed[K, T]) Clone() (Graph[K, T], error) {
 }
 
 func (d *directed[K, T]) Order() (int, error) {
-	return d.store.CountVertices()
+	return d.store.VertexCount()
 }
 
 func (d *directed[K, T]) Size() (int, error) {

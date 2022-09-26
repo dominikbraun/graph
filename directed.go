@@ -131,11 +131,57 @@ func (d *directed[K, T]) RemoveEdge(source, target K) error {
 }
 
 func (d *directed[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {
-	return d.store.AdjacencyMap()
+	vertices, err := d.store.ListVertices()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list vertices: %w", err)
+	}
+
+	edges, err := d.store.ListEdges()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list edges: %w", err)
+	}
+
+	m := make(map[K]map[K]Edge[K])
+
+	for _, vertex := range vertices {
+		m[vertex] = make(map[K]Edge[K])
+	}
+
+	for _, edge := range edges {
+		if _, ok := m[edge.Source]; !ok {
+			m[edge.Source] = make(map[K]Edge[K])
+		}
+		m[edge.Source][edge.Target] = edge
+	}
+
+	return m, nil
 }
 
 func (d *directed[K, T]) PredecessorMap() (map[K]map[K]Edge[K], error) {
-	return d.store.PredecessorMap()
+	m := make(map[K]map[K]Edge[K])
+
+	vertices, err := d.store.ListVertices()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list vertices: %w", err)
+	}
+
+	edges, err := d.store.ListEdges()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list edges: %w", err)
+	}
+
+	for _, vertex := range vertices {
+		m[vertex] = make(map[K]Edge[K])
+	}
+
+	for _, edge := range edges {
+		if _, ok := m[edge.Target]; !ok {
+			m[edge.Target] = make(map[K]Edge[K])
+		}
+		m[edge.Target][edge.Source] = edge
+	}
+
+	return m, nil
 }
 
 func (d *directed[K, T]) addEdge(sourceHash, targetHash K, edge Edge[K]) error {
@@ -163,7 +209,7 @@ func (d *directed[K, T]) Order() (int, error) {
 
 func (d *directed[K, T]) Size() (int, error) {
 	size := 0
-	outEdges, err := d.store.AdjacencyMap()
+	outEdges, err := d.AdjacencyMap()
 	if err != nil {
 		return 0, fmt.Errorf("failed to get adjacency map: %w", err)
 	}

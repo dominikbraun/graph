@@ -193,3 +193,13 @@ func (s *memoryStore[K, T]) PredecessorMap() (map[K]map[K]Edge[K], error) {
 
 	return predecessors, nil
 }
+
+func (s *memoryStore[K, T]) ListEdges() ([]Edge[K], error) {
+	res := make([]Edge[K], 0)
+	for _, edges := range s.outEdges {
+		for _, edge := range edges {
+			res = append(res, edge)
+		}
+	}
+	return res, nil
+}

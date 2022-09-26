@@ -8,8 +8,7 @@ type Store[K comparable, T any] interface {
 	AddEdge(sourceHash, targetHash K, edge Edge[K]) error
 	RemoveEdge(sourceHash, targetHash K) error
 	Edge(sourceHash, targetHash K) (Edge[K], error)
+	ListEdges() ([]Edge[K], error)
 	GetEdgesBySource(sourceHash K) ([]Edge[K], error)
 	GetEdgesByTarget(targetHash K) ([]Edge[K], error)
-	AdjacencyMap() (map[K]map[K]Edge[K], error)
-	PredecessorMap() (map[K]map[K]Edge[K], error)
 }

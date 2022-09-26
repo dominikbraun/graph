@@ -148,7 +148,30 @@ func (u *undirected[K, T]) RemoveEdge(source, target K) error {
 }
 
 func (u *undirected[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {
-	return u.store.AdjacencyMap()
+	vertices, err := u.store.ListVertices()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list vertices: %w", err)
+	}
+
+	edges, err := u.store.ListEdges()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list edges: %w", err)
+	}
+
+	m := make(map[K]map[K]Edge[K])
+
+	for _, vertex := range vertices {
+		m[vertex] = make(map[K]Edge[K])
+	}
+
+	for _, edge := range edges {
+		if _, ok := m[edge.Source]; !ok {
+			m[edge.Source] = make(map[K]Edge[K])
+		}
+		m[edge.Source][edge.Target] = edge
+	}
+
+	return m, nil
 }
 
 func (u *undirected[K, T]) PredecessorMap() (map[K]map[K]Edge[K], error) {
@@ -176,7 +199,7 @@ func (u *undirected[K, T]) Order() (int, error) {
 
 func (u *undirected[K, T]) Size() (int, error) {
 	size := 0
-	outEdges, err := u.store.AdjacencyMap()
+	outEdges, err := u.AdjacencyMap()
 	if err != nil {
 		return 0, fmt.Errorf("failed to get adjacency map: %w", err)
 	}

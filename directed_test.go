@@ -847,7 +847,7 @@ func TestDirected_predecessors(t *testing.T) {
 			}
 		}
 
-		predecessors, _ := predecessors(graph.store, graph.hash(test.vertex))
+		predecessors, _ := predecessors(graph, graph.hash(test.vertex))
 
 		if !slicesAreEqual(predecessors, test.expectedPredecessors) {
 			t.Errorf("%s: predecessors don't match: expected %v, got %v", name, test.expectedPredecessors, predecessors)
@@ -875,10 +875,10 @@ func slicesAreEqual[T comparable](a, b []T) bool {
 	return true
 }
 
-func predecessors[K comparable, T any](store Store[K, T], vertexHash K) ([]K, error) {
+func predecessors[K comparable, T any](g *directed[K, T], vertexHash K) ([]K, error) {
 	var predecessorHashes []K
 
-	predicessorsMap, err := store.PredecessorMap()
+	predicessorsMap, err := g.PredecessorMap()
 	if err != nil {
 		return nil, err
 	}

@@ -102,16 +102,13 @@ func (u *undirected[K, T]) Edge(sourceHash, targetHash K) (Edge[T], error) {
 	// In an undirected graph, since multigraphs aren't supported, the edge AB is the same as BA.
 	// Therefore, if source[target] cannot be found, this function also looks for target[source].
 
-	// TODO(@geoah): this can be better probably
 	edge, err := u.store.Edge(sourceHash, targetHash)
-	if err != nil && !errors.Is(err, ErrEdgeNotFound) {
-		return Edge[T]{}, err
-	}
-	if err != nil {
+	if errors.Is(err, ErrEdgeNotFound) {
 		edge, err = u.store.Edge(targetHash, sourceHash)
-		if err != nil {
-			return Edge[T]{}, err
-		}
+	}
+
+	if err != nil {
+		return Edge[T]{}, err
 	}
 
 	sourceVertex, _, err := u.store.Vertex(sourceHash)

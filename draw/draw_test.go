@@ -28,6 +28,7 @@ func TestGenerateDOT(t *testing.T) {
 				Statements: []statement{
 					{Source: "1", Target: "2"},
 					{Source: "1", Target: "3"},
+					{Source: "1"},
 					{Source: "2"},
 					{Source: "3"},
 				},
@@ -54,14 +55,15 @@ func TestGenerateDOT(t *testing.T) {
 				EdgeOperator: "->",
 				Statements: []statement{
 					{
-						Source: "1",
-						Target: "2",
-						Weight: 10,
-						Attributes: map[string]string{
+						Source:     "1",
+						Target:     "2",
+						EdgeWeight: 10,
+						EdgeAttributes: map[string]string{
 							"color": "red",
 						},
 					},
 					{Source: "1", Target: "3"},
+					{Source: "1"},
 					{Source: "2"},
 					{Source: "3"},
 				},
@@ -117,6 +119,7 @@ func TestRenderDOT(t *testing.T) {
 				Statements: []statement{
 					{Source: 1, Target: 2},
 					{Source: 1, Target: 3},
+					{Source: 1},
 					{Source: 2},
 					{Source: 3},
 				},
@@ -124,8 +127,9 @@ func TestRenderDOT(t *testing.T) {
 			expected: `strict digraph {
 				"1" -> "2" [ weight=0 ];
 				"1" -> "3" [ weight=0 ];
-				"2" ;
-				"3" ;
+				"1" [ weight=0 ];
+				"2" [ weight=0 ];
+				"3" [ weight=0 ];
 			}`,
 		},
 		"custom edge attributes": {
@@ -136,17 +140,18 @@ func TestRenderDOT(t *testing.T) {
 					{
 						Source: 1,
 						Target: 2,
-						Attributes: map[string]string{
+						EdgeAttributes: map[string]string{
 							"color": "red",
 						},
 					},
 					{
 						Source: 1,
 						Target: 3,
-						Attributes: map[string]string{
+						EdgeAttributes: map[string]string{
 							"color": "blue",
 						},
 					},
+					{Source: 1},
 					{Source: 2},
 					{Source: 3},
 				},
@@ -154,8 +159,9 @@ func TestRenderDOT(t *testing.T) {
 			expected: `strict digraph {
 				"1" -> "2" [ color="red", weight=0 ];
 				"1" -> "3" [ color="blue", weight=0 ];
-				"2" ;
-				"3" ;
+				"1" [ weight=0 ];
+				"2" [ weight=0 ];
+				"3" [ weight=0 ];
 			}`,
 		},
 		"vertices containing special characters": {
@@ -216,12 +222,12 @@ func normalizeOutput(output string) string {
 }
 
 func statementsAreEqual(a, b statement) bool {
-	if len(a.Attributes) != len(b.Attributes) {
+	if len(a.EdgeAttributes) != len(b.EdgeAttributes) {
 		return false
 	}
 
-	for aKey, aValue := range a.Attributes {
-		bValue, ok := b.Attributes[aKey]
+	for aKey, aValue := range a.EdgeAttributes {
+		bValue, ok := b.EdgeAttributes[aKey]
 		if !ok {
 			return false
 		}
@@ -232,5 +238,5 @@ func statementsAreEqual(a, b statement) bool {
 
 	return a.Source == b.Source &&
 		a.Target == b.Target &&
-		a.Weight == b.Weight
+		a.EdgeWeight == b.EdgeWeight
 }

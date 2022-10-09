@@ -48,7 +48,7 @@ func TestDirected_AddVertex(t *testing.T) {
 		graph := newDirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			_ = graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex, VertexWeight(vertex), VertexAttribute("color", "red"))
 		}
 
 		for _, vertex := range test.vertices {
@@ -56,6 +56,25 @@ func TestDirected_AddVertex(t *testing.T) {
 			if _, ok := graph.vertices[hash]; !ok {
 				t.Errorf("%s: vertex %v not found in graph: %v", name, vertex, graph.vertices)
 			}
+
+			if graph.vertexProperties[hash].Weight != vertex {
+				t.Errorf("%s: vertex %v has wrong weight: %v", name, vertex, graph.vertexProperties[hash].Weight)
+			}
+
+			if graph.vertexProperties[hash].Attributes["color"] != "red" {
+				t.Errorf("%s: vertex %v has wrong attributes: %v", name, vertex, graph.vertexProperties[hash].Attributes)
+			}
+		}
+
+		for _, vertex := range test.expectedVertices {
+			hash := graph.hash(vertex)
+			if _, ok := graph.vertices[hash]; !ok {
+				t.Errorf("%s: vertex %v not found in graph: %v", name, vertex, graph.vertices)
+			}
+		}
+
+		if len(graph.vertices) != len(test.expectedVertices) {
+			t.Errorf("%s: vertex count doesn't match: expected %v, got %v", name, len(test.expectedVertices), len(graph.vertices))
 		}
 	}
 }
@@ -480,7 +499,7 @@ func TestDirected_Clone(t *testing.T) {
 		graph := New(IntHash, Directed())
 
 		for _, vertex := range test.vertices {
-			_ = graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex, VertexWeight(vertex), VertexAttribute("color", "red"))
 		}
 
 		for _, edge := range test.edges {
@@ -516,6 +535,12 @@ func TestDirected_Clone(t *testing.T) {
 			}
 			if actualVertex != expectedVertex {
 				t.Errorf("%s: vertex expectancy doesn't match: expected %v, got %v", name, expectedVertex, actualVertex)
+			}
+			if actual.vertexProperties[expectedHash].Weight != expected.vertexProperties[expectedHash].Weight {
+				t.Errorf("%s: vertex properties expectancy doesn't match: expected %v, got %v", name, expected.vertexProperties[expectedHash], actual.vertexProperties[expectedHash])
+			}
+			if actual.vertexProperties[expectedHash].Attributes["color"] != expected.vertexProperties[expectedHash].Attributes["color"] {
+				t.Errorf("%s: vertex properties expectancy doesn't match: expected %v, got %v", name, expected.vertexProperties[expectedHash], actual.vertexProperties[expectedHash])
 			}
 		}
 

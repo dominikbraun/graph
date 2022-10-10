@@ -128,6 +128,11 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 	hashCursor := target
 
 	for hashCursor != source {
+		// if hashCursor is not a pressent key in bestPredecessors, hashCursor is set to the zero value
+		// without check this leads to endless prepending of zeros to the path
+		if _, ok := bestPredecessors[hashCursor]; !ok {
+			return nil, fmt.Errorf("vertex %v is not reachable from vertex %v", target, source)
+		}
 		hashCursor = bestPredecessors[hashCursor]
 		path = append([]K{hashCursor}, path...)
 	}

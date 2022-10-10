@@ -216,7 +216,7 @@ func TestDirectedShortestPath(t *testing.T) {
 			expectedShortestPath: []string{},
 			shouldFail:           true,
 		},
-		"target not reachable connected directed graph ": {
+		"target not reachable connected directed graph": {
 			vertices: []string{"A", "B", "C"},
 			edges: []Edge[string]{
 				{Source: "A", Target: "B", Properties: EdgeProperties{Weight: 0}},

@@ -75,6 +75,10 @@ func CreatesCycle[K comparable, T any](g Graph[K, T], source, target K) (bool, e
 func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, error) {
 	weights := make(map[K]float64)
 	visited := make(map[K]bool)
+
+	// bestPredecessors stores the best (i.e. cheapest or least-weighted) predecessor for each
+	// vertex. If there is an edge AC with weight 4 and an edge BC with weight 2, the best
+	// predecessor for C is B.
 	bestPredecessors := make(map[K]K)
 
 	weights[source] = 0
@@ -128,8 +132,8 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 	hashCursor := target
 
 	for hashCursor != source {
-		// if hashCursor is not a pressent key in bestPredecessors, hashCursor is set to the zero value
-		// without check this leads to endless prepending of zeros to the path
+		// If hashCursor is not a present key in bestPredecessors, hashCursor is set to the zero
+		// value. Without this check, this leads to endless prepending of zeros to the path.
 		if _, ok := bestPredecessors[hashCursor]; !ok {
 			return nil, fmt.Errorf("vertex %v is not reachable from vertex %v", target, source)
 		}

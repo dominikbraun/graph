@@ -9,6 +9,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+### Fixed
+* Fixed the behavior of `ShortestPath` when the target vertex is not reachable from one of the visited vertices.
+
 ## [0.12.0] - 2022-09-19
 
 ### Added

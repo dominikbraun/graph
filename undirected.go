@@ -53,13 +53,18 @@ func (u *undirected[K, T]) Vertex(hash K) (T, error) {
 	return vertex, nil
 }
 
-func (u *undirected[K, T]) VertexProperties(hash K) (VertexProperties, error) {
-	properties, ok := u.vertexProperties[hash]
-	if !ok {
-		return *properties, fmt.Errorf("vertex with hash %v doesn't exist", hash)
+func (u *undirected[K, T]) VertexWithProperties(hash K) (T, VertexProperties, error) {
+	vertex, err := u.Vertex(hash)
+	if err != nil {
+		return vertex, VertexProperties{}, err
 	}
 
-	return *properties, nil
+	properties, ok := u.vertexProperties[hash]
+	if !ok {
+		return vertex, *properties, fmt.Errorf("vertex with hash %v doesn't exist", hash)
+	}
+
+	return vertex, *properties, nil
 }
 
 func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {

@@ -27,8 +27,9 @@ type Graph[K comparable, T any] interface {
 	// Vertex returns the vertex with the given hash or an error if the vertex doesn't exist.
 	Vertex(hash K) (T, error)
 
-	// VertexProperties returns the properties of the vertex with the given hash or an error if the vertex doesn't exist
-	VertexProperties(hash K) (VertexProperties, error)
+	// VertexWithProperties returns the vertex with the given hash as well as its properties
+	// or an error if the vertex doesn't exist.
+	VertexWithProperties(hash K) (T, VertexProperties, error)
 
 	// AddEdge creates an edge between the source and the target vertex. If the Directed option has
 	// been called on the graph, this is a directed edge. Returns an error if either vertex doesn't

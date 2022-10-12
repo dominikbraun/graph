@@ -84,7 +84,7 @@ func generateDOT[K comparable, T any](g graph.Graph[K, T]) (description, error) 
 	}
 
 	for vertex, adjacencies := range adjacencyMap {
-		sourceProperties, err := g.VertexProperties(vertex)
+		_, sourceProperties, err := g.VertexWithProperties(vertex)
 		if err != nil {
 			return desc, err
 		}

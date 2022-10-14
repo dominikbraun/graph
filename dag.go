@@ -13,7 +13,7 @@ import (
 // recursively and uses Kahn's algorithm.
 func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 	if !isDAG(g) {
-		return nil, errors.New("topological sort can only be performed on DAGs created with the PermitCycles option")
+		return nil, errors.New("topological sort can only be performed on DAGs created with the PreventCycles option")
 	}
 
 	predecessorMap, err := g.PredecessorMap()
@@ -62,7 +62,7 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 // With a time complexity of O(V(V+E)), TransitiveReduction is a very costly operation.
 func TransitiveReduction[K comparable, T any](g Graph[K, T]) error {
 	if !isDAG(g) {
-		return errors.New("topological sort can only be performed on DAGs created with the PermitCycles option")
+		return errors.New("topological sort can only be performed on DAGs created with the PreventCycles option")
 	}
 
 	adjacencyMap, err := g.AdjacencyMap()
@@ -97,5 +97,5 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) error {
 }
 
 func isDAG[K comparable, T any](g Graph[K, T]) bool {
-	return g.Traits().IsDirected && g.Traits().PermitCycles
+	return g.Traits().IsDirected && g.Traits().PreventCycles
 }

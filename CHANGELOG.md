@@ -16,6 +16,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 * Changed `AddVertex` to accept functional options.
+* Renamed `PermitCycles` to `PreventCycles`. This seems to be the price to pay if English isn't a library author's native language.
 
 ### Fixed
 * Fixed the behavior of `ShortestPath` when the target vertex is not reachable from one of the visited vertices.

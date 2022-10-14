@@ -24,7 +24,7 @@ func TestDirectedTopologicalSort(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(IntHash, Directed(), PermitCycles())
+		graph := New(IntHash, Directed(), PreventCycles())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -108,7 +108,7 @@ func TestDirectedTransitiveReduction(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(StringHash, Directed(), PermitCycles())
+		graph := New(StringHash, Directed(), PreventCycles())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)

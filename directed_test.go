@@ -142,7 +142,7 @@ func TestDirected_AddEdge(t *testing.T) {
 				{Source: 3, Target: 1},
 			},
 			traits: &Traits{
-				PermitCycles: true,
+				PreventCycles: true,
 			},
 			shouldFinallyFail: true,
 		},

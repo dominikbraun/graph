@@ -84,8 +84,8 @@ func (d *directed[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Edge
 		return fmt.Errorf("an edge between vertices %v and %v already exists", sourceHash, targetHash)
 	}
 
-	// If the user opted in to permitting cycles, run a cycle check.
-	if d.traits.PermitCycles {
+	// If the user opted in to preventing cycles, run a cycle check.
+	if d.traits.PreventCycles {
 		createsCycle, err := CreatesCycle[K, T](d, sourceHash, targetHash)
 		if err != nil {
 			return fmt.Errorf("failed to check for cycles: %w", err)

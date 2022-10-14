@@ -6,22 +6,24 @@ import (
 )
 
 type directed[K comparable, T any] struct {
-	hash     Hash[K, T]
-	traits   *Traits
-	vertices map[K]T
-	edges    map[K]map[K]Edge[T]
-	outEdges map[K]map[K]Edge[T]
-	inEdges  map[K]map[K]Edge[T]
+	hash             Hash[K, T]
+	traits           *Traits
+	vertices         map[K]T
+	vertexProperties map[K]*VertexProperties
+	edges            map[K]map[K]Edge[T]
+	outEdges         map[K]map[K]Edge[T]
+	inEdges          map[K]map[K]Edge[T]
 }
 
 func newDirected[K comparable, T any](hash Hash[K, T], traits *Traits) *directed[K, T] {
 	return &directed[K, T]{
-		hash:     hash,
-		traits:   traits,
-		vertices: make(map[K]T),
-		edges:    make(map[K]map[K]Edge[T]),
-		outEdges: make(map[K]map[K]Edge[T]),
-		inEdges:  make(map[K]map[K]Edge[T]),
+		hash:             hash,
+		traits:           traits,
+		vertices:         make(map[K]T),
+		vertexProperties: make(map[K]*VertexProperties),
+		edges:            make(map[K]map[K]Edge[T]),
+		outEdges:         make(map[K]map[K]Edge[T]),
+		inEdges:          make(map[K]map[K]Edge[T]),
 	}
 }
 
@@ -29,9 +31,17 @@ func (d *directed[K, T]) Traits() *Traits {
 	return d.traits
 }
 
-func (d *directed[K, T]) AddVertex(value T) error {
+func (d *directed[K, T]) AddVertex(value T, options ...func(*VertexProperties)) error {
 	hash := d.hash(value)
 	d.vertices[hash] = value
+	d.vertexProperties[hash] = &VertexProperties{
+		Weight:     0,
+		Attributes: make(map[string]string),
+	}
+
+	for _, option := range options {
+		option(d.vertexProperties[hash])
+	}
 
 	return nil
 }
@@ -43,6 +53,20 @@ func (d *directed[K, T]) Vertex(hash K) (T, error) {
 	}
 
 	return vertex, nil
+}
+
+func (d *directed[K, T]) VertexWithProperties(hash K) (T, VertexProperties, error) {
+	vertex, err := d.Vertex(hash)
+	if err != nil {
+		return vertex, VertexProperties{}, err
+	}
+
+	properties, ok := d.vertexProperties[hash]
+	if !ok {
+		return vertex, *properties, fmt.Errorf("vertex with hash %v doesn't exist", hash)
+	}
+
+	return vertex, *properties, nil
 }
 
 func (d *directed[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
@@ -171,18 +195,24 @@ func (d *directed[K, T]) Clone() (Graph[K, T], error) {
 	}
 
 	vertices := make(map[K]T)
+	vertexProperties := make(map[K]*VertexProperties)
 
 	for hash, vertex := range d.vertices {
 		vertices[hash] = vertex
+		vertexProperties[hash] = &VertexProperties{
+			Weight:     d.vertexProperties[hash].Weight,
+			Attributes: d.vertexProperties[hash].Attributes,
+		}
 	}
 
 	return &directed[K, T]{
-		hash:     d.hash,
-		traits:   traits,
-		vertices: vertices,
-		edges:    cloneEdges(d.edges),
-		outEdges: cloneEdges(d.outEdges),
-		inEdges:  cloneEdges(d.inEdges),
+		hash:             d.hash,
+		traits:           traits,
+		vertices:         vertices,
+		vertexProperties: vertexProperties,
+		edges:            cloneEdges(d.edges),
+		outEdges:         cloneEdges(d.outEdges),
+		inEdges:          cloneEdges(d.inEdges),
 	}, nil
 }
 

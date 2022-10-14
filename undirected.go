@@ -6,20 +6,22 @@ import (
 )
 
 type undirected[K comparable, T any] struct {
-	hash     Hash[K, T]
-	traits   *Traits
-	vertices map[K]T
-	outEdges map[K]map[K]Edge[T]
-	inEdges  map[K]map[K]Edge[T]
+	hash             Hash[K, T]
+	traits           *Traits
+	vertices         map[K]T
+	vertexProperties map[K]*VertexProperties
+	outEdges         map[K]map[K]Edge[T]
+	inEdges          map[K]map[K]Edge[T]
 }
 
 func newUndirected[K comparable, T any](hash Hash[K, T], traits *Traits) *undirected[K, T] {
 	return &undirected[K, T]{
-		hash:     hash,
-		traits:   traits,
-		vertices: make(map[K]T),
-		outEdges: make(map[K]map[K]Edge[T]),
-		inEdges:  make(map[K]map[K]Edge[T]),
+		hash:             hash,
+		traits:           traits,
+		vertices:         make(map[K]T),
+		vertexProperties: make(map[K]*VertexProperties),
+		outEdges:         make(map[K]map[K]Edge[T]),
+		inEdges:          make(map[K]map[K]Edge[T]),
 	}
 }
 
@@ -27,9 +29,17 @@ func (u *undirected[K, T]) Traits() *Traits {
 	return u.traits
 }
 
-func (u *undirected[K, T]) AddVertex(value T) error {
+func (u *undirected[K, T]) AddVertex(value T, options ...func(*VertexProperties)) error {
 	hash := u.hash(value)
 	u.vertices[hash] = value
+	u.vertexProperties[hash] = &VertexProperties{
+		Weight:     0,
+		Attributes: make(map[string]string),
+	}
+
+	for _, option := range options {
+		option(u.vertexProperties[hash])
+	}
 
 	return nil
 }
@@ -41,6 +51,20 @@ func (u *undirected[K, T]) Vertex(hash K) (T, error) {
 	}
 
 	return vertex, nil
+}
+
+func (u *undirected[K, T]) VertexWithProperties(hash K) (T, VertexProperties, error) {
+	vertex, err := u.Vertex(hash)
+	if err != nil {
+		return vertex, VertexProperties{}, err
+	}
+
+	properties, ok := u.vertexProperties[hash]
+	if !ok {
+		return vertex, *properties, fmt.Errorf("vertex with hash %v doesn't exist", hash)
+	}
+
+	return vertex, *properties, nil
 }
 
 func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
@@ -156,17 +180,23 @@ func (u *undirected[K, T]) Clone() (Graph[K, T], error) {
 	}
 
 	vertices := make(map[K]T)
+	vertexProperties := make(map[K]*VertexProperties)
 
 	for hash, vertex := range u.vertices {
 		vertices[hash] = vertex
+		vertexProperties[hash] = &VertexProperties{
+			Weight:     u.vertexProperties[hash].Weight,
+			Attributes: u.vertexProperties[hash].Attributes,
+		}
 	}
 
 	return &undirected[K, T]{
-		hash:     u.hash,
-		traits:   traits,
-		vertices: vertices,
-		outEdges: cloneEdges(u.outEdges),
-		inEdges:  cloneEdges(u.inEdges),
+		hash:             u.hash,
+		traits:           traits,
+		vertices:         vertices,
+		vertexProperties: vertexProperties,
+		outEdges:         cloneEdges(u.outEdges),
+		inEdges:          cloneEdges(u.inEdges),
 	}, nil
 }
 

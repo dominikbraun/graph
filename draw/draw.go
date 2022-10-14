@@ -10,9 +10,10 @@ import (
 	"github.com/dominikbraun/graph"
 )
 
+// ToDo: This template should be simplified and split into multiple templates.
 const dotTemplate = `strict {{.GraphType}} {
 {{range $s := .Statements}}
-	"{{.Source}}" {{if .Target}}{{$.EdgeOperator}} "{{.Target}}" [ {{range $k, $v := .Attributes}}{{$k}}="{{$v}}", {{end}} weight={{.Weight}} ]{{end}};
+	"{{.Source}}" {{if .Target}}{{$.EdgeOperator}} "{{.Target}}" [ {{range $k, $v := .EdgeAttributes}}{{$k}}="{{$v}}", {{end}} weight={{.EdgeWeight}} ]{{else}}[ {{range $k, $v := .SourceAttributes}}{{$k}}="{{$v}}", {{end}} weight={{.SourceWeight}} ]{{end}};
 {{end}}
 }
 `
@@ -24,10 +25,12 @@ type description struct {
 }
 
 type statement struct {
-	Source     interface{}
-	Target     interface{}
-	Weight     int
-	Attributes map[string]string
+	Source           interface{}
+	Target           interface{}
+	SourceWeight     int
+	SourceAttributes map[string]string
+	EdgeWeight       int
+	EdgeAttributes   map[string]string
 }
 
 // DOT renders the given graph structure in DOT language into an io.Writer, for example a file. The
@@ -39,13 +42,13 @@ type statement struct {
 //
 //	g.AddVertex(1)
 //	g.AddVertex(2)
-//	g.AddVertex(3)
+//	g.AddVertex(3, graph.VertexAttribute("style", "filled"), graph.VertexAttribute("fillcolor", "red"))
 //
-//	_ = g.Edge(1, 2)
-//	_ = g.Edge(1, 3)
+//	_ = g.AddEdge(1, 2, graph.EdgeWeight(10), graph.EdgeAttribute("color", "red"))
+//	_ = g.AddEdge(1, 3)
 //
 //	file, _ := os.Create("./my-graph.gv")
-//	_ = graph.Draw(g, file)
+//	_ = draw.DOT(g, file)
 //
 // To generate an SVG from the created file using Graphviz, use a command such as the following:
 //
@@ -82,20 +85,24 @@ func generateDOT[K comparable, T any](g graph.Graph[K, T]) (description, error) 
 	}
 
 	for vertex, adjacencies := range adjacencyMap {
-		if len(adjacencies) == 0 {
-			stmt := statement{
-				Source: vertex,
-			}
-			desc.Statements = append(desc.Statements, stmt)
-			continue
+		_, sourceProperties, err := g.VertexWithProperties(vertex)
+		if err != nil {
+			return desc, err
 		}
+
+		stmt := statement{
+			Source:           vertex,
+			SourceWeight:     sourceProperties.Weight,
+			SourceAttributes: sourceProperties.Attributes,
+		}
+		desc.Statements = append(desc.Statements, stmt)
 
 		for adjacency, edge := range adjacencies {
 			stmt := statement{
-				Source:     vertex,
-				Target:     adjacency,
-				Weight:     edge.Properties.Weight,
-				Attributes: edge.Properties.Attributes,
+				Source:         vertex,
+				Target:         adjacency,
+				EdgeWeight:     edge.Properties.Weight,
+				EdgeAttributes: edge.Properties.Attributes,
 			}
 			desc.Statements = append(desc.Statements, stmt)
 		}

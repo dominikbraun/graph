@@ -10,10 +10,11 @@ import (
 
 func TestGenerateDOT(t *testing.T) {
 	tests := map[string]struct {
-		graph    graph.Graph[string, string]
-		vertices []string
-		edges    []graph.Edge[string]
-		expected description
+		graph            graph.Graph[string, string]
+		vertices         []string
+		vertexProperties map[string]graph.VertexProperties
+		edges            []graph.Edge[string]
+		expected         description
 	}{
 		"3-vertex directed graph": {
 			graph:    graph.New(graph.StringHash, graph.Directed()),
@@ -28,6 +29,7 @@ func TestGenerateDOT(t *testing.T) {
 				Statements: []statement{
 					{Source: "1", Target: "2"},
 					{Source: "1", Target: "3"},
+					{Source: "1"},
 					{Source: "2"},
 					{Source: "3"},
 				},
@@ -54,16 +56,62 @@ func TestGenerateDOT(t *testing.T) {
 				EdgeOperator: "->",
 				Statements: []statement{
 					{
-						Source: "1",
-						Target: "2",
-						Weight: 10,
-						Attributes: map[string]string{
+						Source:     "1",
+						Target:     "2",
+						EdgeWeight: 10,
+						EdgeAttributes: map[string]string{
 							"color": "red",
 						},
 					},
 					{Source: "1", Target: "3"},
+					{Source: "1"},
 					{Source: "2"},
 					{Source: "3"},
+				},
+			},
+		},
+		"vertices with attributes": {
+			graph:    graph.New(graph.StringHash, graph.Directed(), graph.Weighted()),
+			vertices: []string{"1", "2"},
+			vertexProperties: map[string]graph.VertexProperties{
+				"1": {
+					Attributes: map[string]string{
+						"color": "red",
+					},
+					Weight: 10,
+				},
+				"2": {
+					Attributes: map[string]string{
+						"color": "blue",
+					},
+					Weight: 20,
+				},
+			},
+			edges: []graph.Edge[string]{
+				{Source: "1", Target: "2"},
+			},
+			expected: description{
+				GraphType:    "digraph",
+				EdgeOperator: "->",
+				Statements: []statement{
+					{
+						Source: "1",
+						SourceAttributes: map[string]string{
+							"color": "red",
+						},
+						SourceWeight: 10,
+					},
+					{
+						Source: "2",
+						SourceAttributes: map[string]string{
+							"color": "blue",
+						},
+						SourceWeight: 20,
+					},
+					{
+						Source: "1",
+						Target: "2",
+					},
 				},
 			},
 		},
@@ -71,7 +119,17 @@ func TestGenerateDOT(t *testing.T) {
 
 	for name, test := range tests {
 		for _, vertex := range test.vertices {
-			_ = test.graph.AddVertex(vertex)
+			if test.vertexProperties == nil {
+				_ = test.graph.AddVertex(vertex)
+				continue
+			}
+			// If there are vertex attributes, iterate over them and call VertexAttribute for each
+			// entry. A vertex should only have one attribute so that AddVertex is invoked once.
+			for key, value := range test.vertexProperties[vertex].Attributes {
+				weight := test.vertexProperties[vertex].Weight
+				// ToDo: Clarify how multiple functional options and attributes can be tested.
+				_ = test.graph.AddVertex(vertex, graph.VertexWeight(weight), graph.VertexAttribute(key, value))
+			}
 		}
 
 		for _, edge := range test.edges {
@@ -117,6 +175,7 @@ func TestRenderDOT(t *testing.T) {
 				Statements: []statement{
 					{Source: 1, Target: 2},
 					{Source: 1, Target: 3},
+					{Source: 1},
 					{Source: 2},
 					{Source: 3},
 				},
@@ -124,8 +183,9 @@ func TestRenderDOT(t *testing.T) {
 			expected: `strict digraph {
 				"1" -> "2" [ weight=0 ];
 				"1" -> "3" [ weight=0 ];
-				"2" ;
-				"3" ;
+				"1" [ weight=0 ];
+				"2" [ weight=0 ];
+				"3" [ weight=0 ];
 			}`,
 		},
 		"custom edge attributes": {
@@ -136,17 +196,18 @@ func TestRenderDOT(t *testing.T) {
 					{
 						Source: 1,
 						Target: 2,
-						Attributes: map[string]string{
+						EdgeAttributes: map[string]string{
 							"color": "red",
 						},
 					},
 					{
 						Source: 1,
 						Target: 3,
-						Attributes: map[string]string{
+						EdgeAttributes: map[string]string{
 							"color": "blue",
 						},
 					},
+					{Source: 1},
 					{Source: 2},
 					{Source: 3},
 				},
@@ -154,8 +215,9 @@ func TestRenderDOT(t *testing.T) {
 			expected: `strict digraph {
 				"1" -> "2" [ color="red", weight=0 ];
 				"1" -> "3" [ color="blue", weight=0 ];
-				"2" ;
-				"3" ;
+				"1" [ weight=0 ];
+				"2" [ weight=0 ];
+				"3" [ weight=0 ];
 			}`,
 		},
 		"vertices containing special characters": {
@@ -172,6 +234,37 @@ func TestRenderDOT(t *testing.T) {
 				"/home" -> "projects/graph" [ weight=0 ];
 				"/home" -> ".config" [ weight=0 ];
 				".config" -> "my file.txt" [ weight=0 ];
+			}`,
+		},
+		"vertices with attributes": {
+			description: description{
+				GraphType:    "digraph",
+				EdgeOperator: "->",
+				Statements: []statement{
+					{
+						Source: "1",
+						SourceAttributes: map[string]string{
+							"color": "red",
+						},
+						SourceWeight: 10,
+					},
+					{
+						Source: "2",
+						SourceAttributes: map[string]string{
+							"color": "blue",
+						},
+						SourceWeight: 20,
+					},
+					{
+						Source: "1",
+						Target: "2",
+					},
+				},
+			},
+			expected: `strict digraph {
+				"1" [ color="red", weight=10 ];
+				"2" [ color="blue", weight=20 ];
+				"1" -> "2" [ weight=0 ];
 			}`,
 		},
 	}
@@ -216,12 +309,26 @@ func normalizeOutput(output string) string {
 }
 
 func statementsAreEqual(a, b statement) bool {
-	if len(a.Attributes) != len(b.Attributes) {
+	if len(a.EdgeAttributes) != len(b.EdgeAttributes) {
 		return false
 	}
 
-	for aKey, aValue := range a.Attributes {
-		bValue, ok := b.Attributes[aKey]
+	for aKey, aValue := range a.EdgeAttributes {
+		bValue, ok := b.EdgeAttributes[aKey]
+		if !ok {
+			return false
+		}
+		if aValue != bValue {
+			return false
+		}
+	}
+
+	if len(a.SourceAttributes) != len(b.SourceAttributes) {
+		return false
+	}
+
+	for aKey, aValue := range a.SourceAttributes {
+		bValue, ok := b.SourceAttributes[aKey]
 		if !ok {
 			return false
 		}
@@ -232,5 +339,6 @@ func statementsAreEqual(a, b statement) bool {
 
 	return a.Source == b.Source &&
 		a.Target == b.Target &&
-		a.Weight == b.Weight
+		a.EdgeWeight == b.EdgeWeight &&
+		a.SourceWeight == b.SourceWeight
 }

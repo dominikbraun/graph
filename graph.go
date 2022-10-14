@@ -16,10 +16,20 @@ type Graph[K comparable, T any] interface {
 	// Whether AddVertex is idempotent depends on the underlying vertex store implementation. By
 	// default, when using the in-memory store, an existing vertex will be overwritten, whereas
 	// other stores might return an error.
-	AddVertex(value T) error
+	//
+	// AddVertex accepts a variety of functional options to set further edge details such as the
+	// weight or an attribute:
+	//
+	//	_ = graph.AddVertex("A", "B", graph.VertexWeight(4), graph.VertexAttribute("label", "my-label"))
+	//
+	AddVertex(value T, options ...func(*VertexProperties)) error
 
 	// Vertex returns the vertex with the given hash or an error if the vertex doesn't exist.
 	Vertex(hash K) (T, error)
+
+	// VertexWithProperties returns the vertex with the given hash as well as its properties or an
+	// error if the vertex doesn't exist.
+	VertexWithProperties(hash K) (T, VertexProperties, error)
 
 	// AddEdge creates an edge between the source and the target vertex. If the Directed option has
 	// been called on the graph, this is a directed edge. Returns an error if either vertex doesn't
@@ -28,7 +38,7 @@ type Graph[K comparable, T any] interface {
 	// AddEdge accepts a variety of functional options to set further edge details such as the
 	// weight or an attribute:
 	//
-	//	_ = graph.Edge("A", "B", graph.EdgeWeight(4), graph.EdgeAttribute("label", "my-label"))
+	//	_ = graph.AddEdge("A", "B", graph.EdgeWeight(4), graph.EdgeAttribute("label", "my-label"))
 	//
 	AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error
 
@@ -90,7 +100,7 @@ type Edge[T any] struct {
 // EdgeProperties represents a set of properties that each edge possesses. They can be set when
 // adding a new edge using the functional options provided by this library:
 //
-//	g.Edge("A", "B", graph.EdgeWeight(2), graph.EdgeAttribute("color", "red"))
+//	g.AddEdge("A", "B", graph.EdgeWeight(2), graph.EdgeAttribute("color", "red"))
 //
 // The example above will create an edge with weight 2 and a "color" attribute with value "red".
 type EdgeProperties struct {
@@ -184,6 +194,33 @@ func EdgeWeight(weight int) func(*EdgeProperties) {
 // edge. This is a functional option for the Edge and AddEdge methods.
 func EdgeAttribute(key, value string) func(*EdgeProperties) {
 	return func(e *EdgeProperties) {
+		e.Attributes[key] = value
+	}
+}
+
+// VertexProperties represents a set of properties that each vertex possesses. They can be set when
+// adding a new vertex using the functional options provided by this library:
+//
+//	g.AddVertex("A", "B", graph.VertexWeight(2), graph.VertexAttribute("color", "red"))
+//
+// The example above will create an vertex with weight 2 and a "color" attribute with value "red".
+type VertexProperties struct {
+	Attributes map[string]string
+	Weight     int
+}
+
+// VertexWeight returns a function that sets the weight of an vertex to the given weight. This is a
+// functional option for the Vertex and AddVertex methods.
+func VertexWeight(weight int) func(*VertexProperties) {
+	return func(e *VertexProperties) {
+		e.Weight = weight
+	}
+}
+
+// VertexAttribute returns a function that adds the given key-value pair to the attributes of an
+// vertex. This is a functional option for the Vertex and AddVertex methods.
+func VertexAttribute(key, value string) func(*VertexProperties) {
+	return func(e *VertexProperties) {
 		e.Attributes[key] = value
 	}
 }

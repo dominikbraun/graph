@@ -31,12 +31,22 @@ func TestUndirected_Traits(t *testing.T) {
 
 func TestUndirected_AddVertex(t *testing.T) {
 	tests := map[string]struct {
-		vertices         []int
-		expectedVertices []int
+		vertices           []int
+		properties         *VertexProperties
+		expectedVertices   []int
+		expectedProperties *VertexProperties
 	}{
 		"graph with 3 vertices": {
-			vertices:         []int{1, 2, 3},
+			vertices: []int{1, 2, 3},
+			properties: &VertexProperties{
+				Attributes: map[string]string{"color": "red"},
+				Weight:     10,
+			},
 			expectedVertices: []int{1, 2, 3},
+			expectedProperties: &VertexProperties{
+				Attributes: map[string]string{"color": "red"},
+				Weight:     10,
+			},
 		},
 		"graph with duplicated vertex": {
 			vertices:         []int{1, 2, 2},
@@ -48,13 +58,47 @@ func TestUndirected_AddVertex(t *testing.T) {
 		graph := newUndirected(IntHash, &Traits{})
 
 		for _, vertex := range test.vertices {
-			_ = graph.AddVertex(vertex)
+			if test.properties == nil {
+				_ = graph.AddVertex(vertex)
+				continue
+			}
+			// If there are vertex attributes, iterate over them and call VertexAttribute for each
+			// entry. A vertex should only have one attribute so that AddVertex is invoked once.
+			for key, value := range test.properties.Attributes {
+				_ = graph.AddVertex(vertex, VertexWeight(test.properties.Weight), VertexAttribute(key, value))
+			}
 		}
 
 		for _, vertex := range test.vertices {
+			if len(graph.vertices) != len(test.expectedVertices) {
+				t.Errorf("%s: vertex count doesn't match: expected %v, got %v", name, len(test.expectedVertices), len(graph.vertices))
+			}
+
 			hash := graph.hash(vertex)
 			if _, ok := graph.vertices[hash]; !ok {
 				t.Errorf("%s: vertex %v not found in graph: %v", name, vertex, graph.vertices)
+			}
+
+			if test.properties == nil {
+				continue
+			}
+
+			if graph.vertexProperties[hash].Weight != test.expectedProperties.Weight {
+				t.Errorf("%s: edge weights don't match: expected weight %v, got %v", name, test.expectedProperties.Weight, graph.vertexProperties[hash].Weight)
+			}
+
+			if len(graph.vertexProperties[hash].Attributes) != len(test.expectedProperties.Attributes) {
+				t.Fatalf("%s: attributes lengths don't match: expcted %v, got %v", name, len(test.expectedProperties.Attributes), len(graph.vertexProperties[hash].Attributes))
+			}
+
+			for expectedKey, expectedValue := range test.expectedProperties.Attributes {
+				value, ok := graph.vertexProperties[hash].Attributes[expectedKey]
+				if !ok {
+					t.Errorf("%s: attribute keys don't match: expected key %v not found", name, expectedKey)
+				}
+				if value != expectedValue {
+					t.Errorf("%s: attribute values don't match: expected value %v for key %v, got %v", name, expectedValue, expectedKey, value)
+				}
 			}
 		}
 	}
@@ -444,7 +488,7 @@ func TestUndirected_Clone(t *testing.T) {
 		graph := New(IntHash)
 
 		for _, vertex := range test.vertices {
-			_ = graph.AddVertex(vertex)
+			_ = graph.AddVertex(vertex, VertexWeight(vertex), VertexAttribute("color", "red"))
 		}
 
 		for _, edge := range test.edges {
@@ -480,6 +524,12 @@ func TestUndirected_Clone(t *testing.T) {
 			}
 			if actualVertex != expectedVertex {
 				t.Errorf("%s: vertex expectancy doesn't match: expected %v, got %v", name, expectedVertex, actualVertex)
+			}
+			if actual.vertexProperties[expectedHash].Weight != expected.vertexProperties[expectedHash].Weight {
+				t.Errorf("%s: vertex properties expectancy doesn't match: expected %v, got %v", name, expected.vertexProperties[expectedHash], actual.vertexProperties[expectedHash])
+			}
+			if actual.vertexProperties[expectedHash].Attributes["color"] != expected.vertexProperties[expectedHash].Attributes["color"] {
+				t.Errorf("%s: vertex properties expectancy doesn't match: expected %v, got %v", name, expected.vertexProperties[expectedHash], actual.vertexProperties[expectedHash])
 			}
 		}
 

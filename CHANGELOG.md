@@ -9,7 +9,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 * Added the `VertexProperties` type for storing vertex-related properties.
-* Added the `VertexWithAttributes` method for retrieving a vertex and its properties.
+* Added the `VertexWithProperties` method for retrieving a vertex and its properties.
 * Added the `VertexWeight` functional option that can be used for `AddVertex`.
 * Added the `VertexAttribute` functional option that can be used for `AddVertex`.
 * Added support for rendering vertices with attributes using `draw.DOT`.

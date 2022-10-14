@@ -8,9 +8,9 @@ package graph
 //
 // This will set the IsDirected field to true.
 type Traits struct {
-	IsDirected   bool
-	IsAcyclic    bool
-	IsWeighted   bool
+	IsDirected    bool
+	IsAcyclic     bool
+	IsWeighted    bool
 	IsRooted      bool
 	PreventCycles bool
 }

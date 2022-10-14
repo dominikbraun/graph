@@ -9,7 +9,7 @@ A library for creating generic graph data structures and modifying, analyzing, a
 * Algorithms for finding paths or components, such as shortest paths or strongly connected components.
 * Algorithms for transformations and representations, such as transitive reduction or topological order.
 * Algorithms for non-recursive graph traversal, such as DFS or BFS.
-* Vertices and Edges with optional metadata, such as weights or custom attributes.
+* Vertices and edges with optional metadata, such as weights or custom attributes.
 * Visualization of graphs using the DOT language and Graphviz.
 * Extensive tests with ~90% coverage, and zero dependencies.
 
@@ -257,9 +257,9 @@ To get an overview of all supported attributes, take a look at the
 
 ## Setting vertex attributes
 
-Vertices may have one or more attributes which can be used to store metadata. Attributes will be taken
-into account when [visualizing a graph](#visualize-a-graph-using-graphviz). For example, this vertex
-will be rendered in red color:
+Vertices may have one or more attributes which can be used to store metadata. Attributes will be
+taken into account when [visualizing a graph](#visualize-a-graph-using-graphviz). For example, this
+vertex will be rendered in red color:
 
 ```go
 _ = g.AddVertex(1, graph.VertexAttribute("style", "filled"), graph.VertexAttribute("fillcolor", "red"))

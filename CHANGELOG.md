@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [0.13.0] - 2022-10-15
 
 ### Added
+* Added the `VertexProperties` type for storing vertex-related properties.
+* Added the `VertexWithAttributes` method for retrieving a vertex and its properties.
+* Added the `VertexWeight` functional option that can be used for `AddVertex`.
+* Added the `VertexAttribute` functional option that can be used for `AddVertex`.
+* Added support for rendering vertices with attributes using `draw.DOT`.
+
+### Changed
+* Changed `AddVertex` to accept functional options.
 
 ### Fixed
 * Fixed the behavior of `ShortestPath` when the target vertex is not reachable from one of the visited vertices.

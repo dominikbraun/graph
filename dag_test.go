@@ -7,6 +7,7 @@ func TestDirectedTopologicalSort(t *testing.T) {
 		vertices      []int
 		edges         []Edge[int]
 		expectedOrder []int
+		shouldFail    bool
 	}{
 		"graph with 5 vertices": {
 			vertices: []int{1, 2, 3, 4, 5},
@@ -21,10 +22,19 @@ func TestDirectedTopologicalSort(t *testing.T) {
 			},
 			expectedOrder: []int{1, 2, 3, 4, 5},
 		},
+		"graph with cycle vertices": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 2, Target: 3},
+				{Source: 3, Target: 1},
+			},
+			shouldFail: true,
+		},
 	}
 
 	for name, test := range tests {
-		graph := New(IntHash, Directed(), PreventCycles())
+		graph := New(IntHash, Directed())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -37,6 +47,14 @@ func TestDirectedTopologicalSort(t *testing.T) {
 		}
 
 		order, err := TopologicalSort(graph)
+
+		if test.shouldFail {
+			if err == nil {
+				t.Fatalf("%s: expected error but got none", name)
+			}
+			continue
+		}
+
 		if err != nil {
 			t.Fatalf("%s: failed to add edge: %s", name, err.Error())
 		}

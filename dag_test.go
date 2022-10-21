@@ -48,15 +48,12 @@ func TestDirectedTopologicalSort(t *testing.T) {
 
 		order, err := TopologicalSort(graph)
 
-		if test.shouldFail {
-			if err == nil {
-				t.Fatalf("%s: expected error but got none", name)
-			}
-			continue
+		if test.shouldFail != (err != nil) {
+			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, err != nil, err)
 		}
 
-		if err != nil {
-			t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+		if test.shouldFail {
+			continue
 		}
 
 		if len(order) != len(test.expectedOrder) {

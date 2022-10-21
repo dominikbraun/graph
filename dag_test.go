@@ -84,6 +84,7 @@ func TestDirectedTransitiveReduction(t *testing.T) {
 		vertices      []string
 		edges         []Edge[string]
 		expectedEdges []Edge[string]
+		shouldFail    bool
 	}{
 		"graph as on img/transitive-reduction.svg": {
 			vertices: []string{"A", "B", "C", "D", "E"},
@@ -105,10 +106,19 @@ func TestDirectedTransitiveReduction(t *testing.T) {
 				{Source: "D", Target: "E"},
 			},
 		},
+		"graph with cycle": {
+			vertices: []string{"A", "B", "C"},
+			edges: []Edge[string]{
+				{Source: "A", Target: "B"},
+				{Source: "B", Target: "C"},
+				{Source: "C", Target: "A"},
+			},
+			shouldFail: true,
+		},
 	}
 
 	for name, test := range tests {
-		graph := New(StringHash, Directed(), PreventCycles())
+		graph := New(StringHash, Directed())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -120,12 +130,18 @@ func TestDirectedTransitiveReduction(t *testing.T) {
 			}
 		}
 
-		if err := TransitiveReduction(graph); err != nil {
-			t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+		res, err := TransitiveReduction(graph)
+
+		if test.shouldFail != (err != nil) {
+			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, err != nil, err)
+		}
+
+		if test.shouldFail {
+			continue
 		}
 
 		actualEdges := make([]Edge[string], 0)
-		adjacencyMap, _ := graph.AdjacencyMap()
+		adjacencyMap, _ := res.AdjacencyMap()
 
 		for _, adjacencies := range adjacencyMap {
 			for _, edge := range adjacencies {
@@ -133,7 +149,7 @@ func TestDirectedTransitiveReduction(t *testing.T) {
 			}
 		}
 
-		equalsFunc := graph.(*directed[string, string]).edgesAreEqual
+		equalsFunc := res.(*directed[string, string]).edgesAreEqual
 
 		if !slicesAreEqualWithFunc(actualEdges, test.expectedEdges, equalsFunc) {
 			t.Errorf("%s: edge expectancy doesn't match: expected %v, got %v", name, test.expectedEdges, actualEdges)
@@ -153,7 +169,7 @@ func TestUndirectedTransitiveReduction(t *testing.T) {
 	for name, test := range tests {
 		graph := New(StringHash)
 
-		err := TransitiveReduction(graph)
+		_, err := TransitiveReduction(graph)
 
 		if test.shouldFail != (err != nil) {
 			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, err != nil, err)

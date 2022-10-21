@@ -55,19 +55,25 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 	return order, nil
 }
 
-// TransitiveReduction transforms the graph into its own transitive reduction. The transitive
-// reduction of the given graph is another graph with the same vertices and the same reachability,
-// but with as few edges as possible. This greatly reduces the complexity of the graph.
+// TransitiveReduction returns another graph with the same vertices and the
+// same reachability, but with as few edges as possible. This greatly reduces
+// the complexity of the graph.
 //
-// With a time complexity of O(V(V+E)), TransitiveReduction is a very costly operation.
-func TransitiveReduction[K comparable, T any](g Graph[K, T]) error {
-	if !isDAG(g) {
-		return errors.New("topological sort can only be performed on DAGs created with the PreventCycles option")
+// With a time complexity of O(V(V+E)), TransitiveReduction is a very costly
+// operation.
+func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error) {
+	if !g.Traits().IsDirected {
+		return nil, fmt.Errorf("transitive reduction cannot be performed on undirected graph")
 	}
 
-	adjacencyMap, err := g.AdjacencyMap()
+	transitiveReduction, err := g.Clone()
 	if err != nil {
-		return fmt.Errorf("failed to get adajcency map: %w", err)
+		return nil, fmt.Errorf("failed clone the graph: %w", err)
+	}
+
+	adjacencyMap, err := transitiveReduction.AdjacencyMap()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get adajcency map: %w", err)
 	}
 
 	for vertex, successors := range adjacencyMap {
@@ -78,22 +84,53 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) error {
 		// These edges are redundant because their targets obviously are reachable via DFS, i.e.
 		// they aren't needed in the top-level vertex anymore and can be removed from there.
 		for successor := range successors {
-			err := DFS(g, successor, func(current K) bool {
-				for _, edge := range adjacencyMap[current] {
-					if _, ok := adjacencyMap[vertex][edge.Target]; ok {
-						_ = g.RemoveEdge(vertex, edge.Target)
-					}
+			visited := make(map[K]struct{}, transitiveReduction.Order())
+			onStack := make(map[K]struct{}, transitiveReduction.Order())
+			stack := append(
+				make([]K, 0, transitiveReduction.Order()),
+				successor,
+			)
+
+			for len(stack) > 0 {
+				current := stack[len(stack)-1]
+				stack = stack[:len(stack)-1]
+
+				if _, ok := visited[current]; !ok {
+					// this node is not yet visited, mark it and put it on stack
+					visited[current] = struct{}{}
+					onStack[current] = struct{}{}
+				} else {
+					// this node is already visited, remove it from stack
+					delete(onStack, current)
+					continue
 				}
 
-				return false
-			})
-			if err != nil {
-				return err
+				// leaf node, remove it from stack
+				if len(adjacencyMap[current]) == 0 {
+					delete(onStack, current)
+				}
+
+				for adjacency := range adjacencyMap[current] {
+					if _, ok := visited[adjacency]; ok {
+						if _, ok := onStack[adjacency]; ok {
+							// if this child is visited as well as on stack, we have a cycle
+							return nil, fmt.Errorf(
+								"transitive reduction cannot be performed on graph with cycle",
+							)
+						}
+						continue
+					}
+
+					if _, ok := adjacencyMap[vertex][adjacency]; ok {
+						_ = transitiveReduction.RemoveEdge(vertex, adjacency)
+					}
+					stack = append(stack, adjacency)
+				}
 			}
 		}
 	}
 
-	return nil
+	return transitiveReduction, nil
 }
 
 func isDAG[K comparable, T any](g Graph[K, T]) bool {

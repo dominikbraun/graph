@@ -22,7 +22,7 @@ func TestDirectedTopologicalSort(t *testing.T) {
 			},
 			expectedOrder: []int{1, 2, 3, 4, 5},
 		},
-		"graph with cycle vertices": {
+		"graph with cycle": {
 			vertices: []int{1, 2, 3},
 			edges: []Edge[int]{
 				{Source: 1, Target: 2},

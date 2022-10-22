@@ -88,26 +88,23 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error
 		for successor := range successors {
 			visited := make(map[K]struct{}, transitiveReduction.Order())
 			onStack := make(map[K]struct{}, transitiveReduction.Order())
-			stack := append(
-				make([]K, 0, transitiveReduction.Order()),
-				successor,
-			)
+			stack := append(make([]K, 0, transitiveReduction.Order()), successor)
 
 			for len(stack) > 0 {
 				current := stack[len(stack)-1]
 				stack = stack[:len(stack)-1]
 
 				if _, ok := visited[current]; !ok {
-					// If the node is not yet visited, mark it as visited and put it on the stack.
+					// If the vertex is not yet visited, mark it as visited and put it on the stack.
 					visited[current] = struct{}{}
 					onStack[current] = struct{}{}
 				} else {
-					// Otherwise, remove the node from the stack.
+					// Otherwise, remove the vertex from the stack.
 					delete(onStack, current)
 					continue
 				}
 
-				// If the node is a leaf node, remove it from the stack.
+				// If the vertex is a leaf node, remove it from the stack.
 				if len(adjacencyMap[current]) == 0 {
 					delete(onStack, current)
 				}
@@ -115,10 +112,8 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error
 				for adjacency := range adjacencyMap[current] {
 					if _, ok := visited[adjacency]; ok {
 						if _, ok := onStack[adjacency]; ok {
-							// If this child is visited as well as on the stack, we have a cycle.
-							return nil, fmt.Errorf(
-								"transitive reduction cannot be performed on graph with cycle",
-							)
+							// If this vertex is visited as well as on the stack, we have a cycle.
+							return nil, fmt.Errorf("transitive reduction cannot be performed on graph with cycle")
 						}
 						continue
 					}

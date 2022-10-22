@@ -134,7 +134,3 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error
 
 	return transitiveReduction, nil
 }
-
-func isDAG[K comparable, T any](g Graph[K, T]) bool {
-	return g.Traits().IsDirected && g.Traits().PreventCycles
-}

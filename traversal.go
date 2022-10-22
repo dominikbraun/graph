@@ -11,9 +11,9 @@ import "fmt"
 //
 //	g := graph.New(graph.IntHash)
 //
-//	g.AddVertex(1)
-//	g.AddVertex(2)
-//	g.AddVertex(3)
+//	_ = g.AddVertex(1)
+//	_ = g.AddVertex(2)
+//	_ = g.AddVertex(3)
 //
 //	_ = g.AddEdge(1, 2)
 //	_ = g.AddEdge(2, 3)
@@ -77,9 +77,9 @@ func DFS[K comparable, T any](g Graph[K, T], start K, visit func(K) bool) error 
 //
 //	g := graph.New(graph.IntHash)
 //
-//	g.AddVertex(1)
-//	g.AddVertex(2)
-//	g.AddVertex(3)
+//	_ = g.AddVertex(1)
+//	_ = g.AddVertex(2)
+//	_ = g.AddVertex(3)
 //
 //	_ = g.AddEdge(1, 2)
 //	_ = g.AddEdge(2, 3)

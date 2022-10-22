@@ -40,9 +40,9 @@ type statement struct {
 //
 //	g := graph.New(graph.IntHash, graph.Directed())
 //
-//	g.AddVertex(1)
-//	g.AddVertex(2)
-//	g.AddVertex(3, graph.VertexAttribute("style", "filled"), graph.VertexAttribute("fillcolor", "red"))
+//	_ = g.AddVertex(1)
+//	_ = g.AddVertex(2)
+//	_ = g.AddVertex(3, graph.VertexAttribute("style", "filled"), graph.VertexAttribute("fillcolor", "red"))
 //
 //	_ = g.AddEdge(1, 2, graph.EdgeWeight(10), graph.EdgeAttribute("color", "red"))
 //	_ = g.AddEdge(1, 3)

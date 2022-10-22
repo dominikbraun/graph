@@ -129,9 +129,9 @@ type Hash[K comparable, T any] func(T) K
 // graph stores integer vertices:
 //
 //	g := graph.New(graph.IntHash)
-//	g.AddVertex(1)
-//	g.AddVertex(2)
-//	g.AddVertex(3)
+//	_ = g.AddVertex(1)
+//	_ = g.AddVertex(2)
+//	_ = g.AddVertex(3)
 //
 // The provided IntHash hashing function takes an integer and uses it as a hash value at the same
 // time. In a more complex scenario with custom objects, you should define your own function:
@@ -145,7 +145,7 @@ type Hash[K comparable, T any] func(T) K
 //	}
 //
 //	g := graph.New(cityHash)
-//	g.AddVertex(london)
+//	_ = g.AddVertex(london)
 //
 // This graph will store vertices of type City, identified by hashes of type string. Both type
 // parameters can be inferred from the hashing function.
@@ -201,7 +201,7 @@ func EdgeAttribute(key, value string) func(*EdgeProperties) {
 // VertexProperties represents a set of properties that each vertex possesses. They can be set when
 // adding a new vertex using the functional options provided by this library:
 //
-//	g.AddVertex("A", "B", graph.VertexWeight(2), graph.VertexAttribute("color", "red"))
+//	_ = g.AddVertex("A", "B", graph.VertexWeight(2), graph.VertexAttribute("color", "red"))
 //
 // The example above will create an vertex with weight 2 and a "color" attribute with value "red".
 type VertexProperties struct {

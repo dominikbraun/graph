@@ -30,11 +30,11 @@ go get github.com/dominikbraun/graph
 ```go
 g := graph.New(graph.IntHash)
 
-g.AddVertex(1)
-g.AddVertex(2)
-g.AddVertex(3)
-g.AddVertex(4)
-g.AddVertex(5)
+_ = g.AddVertex(1)
+_ = g.AddVertex(2)
+_ = g.AddVertex(3)
+_ = g.AddVertex(4)
+_ = g.AddVertex(5)
 
 _ = g.AddEdge(1, 2)
 _ = g.AddEdge(1, 4)
@@ -51,10 +51,10 @@ _ = g.AddEdge(3, 5)
 ```go
 g := graph.New(graph.IntHash, graph.Directed(), graph.Acyclic())
 
-g.AddVertex(1)
-g.AddVertex(2)
-g.AddVertex(3)
-g.AddVertex(4)
+_ = g.AddVertex(1)
+_ = g.AddVertex(2)
+_ = g.AddVertex(3)
+_ = g.AddVertex(4)
 
 _ = g.AddEdge(1, 2)
 _ = g.AddEdge(1, 3)
@@ -78,7 +78,7 @@ cityHash := func(c City) string {
 
 g := graph.New(cityHash)
 
-g.AddVertex(london)
+_ = g.AddVertex(london)
 ```
 
 ## Create a weighted graph
@@ -88,10 +88,10 @@ g.AddVertex(london)
 ```go
 g := graph.New(cityHash, graph.Weighted())
 
-g.AddVertex(london)
-g.AddVertex(munich)
-g.AddVertex(paris)
-g.AddVertex(madrid)
+_ = g.AddVertex(london)
+_ = g.AddVertex(munich)
+_ = g.AddVertex(paris)
+_ = g.AddVertex(madrid)
 
 _ = g.AddEdge("london", "munich", graph.EdgeWeight(3))
 _ = g.AddEdge("london", "paris", graph.EdgeWeight(2))
@@ -110,10 +110,10 @@ This example traverses and prints all vertices in the graph in DFS order.
 ```go
 g := graph.New(graph.IntHash, graph.Directed())
 
-g.AddVertex(1)
-g.AddVertex(2)
-g.AddVertex(3)
-g.AddVertex(4)
+_ = g.AddVertex(1)
+_ = g.AddVertex(2)
+_ = g.AddVertex(3)
+_ = g.AddVertex(4)
 
 _ = g.AddEdge(1, 2)
 _ = g.AddEdge(1, 3)
@@ -202,9 +202,9 @@ _ := graph.TransitiveReduction(g)
 ```go
 g := graph.New(graph.IntHash, graph.PreventCycles())
 
-g.AddVertex(1)
-g.AddVertex(2)
-g.AddVertex(3)
+_ = g.AddVertex(1)
+_ = g.AddVertex(2)
+_ = g.AddVertex(3)
 
 _ = g.AddEdge(1, 2)
 _ = g.AddEdge(1, 3)
@@ -225,9 +225,9 @@ The following example will generate a DOT description for `g` and write it into 
 ```go
 g := graph.New(graph.IntHash, graph.Directed())
 
-g.AddVertex(1)
-g.AddVertex(2)
-g.AddVertex(3)
+_ = g.AddVertex(1)
+_ = g.AddVertex(2)
+_ = g.AddVertex(3)
 
 _ = g.AddEdge(1, 2)
 _ = g.AddEdge(1, 3)

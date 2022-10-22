@@ -12,8 +12,8 @@ import (
 // TopologicalSort only works for directed acyclic graphs. The current implementation works non-
 // recursively and uses Kahn's algorithm.
 func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
-	if !isDAG(g) {
-		return nil, errors.New("topological sort can only be performed on DAGs created with the PreventCycles option")
+	if !g.Traits().IsDirected {
+		return nil, fmt.Errorf("topological sort cannot be computed on undirected graph")
 	}
 
 	predecessorMap, err := g.PredecessorMap()
@@ -50,6 +50,10 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 				queue = append(queue, vertex)
 			}
 		}
+	}
+
+	if len(order) != g.Order() {
+		return nil, errors.New("topological sort cannot be computed on graph with cycles")
 	}
 
 	return order, nil

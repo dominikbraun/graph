@@ -130,7 +130,7 @@ func TestDirectedTransitiveReduction(t *testing.T) {
 			}
 		}
 
-		res, err := TransitiveReduction(graph)
+		reduction, err := TransitiveReduction(graph)
 
 		if test.shouldFail != (err != nil) {
 			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, err != nil, err)
@@ -141,7 +141,7 @@ func TestDirectedTransitiveReduction(t *testing.T) {
 		}
 
 		actualEdges := make([]Edge[string], 0)
-		adjacencyMap, _ := res.AdjacencyMap()
+		adjacencyMap, _ := reduction.AdjacencyMap()
 
 		for _, adjacencies := range adjacencyMap {
 			for _, edge := range adjacencies {
@@ -149,7 +149,7 @@ func TestDirectedTransitiveReduction(t *testing.T) {
 			}
 		}
 
-		equalsFunc := res.(*directed[string, string]).edgesAreEqual
+		equalsFunc := reduction.(*directed[string, string]).edgesAreEqual
 
 		if !slicesAreEqualWithFunc(actualEdges, test.expectedEdges, equalsFunc) {
 			t.Errorf("%s: edge expectancy doesn't match: expected %v, got %v", name, test.expectedEdges, actualEdges)

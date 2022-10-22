@@ -55,12 +55,10 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 	return order, nil
 }
 
-// TransitiveReduction returns another graph with the same vertices and the
-// same reachability, but with as few edges as possible. This greatly reduces
-// the complexity of the graph.
+// TransitiveReduction returns another graph with the same vertices and the same reachability, but
+// with as few edges as possible. This greatly reduces the complexity of the graph.
 //
-// With a time complexity of O(V(V+E)), TransitiveReduction is a very costly
-// operation.
+// With a time complexity of O(V(V+E)), TransitiveReduction is a very costly operation.
 func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error) {
 	if !g.Traits().IsDirected {
 		return nil, fmt.Errorf("transitive reduction cannot be performed on undirected graph")
@@ -68,7 +66,7 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error
 
 	transitiveReduction, err := g.Clone()
 	if err != nil {
-		return nil, fmt.Errorf("failed clone the graph: %w", err)
+		return nil, fmt.Errorf("failed to clone the graph: %w", err)
 	}
 
 	adjacencyMap, err := transitiveReduction.AdjacencyMap()
@@ -96,16 +94,16 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error
 				stack = stack[:len(stack)-1]
 
 				if _, ok := visited[current]; !ok {
-					// this node is not yet visited, mark it and put it on stack
+					// If the node is not yet visited, mark it as visited and put it on the stack.
 					visited[current] = struct{}{}
 					onStack[current] = struct{}{}
 				} else {
-					// this node is already visited, remove it from stack
+					// Otherwise, remove the node from the stack.
 					delete(onStack, current)
 					continue
 				}
 
-				// leaf node, remove it from stack
+				// If the node is a leaf node, remove it from the stack.
 				if len(adjacencyMap[current]) == 0 {
 					delete(onStack, current)
 				}
@@ -113,7 +111,7 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error
 				for adjacency := range adjacencyMap[current] {
 					if _, ok := visited[adjacency]; ok {
 						if _, ok := onStack[adjacency]; ok {
-							// if this child is visited as well as on stack, we have a cycle
+							// If this child is visited as well as on the stack, we have a cycle.
 							return nil, fmt.Errorf(
 								"transitive reduction cannot be performed on graph with cycle",
 							)

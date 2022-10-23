@@ -15,6 +15,8 @@ A library for creating generic graph data structures and modifying, analyzing, a
 
 > Status: Because `graph` is in version 0, the public API shouldn't be considered stable.
 
+> This README may contain unreleased changes. Check out the [latest documentation](https://pkg.go.dev/github.com/dominikbraun/graph).
+
 # Getting started
 
 ```

@@ -1,3 +1,5 @@
+// Package graph provides types and functions for creating generic graph data structures and
+// modifying, analyzing, and visualizing them.
 package graph
 
 import "errors"

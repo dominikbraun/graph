@@ -27,7 +27,7 @@ type Graph[K comparable, T any] interface {
 	// Vertex returns the vertex with the given hash or an error if the vertex doesn't exist.
 	Vertex(hash K) (T, error)
 
-	// VertexWithProperties returns the vertex with the given hash as well as its properties or an
+	// VertexWithProperties returns the vertex with the given hash along with its properties, or an
 	// error if the vertex doesn't exist.
 	VertexWithProperties(hash K) (T, VertexProperties, error)
 
@@ -198,18 +198,18 @@ func EdgeAttribute(key, value string) func(*EdgeProperties) {
 	}
 }
 
-// VertexProperties represents a set of properties that each vertex possesses. They can be set when
-// adding a new vertex using the functional options provided by this library:
+// VertexProperties represents a set of properties that each vertex has. They can be set when adding
+// a new vertex using the functional options provided by this library:
 //
 //	_ = g.AddVertex("A", "B", graph.VertexWeight(2), graph.VertexAttribute("color", "red"))
 //
-// The example above will create an vertex with weight 2 and a "color" attribute with value "red".
+// The example above will create a vertex with weight 2 and a "color" attribute with value "red".
 type VertexProperties struct {
 	Attributes map[string]string
 	Weight     int
 }
 
-// VertexWeight returns a function that sets the weight of an vertex to the given weight. This is a
+// VertexWeight returns a function that sets the weight of a vertex to the given weight. This is a
 // functional option for the Vertex and AddVertex methods.
 func VertexWeight(weight int) func(*VertexProperties) {
 	return func(e *VertexProperties) {
@@ -217,7 +217,7 @@ func VertexWeight(weight int) func(*VertexProperties) {
 	}
 }
 
-// VertexAttribute returns a function that adds the given key-value pair to the attributes of an
+// VertexAttribute returns a function that adds the given key-value pair to the attributes of a
 // vertex. This is a functional option for the Vertex and AddVertex methods.
 func VertexAttribute(key, value string) func(*VertexProperties) {
 	return func(e *VertexProperties) {

@@ -59,10 +59,10 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 	return order, nil
 }
 
-// TransitiveReduction returns another graph with the same vertices and the same reachability, but
-// with as few edges as possible. This greatly reduces the complexity of the graph.
+// TransitiveReduction returns a new graph with the same vertices and the same reachability as the
+// given graph, but with as few edges as possible. This significantly reduces its complexity.
 //
-// With a time complexity of O(V(V+E)), TransitiveReduction is a very costly operation.
+// With a time complexity of O(V(V+E)), TransitiveReduction is a very costly operation. Note that
 func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error) {
 	if !g.Traits().IsDirected {
 		return nil, fmt.Errorf("transitive reduction cannot be performed on undirected graph")
@@ -83,36 +83,39 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error
 		// Then, for each vertex visited in the DFS, inspect all of its edges. Remove the edges that
 		// also appear in the edges of the top-level iteration vertex.
 		//
-		// These edges are redundant because their targets obviously are reachable via DFS, i.e.
-		// they aren't needed in the top-level vertex anymore and can be removed from there.
+		// These edges are redundant because their targets obviously are reachable through the DFS,
+		// hence they can be removed from the top-level vertex.
 		for successor := range successors {
+			stack := make([]K, 0, transitiveReduction.Order())
 			visited := make(map[K]struct{}, transitiveReduction.Order())
-			onStack := make(map[K]struct{}, transitiveReduction.Order())
-			stack := append(make([]K, 0, transitiveReduction.Order()), successor)
+			onStack := make(map[K]bool, transitiveReduction.Order())
+
+			stack = append(stack, successor)
 
 			for len(stack) > 0 {
 				current := stack[len(stack)-1]
 				stack = stack[:len(stack)-1]
 
-				if _, ok := visited[current]; !ok {
-					// If the vertex is not yet visited, mark it as visited and put it on the stack.
-					visited[current] = struct{}{}
-					onStack[current] = struct{}{}
-				} else {
-					// Otherwise, remove the vertex from the stack.
-					delete(onStack, current)
+				// If the vertex has already been visited, remove it from the stack and continue
+				// with the next vertex. Otherwise, proceed by putting it onto the stack.
+				if _, ok := visited[current]; ok {
+					onStack[current] = false
 					continue
 				}
 
-				// If the vertex is a leaf node, remove it from the stack.
+				visited[current] = struct{}{}
+				onStack[current] = true
+
+				// Also, if the vertex is a leaf node, remove it from the stack.
 				if len(adjacencyMap[current]) == 0 {
-					delete(onStack, current)
+					onStack[current] = false
 				}
 
 				for adjacency := range adjacencyMap[current] {
 					if _, ok := visited[adjacency]; ok {
-						if _, ok := onStack[adjacency]; ok {
-							// If this vertex is visited as well as on the stack, we have a cycle.
+						if onStack[adjacency] {
+							// If the current adjacency is both on the stack and has already been
+							// visited, there is a cycle and an error is returned.
 							return nil, fmt.Errorf("transitive reduction cannot be performed on graph with cycle")
 						}
 						continue

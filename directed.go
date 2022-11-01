@@ -49,7 +49,7 @@ func (d *directed[K, T]) AddVertex(value T, options ...func(*VertexProperties)) 
 func (d *directed[K, T]) Vertex(hash K) (T, error) {
 	vertex, ok := d.vertices[hash]
 	if !ok {
-		return vertex, fmt.Errorf("vertex with hash %v doesn't exist", hash)
+		return vertex, ErrVertexNotFound
 	}
 
 	return vertex, nil

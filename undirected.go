@@ -47,7 +47,7 @@ func (u *undirected[K, T]) AddVertex(value T, options ...func(*VertexProperties)
 func (u *undirected[K, T]) Vertex(hash K) (T, error) {
 	vertex, ok := u.vertices[hash]
 	if !ok {
-		return vertex, fmt.Errorf("vertex with hash %v doesn't exist", hash)
+		return vertex, ErrVertexNotFound
 	}
 
 	return vertex, nil

@@ -7,9 +7,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.14.0] - 2022-11-01
 
+### Added
+* Added the `ErrVertexNotFound` error instance.
+
 ### Changed
 * Changed `TopologicalSort` to fail at runtime when a cycle is detected.
 * Changed `TransitiveReduction` to return the transitive reduction as a new graph and fail at runtime when a cycle is detected.
+* Changed `Vertex` to return `ErrVertexNotFound` if the desired vertex couldn't be found.
 
 ## [0.13.0] - 2022-10-15
 

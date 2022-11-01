@@ -4,8 +4,12 @@ package graph
 
 import "errors"
 
-// ErrEdgeNotFound will be returned when a desired edge cannot be found.
-var ErrEdgeNotFound = errors.New("edge not found")
+var (
+	// ErrVertexNotFound will be returned when a desired vertex cannot be found.
+	ErrVertexNotFound = errors.New("vertex not found")
+	// ErrEdgeNotFound will be returned when a desired edge cannot be found.
+	ErrEdgeNotFound = errors.New("edge not found")
+)
 
 // Graph represents a generic graph data structure consisting of vertices and edges. Its vertices
 // are of type T, and each vertex is identified by a hash of type K.
@@ -26,7 +30,7 @@ type Graph[K comparable, T any] interface {
 	//
 	AddVertex(value T, options ...func(*VertexProperties)) error
 
-	// Vertex returns the vertex with the given hash or an error if the vertex doesn't exist.
+	// Vertex returns the vertex with the given hash or ErrVertexNotFound if it doesn't exist.
 	Vertex(hash K) (T, error)
 
 	// VertexWithProperties returns the vertex with the given hash along with its properties, or an

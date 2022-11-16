@@ -148,52 +148,6 @@ func (s *memoryStore[K, T]) GetEdgesByTarget(targetHash K) ([]Edge[K], error) {
 	return targetEdgesArray, nil
 }
 
-func (s *memoryStore[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-
-	m := make(map[K]map[K]Edge[K])
-
-	for hash := range s.vertices {
-		m[hash] = make(map[K]Edge[K])
-	}
-
-	for sourceHash, targetEdges := range s.outEdges {
-		m[sourceHash] = make(map[K]Edge[K])
-		for targetHash, edge := range targetEdges {
-			m[sourceHash][targetHash] = edge
-		}
-	}
-
-	return m, nil
-}
-
-func (s *memoryStore[K, T]) PredecessorMap() (map[K]map[K]Edge[K], error) {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-
-	predecessors := make(map[K]map[K]Edge[K])
-
-	for vertexHash := range s.vertices {
-		predecessors[vertexHash] = make(map[K]Edge[K])
-	}
-
-	for vertexHash, inEdges := range s.inEdges {
-		for predecessorHash, edge := range inEdges {
-			predecessors[vertexHash][predecessorHash] = Edge[K]{
-				Source: predecessorHash,
-				Target: vertexHash,
-				Properties: EdgeProperties{
-					Attributes: edge.Properties.Attributes,
-					Weight:     edge.Properties.Weight,
-				},
-			}
-		}
-	}
-
-	return predecessors, nil
-}
-
 func (s *memoryStore[K, T]) ListEdges() ([]Edge[K], error) {
 	res := make([]Edge[K], 0)
 	for _, edges := range s.outEdges {

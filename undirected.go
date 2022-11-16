@@ -53,13 +53,11 @@ func (u *undirected[K, T]) VertexWithProperties(hash K) (T, VertexProperties, er
 }
 
 func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
-	_, _, err := u.store.Vertex(sourceHash)
-	if err != nil {
+	if _, _, err := u.store.Vertex(sourceHash); err != nil {
 		return fmt.Errorf("could not find source vertex with hash %v: %w", sourceHash, err)
 	}
 
-	_, _, err = u.store.Vertex(targetHash)
-	if err != nil {
+	if _, _, err := u.store.Vertex(targetHash); err != nil {
 		return fmt.Errorf("could not find target vertex with hash %v: %w", targetHash, err)
 	}
 
@@ -91,8 +89,7 @@ func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Ed
 		option(&edge.Properties)
 	}
 
-	err = u.addEdge(sourceHash, targetHash, edge)
-	if err != nil {
+	if err := u.addEdge(sourceHash, targetHash, edge); err != nil {
 		return fmt.Errorf("failed to add edge: %w", err)
 	}
 

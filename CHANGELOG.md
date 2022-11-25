@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),  and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] - 2022-11-25
+
+### Added
+* Added the `ErrVertexAlreadyExists` error instance. Use `errors.Is` to check for this instance.
+* Added the `ErrEdgeAlreadyExists` error instance. Use `errors.Is` to check for this instance.
+* Added the `ErrEdgeCreatesCycle` error instance. Use `errors.Is` to check for this instance.
+
+### Changed
+* Changed `AddVertex` to return `ErrVertexAlreadyExists` if the vertex already exists.
+* Changed `VertexWithProperties` to return `ErrVertexNotFound` if the vertex doesn't exist.
+* Changed `AddEdge` to return `ErrVertexNotFound` if either vertex doesn't exist.
+* Changed `AddEdge` to return `ErrEdgeAlreadyExists` if the edge already exists.
+* Changed `AddEdge` to return `ErrEdgeCreatesCycle` if cycle prevention is active and the edge would create a cycle.
+* Changed `Edge` to return `ErrEdgeNotFound` if the edge doesn't exist.
+* Changed `RemoveEdge` to return the error instances returned by `Edge`.
+
 ## [0.14.0] - 2022-11-01
 
 ### Added

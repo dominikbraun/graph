@@ -31,6 +31,11 @@ func (u *undirected[K, T]) Traits() *Traits {
 
 func (u *undirected[K, T]) AddVertex(value T, options ...func(*VertexProperties)) error {
 	hash := u.hash(value)
+
+	if _, ok := u.vertices[hash]; ok {
+		return ErrVertexAlreadyExists
+	}
+
 	u.vertices[hash] = value
 	u.vertexProperties[hash] = &VertexProperties{
 		Weight:     0,
@@ -61,7 +66,7 @@ func (u *undirected[K, T]) VertexWithProperties(hash K) (T, VertexProperties, er
 
 	properties, ok := u.vertexProperties[hash]
 	if !ok {
-		return vertex, *properties, fmt.Errorf("vertex with hash %v doesn't exist", hash)
+		return vertex, *properties, ErrVertexNotFound
 	}
 
 	return vertex, *properties, nil
@@ -70,26 +75,26 @@ func (u *undirected[K, T]) VertexWithProperties(hash K) (T, VertexProperties, er
 func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
 	source, ok := u.vertices[sourceHash]
 	if !ok {
-		return fmt.Errorf("could not find source vertex with hash %v", sourceHash)
+		return fmt.Errorf("source vertex %v: %w", sourceHash, ErrVertexNotFound)
 	}
 
 	target, ok := u.vertices[targetHash]
 	if !ok {
-		return fmt.Errorf("could not find target vertex with hash %v", targetHash)
+		return fmt.Errorf("target vertex %v: %w", targetHash, ErrVertexNotFound)
 	}
 
 	if _, err := u.Edge(sourceHash, targetHash); !errors.Is(err, ErrEdgeNotFound) {
-		return fmt.Errorf("an edge between vertices %v and %v already exists", sourceHash, targetHash)
+		return ErrEdgeAlreadyExists
 	}
 
 	// If the user opted in to preventing cycles, run a cycle check.
 	if u.traits.PreventCycles {
 		createsCycle, err := CreatesCycle[K, T](u, sourceHash, targetHash)
 		if err != nil {
-			return fmt.Errorf("failed to check for cycles: %w", err)
+			return fmt.Errorf("check for cycles: %w", err)
 		}
 		if createsCycle {
-			return fmt.Errorf("an edge between %v and %v would introduce a cycle", sourceHash, targetHash)
+			return ErrEdgeCreatesCycle
 		}
 	}
 
@@ -131,7 +136,7 @@ func (u *undirected[K, T]) Edge(sourceHash, targetHash K) (Edge[T], error) {
 
 func (u *undirected[K, T]) RemoveEdge(source, target K) error {
 	if _, err := u.Edge(source, target); err != nil {
-		return fmt.Errorf("failed to find edge from %v to %v: %w", source, target, err)
+		return err
 	}
 
 	delete(u.inEdges[source], target)
@@ -210,7 +215,7 @@ func (u *undirected[K, T]) Size() int {
 		size += len(outEdges)
 	}
 
-	// Divide by 2 since every add edge operation on undirected graph is counted twice.
+	// Divide by 2 since every AddEdge call on undirected graphs is counted twice.
 	return size / 2
 }
 

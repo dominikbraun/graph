@@ -5,10 +5,11 @@ package graph
 import "errors"
 
 var (
-	// ErrVertexNotFound will be returned when a desired vertex cannot be found.
-	ErrVertexNotFound = errors.New("vertex not found")
-	// ErrEdgeNotFound will be returned when a desired edge cannot be found.
-	ErrEdgeNotFound = errors.New("edge not found")
+	ErrVertexNotFound      = errors.New("vertex not found")
+	ErrVertexAlreadyExists = errors.New("vertex already exists")
+	ErrEdgeNotFound        = errors.New("edge not found")
+	ErrEdgeAlreadyExists   = errors.New("edge already exists")
+	ErrEdgeCreatesCycle    = errors.New("edge would create a cycle")
 )
 
 // Graph represents a generic graph data structure consisting of vertices and edges. Its vertices
@@ -17,11 +18,8 @@ type Graph[K comparable, T any] interface {
 	// Traits returns the graph's traits. Those traits must be set when creating a graph using New.
 	Traits() *Traits
 
-	// AddVertex creates a new vertex in the graph, which won't be connected to another vertex yet.
-	//
-	// Whether AddVertex is idempotent depends on the underlying vertex store implementation. By
-	// default, when using the in-memory store, an existing vertex will be overwritten, whereas
-	// other stores might return an error.
+	// AddVertex creates a new vertex in the graph. If the vertex already exists in the graph,
+	// ErrVertexAlreadyExists will be returned.
 	//
 	// AddVertex accepts a variety of functional options to set further edge details such as the
 	// weight or an attribute:
@@ -33,13 +31,15 @@ type Graph[K comparable, T any] interface {
 	// Vertex returns the vertex with the given hash or ErrVertexNotFound if it doesn't exist.
 	Vertex(hash K) (T, error)
 
-	// VertexWithProperties returns the vertex with the given hash along with its properties, or an
-	// error if the vertex doesn't exist.
+	// VertexWithProperties returns the vertex with the given hash along with its properties or
+	// ErrVertexNotFound if it doesn't exist.
 	VertexWithProperties(hash K) (T, VertexProperties, error)
 
 	// AddEdge creates an edge between the source and the target vertex. If the Directed option has
-	// been called on the graph, this is a directed edge. Returns an error if either vertex doesn't
-	// exist or the edge already exists.
+	// been called on the graph, this is a directed edge. If either vertex can't be found,
+	// ErrVertexNotFound will be returned. If the edge already exists, ErrEdgeAlreadyExists will be
+	// returned. If cycle prevention has been activated using PreventCycles and adding the edge
+	// would create a cycle, ErrEdgeCreatesCycle will be returned.
 	//
 	// AddEdge accepts a variety of functional options to set further edge details such as the
 	// weight or an attribute:
@@ -49,7 +49,8 @@ type Graph[K comparable, T any] interface {
 	AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error
 
 	// Edge returns the edge joining two given vertices or an error if the edge doesn't exist. In an
-	// undirected graph, an edge with swapped source and target vertices does match.
+	// undirected graph, an edge with swapped source and target vertices does match. If the edge
+	// doesn't exist, ErrEdgeNotFound will be returned.
 	Edge(sourceHash, targetHash K) (Edge[T], error)
 
 	// RemoveEdge removes the edge between the given source and target vertices. If the edge doesn't

@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"errors"
 	"testing"
 )
 
@@ -35,6 +36,9 @@ func TestUndirected_AddVertex(t *testing.T) {
 		properties         *VertexProperties
 		expectedVertices   []int
 		expectedProperties *VertexProperties
+		// Even though some AddVertex calls might work, at least one of them could fail, for example
+		// if the last call would add an existing vertex.
+		finallyExpectedError error
 	}{
 		"graph with 3 vertices": {
 			vertices: []int{1, 2, 3},
@@ -49,24 +53,31 @@ func TestUndirected_AddVertex(t *testing.T) {
 			},
 		},
 		"graph with duplicated vertex": {
-			vertices:         []int{1, 2, 2},
-			expectedVertices: []int{1, 2},
+			vertices:             []int{1, 2, 2},
+			expectedVertices:     []int{1, 2},
+			finallyExpectedError: ErrVertexAlreadyExists,
 		},
 	}
 
 	for name, test := range tests {
 		graph := newUndirected(IntHash, &Traits{})
 
+		var err error
+
 		for _, vertex := range test.vertices {
 			if test.properties == nil {
-				_ = graph.AddVertex(vertex)
+				err = graph.AddVertex(vertex)
 				continue
 			}
 			// If there are vertex attributes, iterate over them and call VertexAttribute for each
 			// entry. A vertex should only have one attribute so that AddVertex is invoked once.
 			for key, value := range test.properties.Attributes {
-				_ = graph.AddVertex(vertex, VertexWeight(test.properties.Weight), VertexAttribute(key, value))
+				err = graph.AddVertex(vertex, VertexWeight(test.properties.Weight), VertexAttribute(key, value))
 			}
+		}
+
+		if err != test.finallyExpectedError {
+			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v", name, test.finallyExpectedError, err)
 		}
 
 		for _, vertex := range test.vertices {
@@ -104,38 +115,124 @@ func TestUndirected_AddVertex(t *testing.T) {
 	}
 }
 
+func TestUndirected_Vertex(t *testing.T) {
+	tests := map[string]struct {
+		vertices      []int
+		vertex        int
+		expectedError error
+	}{
+		"existing vertex": {
+			vertices: []int{1, 2, 3},
+			vertex:   2,
+		},
+		"non-existent vertex": {
+			vertices:      []int{1, 2, 3},
+			vertex:        4,
+			expectedError: ErrVertexNotFound,
+		},
+	}
+
+	for name, test := range tests {
+		graph := newUndirected(IntHash, &Traits{})
+
+		for _, vertex := range test.vertices {
+			_ = graph.AddVertex(vertex)
+		}
+
+		vertex, err := graph.Vertex(test.vertex)
+
+		if err != test.expectedError {
+			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v", name, test.expectedError, err)
+		}
+
+		if test.expectedError != nil {
+			continue
+		}
+
+		if vertex != test.vertex {
+			t.Errorf("%s: vertex expectancy doesn't match: expected %v, got %v", name, test.vertex, vertex)
+		}
+	}
+}
+
 func TestUndirected_AddEdge(t *testing.T) {
 	tests := map[string]struct {
 		vertices      []int
-		edgeHashes    [][3]int
+		edges         []Edge[int]
 		traits        *Traits
 		expectedEdges []Edge[int]
 		// Even though some AddEdge calls might work, at least one of them could fail, for example
 		// if the last call would introduce a cycle.
-		shouldFinallyFail bool
+		finallyExpectedError error
 	}{
 		"graph with 2 edges": {
-			vertices:   []int{1, 2, 3},
-			edgeHashes: [][3]int{{1, 2, 10}, {1, 3, 20}},
-			traits:     &Traits{},
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2, Properties: EdgeProperties{Weight: 10}},
+				{Source: 1, Target: 3, Properties: EdgeProperties{Weight: 20}},
+			},
+			traits: &Traits{},
 			expectedEdges: []Edge[int]{
 				{Source: 1, Target: 2, Properties: EdgeProperties{Weight: 10}},
 				{Source: 1, Target: 3, Properties: EdgeProperties{Weight: 20}},
 			},
 		},
 		"hashes for non-existent vertices": {
-			vertices:          []int{1, 2},
-			edgeHashes:        [][3]int{{1, 3, 20}},
-			traits:            &Traits{},
-			shouldFinallyFail: true,
+			vertices: []int{1, 2},
+			edges: []Edge[int]{
+				{Source: 1, Target: 3, Properties: EdgeProperties{Weight: 20}},
+			},
+			traits:               &Traits{},
+			finallyExpectedError: ErrVertexNotFound,
 		},
 		"edge introducing a cycle in an acyclic graph": {
-			vertices:   []int{1, 2, 3},
-			edgeHashes: [][3]int{{1, 2, 0}, {2, 3, 0}, {3, 1, 0}},
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 2, Target: 3},
+				{Source: 3, Target: 1},
+			},
 			traits: &Traits{
 				PreventCycles: true,
 			},
-			shouldFinallyFail: true,
+			finallyExpectedError: ErrEdgeCreatesCycle,
+		},
+		"edge already exists": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 2, Target: 3},
+				{Source: 3, Target: 1},
+				{Source: 3, Target: 1},
+			},
+			traits:               &Traits{},
+			finallyExpectedError: ErrEdgeAlreadyExists,
+		},
+		"edge with attributes": {
+			vertices: []int{1, 2},
+			edges: []Edge[int]{
+				{
+					Source: 1,
+					Target: 2,
+					Properties: EdgeProperties{
+						Attributes: map[string]string{
+							"color": "red",
+						},
+					},
+				},
+			},
+			expectedEdges: []Edge[int]{
+				{
+					Source: 1,
+					Target: 2,
+					Properties: EdgeProperties{
+						Attributes: map[string]string{
+							"color": "red",
+						},
+					},
+				},
+			},
+			traits: &Traits{},
 		},
 	}
 
@@ -148,14 +245,22 @@ func TestUndirected_AddEdge(t *testing.T) {
 
 		var err error
 
-		for _, edge := range test.edgeHashes {
-			if err = graph.AddEdge(edge[0], edge[1], EdgeWeight(edge[2])); err != nil {
+		for _, edge := range test.edges {
+			if len(edge.Properties.Attributes) == 0 {
+				err = graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight))
+			}
+			// If there are edge attributes, iterate over them and call EdgeAttribute for each
+			// entry. An edge should only have one attribute so that AddEdge is invoked once.
+			for key, value := range edge.Properties.Attributes {
+				err = graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight), EdgeAttribute(key, value))
+			}
+			if err != nil {
 				break
 			}
 		}
 
-		if test.shouldFinallyFail != (err != nil) {
-			t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFinallyFail, (err != nil), err)
+		if !errors.Is(err, test.finallyExpectedError) {
+			t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v", name, test.finallyExpectedError, err)
 		}
 
 		for _, expectedEdge := range test.expectedEdges {
@@ -177,6 +282,20 @@ func TestUndirected_AddEdge(t *testing.T) {
 
 			if edge.Properties.Weight != expectedEdge.Properties.Weight {
 				t.Errorf("%s: edge weights don't match: expected weight %v, got %v", name, expectedEdge.Properties.Weight, edge.Properties.Weight)
+			}
+
+			if len(edge.Properties.Attributes) != len(expectedEdge.Properties.Attributes) {
+				t.Fatalf("%s: attributes length don't match: expcted %v, got %v", name, len(expectedEdge.Properties.Attributes), len(edge.Properties.Attributes))
+			}
+
+			for expectedKey, expectedValue := range expectedEdge.Properties.Attributes {
+				value, ok := edge.Properties.Attributes[expectedKey]
+				if !ok {
+					t.Errorf("%s: attribute keys don't match: expected key %v not found", name, expectedKey)
+				}
+				if value != expectedValue {
+					t.Errorf("%s: attribute values don't match: expected value %v for key %v, got %v", name, expectedValue, expectedKey, value)
+				}
 			}
 		}
 	}
@@ -222,9 +341,10 @@ func TestUndirected_Edge(t *testing.T) {
 
 func TestUndirected_RemoveEdge(t *testing.T) {
 	tests := map[string]struct {
-		vertices    []int
-		edges       []Edge[int]
-		removeEdges []Edge[int]
+		vertices      []int
+		edges         []Edge[int]
+		removeEdges   []Edge[int]
+		expectedError error
 	}{
 		"two-vertices graph": {
 			vertices: []int{1, 2},
@@ -247,6 +367,16 @@ func TestUndirected_RemoveEdge(t *testing.T) {
 				{Source: 2, Target: 3},
 			},
 		},
+		"remove non-existent edge": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+			},
+			removeEdges: []Edge[int]{
+				{Source: 2, Target: 3},
+			},
+			expectedError: ErrEdgeNotFound,
+		},
 	}
 
 	for name, test := range tests {
@@ -263,8 +393,8 @@ func TestUndirected_RemoveEdge(t *testing.T) {
 		}
 
 		for _, removeEdge := range test.removeEdges {
-			if err := graph.RemoveEdge(removeEdge.Source, removeEdge.Target); err != nil {
-				t.Fatalf("%s: failed to remove edge: %s", name, err.Error())
+			if err := graph.RemoveEdge(removeEdge.Source, removeEdge.Target); !errors.Is(err, test.expectedError) {
+				t.Errorf("%s: error expectancy doesn't match: expected %v, got %v", name, test.expectedError, err)
 			}
 			// After removing the edge, verify that it can't be retrieved using Edge anymore.
 			if _, err := graph.Edge(removeEdge.Source, removeEdge.Target); err != ErrEdgeNotFound {

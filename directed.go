@@ -33,6 +33,11 @@ func (d *directed[K, T]) Traits() *Traits {
 
 func (d *directed[K, T]) AddVertex(value T, options ...func(*VertexProperties)) error {
 	hash := d.hash(value)
+
+	if _, ok := d.vertices[hash]; ok {
+		return ErrVertexAlreadyExists
+	}
+
 	d.vertices[hash] = value
 	d.vertexProperties[hash] = &VertexProperties{
 		Weight:     0,
@@ -63,7 +68,7 @@ func (d *directed[K, T]) VertexWithProperties(hash K) (T, VertexProperties, erro
 
 	properties, ok := d.vertexProperties[hash]
 	if !ok {
-		return vertex, *properties, fmt.Errorf("vertex with hash %v doesn't exist", hash)
+		return vertex, *properties, ErrVertexNotFound
 	}
 
 	return vertex, *properties, nil
@@ -72,26 +77,26 @@ func (d *directed[K, T]) VertexWithProperties(hash K) (T, VertexProperties, erro
 func (d *directed[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
 	source, ok := d.vertices[sourceHash]
 	if !ok {
-		return fmt.Errorf("could not find source vertex with hash %v", sourceHash)
+		return fmt.Errorf("source vertex %v: %w", sourceHash, ErrVertexNotFound)
 	}
 
 	target, ok := d.vertices[targetHash]
 	if !ok {
-		return fmt.Errorf("could not find target vertex with hash %v", targetHash)
+		return fmt.Errorf("target vertex %v: %w", targetHash, ErrVertexNotFound)
 	}
 
 	if _, err := d.Edge(sourceHash, targetHash); !errors.Is(err, ErrEdgeNotFound) {
-		return fmt.Errorf("an edge between vertices %v and %v already exists", sourceHash, targetHash)
+		return ErrEdgeAlreadyExists
 	}
 
 	// If the user opted in to preventing cycles, run a cycle check.
 	if d.traits.PreventCycles {
 		createsCycle, err := CreatesCycle[K, T](d, sourceHash, targetHash)
 		if err != nil {
-			return fmt.Errorf("failed to check for cycles: %w", err)
+			return fmt.Errorf("check for cycles: %w", err)
 		}
 		if createsCycle {
-			return fmt.Errorf("an edge between %v and %v would introduce a cycle", sourceHash, targetHash)
+			return ErrEdgeCreatesCycle
 		}
 	}
 
@@ -128,7 +133,7 @@ func (d *directed[K, T]) Edge(sourceHash, targetHash K) (Edge[T], error) {
 
 func (d *directed[K, T]) RemoveEdge(source, target K) error {
 	if _, err := d.Edge(source, target); err != nil {
-		return fmt.Errorf("failed to find edge from %v to %v: %w", source, target, err)
+		return err
 	}
 
 	delete(d.edges[source], target)

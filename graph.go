@@ -113,6 +113,7 @@ type Edge[T any] struct {
 type EdgeProperties struct {
 	Attributes map[string]string
 	Weight     int
+	Data       any
 }
 
 // Hash is a hashing function that takes a vertex of type T and returns a hash value of type K.
@@ -202,6 +203,14 @@ func EdgeWeight(weight int) func(*EdgeProperties) {
 func EdgeAttribute(key, value string) func(*EdgeProperties) {
 	return func(e *EdgeProperties) {
 		e.Attributes[key] = value
+	}
+}
+
+// EdgeData returns a function that sets the data of an edge to the given value. This is a functional
+// option for the Edge and AddEdge methods.
+func EdgeData(data any) func(*EdgeProperties) {
+	return func(e *EdgeProperties) {
+		e.Data = data
 	}
 }
 

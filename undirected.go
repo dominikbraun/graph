@@ -164,6 +164,7 @@ func (u *undirected[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {
 				Properties: EdgeProperties{
 					Weight:     edge.Properties.Weight,
 					Attributes: edge.Properties.Attributes,
+					Data:       edge.Properties.Data,
 				},
 			}
 		}

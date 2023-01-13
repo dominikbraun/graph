@@ -439,7 +439,7 @@ abcccccccccccccaaaaaaccccccccccaaaaaaaccccccccaaaaaaccccccaaaaaacccaaaaaaaacccca
 		return result
 	}
 
-	getNeighbors := func(heightMap [][]int, x int, y int) []Coordinate {
+	getNeighbors := func(heightMap [][]int, x, y int) []Coordinate {
 		neighbors := []Coordinate{}
 		if x > 0 {
 			neighbors = append(neighbors, Coordinate{X: x - 1, Y: y})
@@ -456,7 +456,7 @@ abcccccccccccccaaaaaaccccccccccaaaaaaaccccccccaaaaaaccccccaaaaaacccaaaaaaaacccca
 		return neighbors
 	}
 
-	findShortestPathToHighest := func(heightMap [][]int, start Coordinate, end Coordinate) int {
+	findShortestPathToHighest := func(heightMap [][]int, start, end Coordinate) int {
 		coordinateHash := func(c Coordinate) string {
 			return strconv.Itoa(c.X) + "," + strconv.Itoa(c.Y)
 		}

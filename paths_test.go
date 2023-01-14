@@ -428,11 +428,11 @@ func TestDirectedShortedPath_Issue70(t *testing.T) {
 		}
 
 		// Add the vertices to the graph
-		g.AddVertex(source)
-		g.AddVertex(target)
+		_ = g.AddVertex(source)
+		_ = g.AddVertex(target)
 
 		// Add edge between the two points
-		g.AddEdge(
+		_ = g.AddEdge(
 			source,
 			target,
 			// Note(geoah): Commenting out the following line should result in

@@ -117,7 +117,9 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 		}
 
 		for adjacency, edge := range adjacencyMap[vertex] {
-			weight := weights[vertex] + float64(edge.Properties.Weight)
+			// Adding 1 to the actual weight is necessary for unweighted graphs with weights of 0.
+			// Otherwise, all paths would have a sum of 0 and a random path would be returned.
+			weight := weights[vertex] + float64(edge.Properties.Weight) + 1
 
 			if weight < weights[adjacency] && !hasInfiniteWeight {
 				weights[adjacency] = weight

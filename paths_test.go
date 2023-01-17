@@ -183,24 +183,6 @@ func TestDirectedShortestPath(t *testing.T) {
 			targetHash:           "B",
 			expectedShortestPath: []string{"A", "C", "E", "B"},
 		},
-		"graph as on img/dijkstra.svg without weights": {
-			vertices: []string{"A", "B", "C", "D", "E", "F", "G"},
-			edges: []Edge[string]{
-				{Source: "A", Target: "C", Properties: EdgeProperties{}},
-				{Source: "A", Target: "F", Properties: EdgeProperties{}},
-				{Source: "C", Target: "D", Properties: EdgeProperties{}},
-				{Source: "C", Target: "E", Properties: EdgeProperties{}},
-				{Source: "C", Target: "F", Properties: EdgeProperties{}},
-				{Source: "D", Target: "B", Properties: EdgeProperties{}},
-				{Source: "E", Target: "B", Properties: EdgeProperties{}},
-				{Source: "E", Target: "F", Properties: EdgeProperties{}},
-				{Source: "F", Target: "G", Properties: EdgeProperties{}},
-				{Source: "G", Target: "B", Properties: EdgeProperties{}},
-			},
-			sourceHash:           "A",
-			targetHash:           "B",
-			expectedShortestPath: []string{"A", "C", "E", "B"},
-		},
 		"diamond-shaped graph": {
 			vertices: []string{"A", "B", "C", "D"},
 			edges: []Edge[string]{
@@ -212,6 +194,21 @@ func TestDirectedShortestPath(t *testing.T) {
 			sourceHash:           "A",
 			targetHash:           "D",
 			expectedShortestPath: []string{"A", "B", "D"},
+		},
+		"unweighted graph": {
+			vertices: []string{"A", "B", "C", "D", "E", "F", "G"},
+			edges: []Edge[string]{
+				{Source: "A", Target: "B", Properties: EdgeProperties{}},
+				{Source: "A", Target: "C", Properties: EdgeProperties{}},
+				{Source: "B", Target: "D", Properties: EdgeProperties{}},
+				{Source: "C", Target: "F", Properties: EdgeProperties{}},
+				{Source: "D", Target: "G", Properties: EdgeProperties{}},
+				{Source: "E", Target: "G", Properties: EdgeProperties{}},
+				{Source: "F", Target: "E", Properties: EdgeProperties{}},
+			},
+			sourceHash:           "A",
+			targetHash:           "G",
+			expectedShortestPath: []string{"A", "B", "D", "G"},
 		},
 		"source equal to target": {
 			vertices: []string{"A", "B", "C", "D"},
@@ -307,24 +304,6 @@ func TestUndirectedShortestPath(t *testing.T) {
 			targetHash:           "B",
 			expectedShortestPath: []string{"A", "C", "E", "B"},
 		},
-		"graph as on img/dijkstra.svg without weights": {
-			vertices: []string{"A", "B", "C", "D", "E", "F", "G"},
-			edges: []Edge[string]{
-				{Source: "A", Target: "C", Properties: EdgeProperties{}},
-				{Source: "A", Target: "F", Properties: EdgeProperties{}},
-				{Source: "C", Target: "D", Properties: EdgeProperties{}},
-				{Source: "C", Target: "E", Properties: EdgeProperties{}},
-				{Source: "C", Target: "F", Properties: EdgeProperties{}},
-				{Source: "D", Target: "B", Properties: EdgeProperties{}},
-				{Source: "E", Target: "B", Properties: EdgeProperties{}},
-				{Source: "E", Target: "F", Properties: EdgeProperties{}},
-				{Source: "F", Target: "G", Properties: EdgeProperties{}},
-				{Source: "G", Target: "B", Properties: EdgeProperties{}},
-			},
-			sourceHash:           "A",
-			targetHash:           "B",
-			expectedShortestPath: []string{"A", "C", "E", "B"},
-		},
 		"diamond-shaped graph": {
 			vertices: []string{"A", "B", "C", "D"},
 			edges: []Edge[string]{
@@ -336,6 +315,21 @@ func TestUndirectedShortestPath(t *testing.T) {
 			sourceHash:           "A",
 			targetHash:           "D",
 			expectedShortestPath: []string{"A", "B", "D"},
+		},
+		"unweighted graph": {
+			vertices: []string{"A", "B", "C", "D", "E", "F", "G"},
+			edges: []Edge[string]{
+				{Source: "A", Target: "B", Properties: EdgeProperties{}},
+				{Source: "A", Target: "C", Properties: EdgeProperties{}},
+				{Source: "B", Target: "D", Properties: EdgeProperties{}},
+				{Source: "C", Target: "F", Properties: EdgeProperties{}},
+				{Source: "D", Target: "G", Properties: EdgeProperties{}},
+				{Source: "E", Target: "G", Properties: EdgeProperties{}},
+				{Source: "F", Target: "E", Properties: EdgeProperties{}},
+			},
+			sourceHash:           "A",
+			targetHash:           "G",
+			expectedShortestPath: []string{"A", "B", "D", "G"},
 		},
 		"source equal to target": {
 			vertices: []string{"A", "B", "C", "D"},

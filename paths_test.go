@@ -222,7 +222,7 @@ func TestDirectedShortestPath(t *testing.T) {
 			targetHash:           "B",
 			expectedShortestPath: []string{"B"},
 		},
-		"target not reachable": {
+		"target not reachable in a disconnected graph": {
 			vertices: []string{"A", "B", "C", "D"},
 			edges: []Edge[string]{
 				{Source: "A", Target: "B", Properties: EdgeProperties{Weight: 2}},
@@ -233,7 +233,7 @@ func TestDirectedShortestPath(t *testing.T) {
 			expectedShortestPath: []string{},
 			shouldFail:           true,
 		},
-		"target not reachable connected directed graph": {
+		"target not reachable in a connected graph": {
 			vertices: []string{"A", "B", "C"},
 			edges: []Edge[string]{
 				{Source: "A", Target: "B", Properties: EdgeProperties{Weight: 0}},
@@ -343,7 +343,7 @@ func TestUndirectedShortestPath(t *testing.T) {
 			targetHash:           "B",
 			expectedShortestPath: []string{"B"},
 		},
-		"target not reachable": {
+		"target not reachable in a disconnected graph": {
 			vertices: []string{"A", "B", "C", "D"},
 			edges: []Edge[string]{
 				{Source: "A", Target: "B", Properties: EdgeProperties{Weight: 2}},

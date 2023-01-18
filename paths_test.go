@@ -1,6 +1,8 @@
 package graph
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestDirectedCreatesCycle(t *testing.T) {
 	tests := map[string]struct {
@@ -193,6 +195,21 @@ func TestDirectedShortestPath(t *testing.T) {
 			targetHash:           "D",
 			expectedShortestPath: []string{"A", "B", "D"},
 		},
+		"unweighted graph": {
+			vertices: []string{"A", "B", "C", "D", "E", "F", "G"},
+			edges: []Edge[string]{
+				{Source: "A", Target: "B", Properties: EdgeProperties{}},
+				{Source: "A", Target: "C", Properties: EdgeProperties{}},
+				{Source: "B", Target: "D", Properties: EdgeProperties{}},
+				{Source: "C", Target: "F", Properties: EdgeProperties{}},
+				{Source: "D", Target: "G", Properties: EdgeProperties{}},
+				{Source: "E", Target: "G", Properties: EdgeProperties{}},
+				{Source: "F", Target: "E", Properties: EdgeProperties{}},
+			},
+			sourceHash:           "A",
+			targetHash:           "G",
+			expectedShortestPath: []string{"A", "B", "D", "G"},
+		},
 		"source equal to target": {
 			vertices: []string{"A", "B", "C", "D"},
 			edges: []Edge[string]{
@@ -298,6 +315,21 @@ func TestUndirectedShortestPath(t *testing.T) {
 			sourceHash:           "A",
 			targetHash:           "D",
 			expectedShortestPath: []string{"A", "B", "D"},
+		},
+		"unweighted graph": {
+			vertices: []string{"A", "B", "C", "D", "E", "F", "G"},
+			edges: []Edge[string]{
+				{Source: "A", Target: "B", Properties: EdgeProperties{}},
+				{Source: "A", Target: "C", Properties: EdgeProperties{}},
+				{Source: "B", Target: "D", Properties: EdgeProperties{}},
+				{Source: "C", Target: "F", Properties: EdgeProperties{}},
+				{Source: "D", Target: "G", Properties: EdgeProperties{}},
+				{Source: "E", Target: "G", Properties: EdgeProperties{}},
+				{Source: "F", Target: "E", Properties: EdgeProperties{}},
+			},
+			sourceHash:           "A",
+			targetHash:           "G",
+			expectedShortestPath: []string{"A", "B", "D", "G"},
 		},
 		"source equal to target": {
 			vertices: []string{"A", "B", "C", "D"},

@@ -7,6 +7,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.15.1] - 2023-01-18
 
+### Changed
+* Changed `ShortestPath` to return `ErrTargetNotReachable` if the target vertex is not reachable.
+
 ### Fixed
 * Fixed `ShortestPath` to return correct results for large unweighted graphs.
 

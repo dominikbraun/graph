@@ -6,6 +6,10 @@ import (
 	"math"
 )
 
+var (
+	ErrTargetNotReachable = errors.New("target vertex not reachable from source")
+)
+
 // CreatesCycle determines whether an edge between the given source and target vertices would
 // introduce a cycle. It won't create that edge in any case.
 //
@@ -66,20 +70,15 @@ func CreatesCycle[K comparable, T any](g Graph[K, T], source, target K) (bool, e
 }
 
 // ShortestPath computes the shortest path between a source and a target vertex using the edge
-// weights and returns the hash values of the vertices forming that path. This search runs in
-// O(|V|+|E|log(|V|)) time.
+// weights and returns the hash values of the vertices forming that path using Dijkstra's algorithm.
+// This search runs in O(|V|+|E|log(|V|)) time.
 //
 // The returned path includes the source and target vertices. If the target cannot be reached
-// from the source vertex, ShortestPath returns an error. If there are multiple shortest paths,
-// an arbitrary one will be returned.
+// from the source vertex, ErrTargetNotReachable will be returned. If there are multiple shortest
+// paths, an arbitrary one will be returned.
 func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, error) {
 	weights := make(map[K]float64)
 	visited := make(map[K]bool)
-
-	// bestPredecessors stores the best (i.e. cheapest or least-weighted) predecessor for each
-	// vertex. If there is an edge AC with weight 4 and an edge BC with weight 2, the best
-	// predecessor for C is B.
-	bestPredecessors := make(map[K]K)
 
 	weights[source] = 0
 	visited[target] = true
@@ -88,11 +87,6 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 	adjacencyMap, err := g.AdjacencyMap()
 	if err != nil {
 		return nil, fmt.Errorf("could not get adjacency map: %w", err)
-	}
-
-	predecessorMap, err := g.PredecessorMap()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get predecessor map: %w", err)
 	}
 
 	for hash := range adjacencyMap {
@@ -104,17 +98,14 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 		queue.Push(hash, weights[hash])
 	}
 
+	// bestPredecessors stores the best (i.e. cheapest or least-weighted) predecessor for each
+	// vertex. If there is an edge AC with weight 4 and an edge BC with weight 2, the best
+	// predecessor for C is B.
+	bestPredecessors := make(map[K]K)
+
 	for queue.Len() > 0 {
 		vertex, _ := queue.Pop()
 		hasInfiniteWeight := math.IsInf(weights[vertex], 1)
-
-		if vertex == target {
-			targetPredecessors := predecessorMap[target]
-
-			if len(targetPredecessors) == 0 {
-				return nil, fmt.Errorf("vertex %v is not reachable from vertex %v", target, source)
-			}
-		}
 
 		for adjacency, edge := range adjacencyMap[vertex] {
 			// Adding 1 to the actual weight is necessary for unweighted graphs with weights of 0.
@@ -137,7 +128,7 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 		// If hashCursor is not a present key in bestPredecessors, hashCursor is set to the zero
 		// value. Without this check, this leads to endless prepending of zeros to the path.
 		if _, ok := bestPredecessors[hashCursor]; !ok {
-			return nil, fmt.Errorf("vertex %v is not reachable from vertex %v", target, source)
+			return nil, ErrTargetNotReachable
 		}
 		hashCursor = bestPredecessors[hashCursor]
 		path = append([]K{hashCursor}, path...)

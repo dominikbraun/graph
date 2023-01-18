@@ -6,9 +6,7 @@ import (
 	"math"
 )
 
-var (
-	ErrTargetNotReachable = errors.New("target vertex not reachable from source")
-)
+var ErrTargetNotReachable = errors.New("target vertex not reachable from source")
 
 // CreatesCycle determines whether an edge between the given source and target vertices would
 // introduce a cycle. It won't create that edge in any case.

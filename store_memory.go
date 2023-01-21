@@ -149,6 +149,9 @@ func (s *memoryStore[K, T]) GetEdgesByTarget(targetHash K) ([]Edge[K], error) {
 }
 
 func (s *memoryStore[K, T]) ListEdges() ([]Edge[K], error) {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+
 	res := make([]Edge[K], 0)
 	for _, edges := range s.outEdges {
 		for _, edge := range edges {

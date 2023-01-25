@@ -238,6 +238,7 @@ func (u *undirected[K, T]) addEdge(sourceHash, targetHash K, edge Edge[K]) error
 		Properties: EdgeProperties{
 			Weight:     edge.Properties.Weight,
 			Attributes: edge.Properties.Attributes,
+			Data:       edge.Properties.Data,
 		},
 	}
 

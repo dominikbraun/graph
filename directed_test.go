@@ -276,7 +276,13 @@ func TestDirected_AddEdge(t *testing.T) {
 			// If there are edge attributes, iterate over them and call EdgeAttribute for each
 			// entry. An edge should only have one attribute so that AddEdge is invoked once.
 			for key, value := range edge.Properties.Attributes {
-				err = graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight), EdgeData(edge.Properties.Data), EdgeAttribute(key, value))
+				err = graph.AddEdge(
+					edge.Source,
+					edge.Target,
+					EdgeWeight(edge.Properties.Weight),
+					EdgeData(edge.Properties.Data),
+					EdgeAttribute(key, value),
+				)
 			}
 			if err != nil {
 				break

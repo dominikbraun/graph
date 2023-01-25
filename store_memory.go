@@ -114,40 +114,6 @@ func (s *memoryStore[K, T]) Edge(sourceHash, targetHash K) (Edge[K], error) {
 	return edge, nil
 }
 
-func (s *memoryStore[K, T]) GetEdgesBySource(sourceHash K) ([]Edge[K], error) {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-
-	sourceEdges, ok := s.outEdges[sourceHash]
-	if !ok {
-		return nil, ErrEdgeNotFound
-	}
-
-	sourceEdgesArray := make([]Edge[K], 0, len(sourceEdges))
-	for _, edge := range sourceEdges {
-		sourceEdgesArray = append(sourceEdgesArray, edge)
-	}
-
-	return sourceEdgesArray, nil
-}
-
-func (s *memoryStore[K, T]) GetEdgesByTarget(targetHash K) ([]Edge[K], error) {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-
-	targetEdges, ok := s.inEdges[targetHash]
-	if !ok {
-		return nil, ErrEdgeNotFound
-	}
-
-	targetEdgesArray := make([]Edge[K], 0, len(targetEdges))
-	for _, edge := range targetEdges {
-		targetEdgesArray = append(targetEdgesArray, edge)
-	}
-
-	return targetEdgesArray, nil
-}
-
 func (s *memoryStore[K, T]) ListEdges() ([]Edge[K], error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()

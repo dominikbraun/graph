@@ -9,6 +9,4 @@ type Store[K comparable, T any] interface {
 	RemoveEdge(sourceHash, targetHash K) error
 	Edge(sourceHash, targetHash K) (Edge[K], error)
 	ListEdges() ([]Edge[K], error)
-	GetEdgesBySource(sourceHash K) ([]Edge[K], error)
-	GetEdgesByTarget(targetHash K) ([]Edge[K], error)
 }

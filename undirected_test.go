@@ -234,6 +234,28 @@ func TestUndirected_AddEdge(t *testing.T) {
 			},
 			traits: &Traits{},
 		},
+		"edge with data": {
+			vertices: []int{1, 2},
+			edges: []Edge[int]{
+				{
+					Source: 1,
+					Target: 2,
+					Properties: EdgeProperties{
+						Data: "foo",
+					},
+				},
+			},
+			expectedEdges: []Edge[int]{
+				{
+					Source: 1,
+					Target: 2,
+					Properties: EdgeProperties{
+						Data: "foo",
+					},
+				},
+			},
+			traits: &Traits{},
+		},
 	}
 
 	for name, test := range tests {
@@ -247,12 +269,12 @@ func TestUndirected_AddEdge(t *testing.T) {
 
 		for _, edge := range test.edges {
 			if len(edge.Properties.Attributes) == 0 {
-				err = graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight))
+				err = graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight), EdgeData(edge.Properties.Data))
 			}
 			// If there are edge attributes, iterate over them and call EdgeAttribute for each
 			// entry. An edge should only have one attribute so that AddEdge is invoked once.
 			for key, value := range edge.Properties.Attributes {
-				err = graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight), EdgeAttribute(key, value))
+				err = graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight), EdgeData(edge.Properties.Data), EdgeAttribute(key, value))
 			}
 			if err != nil {
 				break
@@ -296,6 +318,10 @@ func TestUndirected_AddEdge(t *testing.T) {
 				if value != expectedValue {
 					t.Errorf("%s: attribute values don't match: expected value %v for key %v, got %v", name, expectedValue, expectedKey, value)
 				}
+			}
+
+			if edge.Properties.Data != expectedEdge.Properties.Data {
+				t.Errorf("%s: edge data doesn't match: expected data %v, got %v", name, expectedEdge.Properties.Data, edge.Properties.Data)
 			}
 		}
 	}

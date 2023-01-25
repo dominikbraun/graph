@@ -160,6 +160,7 @@ func (d *directed[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {
 				Properties: EdgeProperties{
 					Weight:     edge.Properties.Weight,
 					Attributes: edge.Properties.Attributes,
+					Data:       edge.Properties.Data,
 				},
 			}
 		}
@@ -183,6 +184,7 @@ func (d *directed[K, T]) PredecessorMap() (map[K]map[K]Edge[K], error) {
 				Properties: EdgeProperties{
 					Attributes: edge.Properties.Attributes,
 					Weight:     edge.Properties.Weight,
+					Data:       edge.Properties.Data,
 				},
 			}
 		}
@@ -296,6 +298,7 @@ func cloneEdges[K comparable, T any](input map[K]map[K]Edge[T]) map[K]map[K]Edge
 				Properties: EdgeProperties{
 					Attributes: attributes,
 					Weight:     edge.Properties.Weight,
+					Data:       edge.Properties.Data,
 				},
 			}
 		}

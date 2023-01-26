@@ -54,12 +54,12 @@ func (d *directed[K, T]) VertexWithProperties(hash K) (T, VertexProperties, erro
 func (d *directed[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
 	_, _, err := d.store.Vertex(sourceHash)
 	if err != nil {
-		return fmt.Errorf("source vertex %v: %w", sourceHash, ErrVertexNotFound)
+		return fmt.Errorf("source vertex %v: %w", sourceHash, err)
 	}
 
 	_, _, err = d.store.Vertex(targetHash)
 	if err != nil {
-		return fmt.Errorf("target vertex %v: %w", targetHash, ErrVertexNotFound)
+		return fmt.Errorf("target vertex %v: %w", targetHash, err)
 	}
 
 	if _, err := d.Edge(sourceHash, targetHash); !errors.Is(err, ErrEdgeNotFound) {

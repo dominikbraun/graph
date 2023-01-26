@@ -149,9 +149,6 @@ func (d *directed[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {
 	}
 
 	for _, edge := range edges {
-		if _, ok := m[edge.Source]; !ok {
-			m[edge.Source] = make(map[K]Edge[K])
-		}
 		m[edge.Source][edge.Target] = edge
 	}
 

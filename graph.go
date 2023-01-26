@@ -89,10 +89,10 @@ type Graph[K comparable, T any] interface {
 	Clone() (Graph[K, T], error)
 
 	// Order computes and returns the number of vertices in the graph.
-	Order() int
+	Order() (int, error)
 
 	// Size computes and returns the number of edges in the graph.
-	Size() int
+	Size() (int, error)
 }
 
 // Edge represents a graph edge with a source and target vertex as well as a weight, which has the
@@ -165,6 +165,12 @@ type Hash[K comparable, T any] func(T) K
 //
 // Which Graph implementation will be returned depends on these traits.
 func New[K comparable, T any](hash Hash[K, T], options ...func(*Traits)) Graph[K, T] {
+	return NewWithStore(hash, newMemoryStore[K, T](), options...)
+}
+
+// NewWithStore creates a new graph same as New, but uses the provided store instead of the default
+// memory store.
+func NewWithStore[K comparable, T any](hash Hash[K, T], store Store[K, T], options ...func(*Traits)) Graph[K, T] {
 	var p Traits
 
 	for _, option := range options {
@@ -172,10 +178,10 @@ func New[K comparable, T any](hash Hash[K, T], options ...func(*Traits)) Graph[K
 	}
 
 	if p.IsDirected {
-		return newDirected(hash, &p)
+		return newDirected(hash, &p, store)
 	}
 
-	return newUndirected(hash, &p)
+	return newUndirected(hash, &p, store)
 }
 
 // StringHash is a hashing function that accepts a string and uses that exact string as a hash

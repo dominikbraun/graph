@@ -21,7 +21,7 @@ func TestUndirected_Traits(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		g := newUndirected(IntHash, test.traits)
+		g := newUndirected(IntHash, test.traits, newMemoryStore[int, int]())
 		traits := g.Traits()
 
 		if !traitsAreEqual(traits, test.expected) {
@@ -60,7 +60,7 @@ func TestUndirected_AddVertex(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{})
+		graph := newUndirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 
 		var err error
 
@@ -80,30 +80,33 @@ func TestUndirected_AddVertex(t *testing.T) {
 			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v", name, test.finallyExpectedError, err)
 		}
 
+		graphStore := graph.store.(*memoryStore[int, int])
+
 		for _, vertex := range test.vertices {
-			if len(graph.vertices) != len(test.expectedVertices) {
-				t.Errorf("%s: vertex count doesn't match: expected %v, got %v", name, len(test.expectedVertices), len(graph.vertices))
+			if len(graphStore.vertices) != len(test.expectedVertices) {
+				t.Errorf("%s: vertex count doesn't match: expected %v, got %v", name, len(test.expectedVertices), len(graphStore.vertices))
 			}
 
 			hash := graph.hash(vertex)
-			if _, ok := graph.vertices[hash]; !ok {
-				t.Errorf("%s: vertex %v not found in graph: %v", name, vertex, graph.vertices)
+			vertices := graph.store.(*memoryStore[int, int]).vertices
+			if _, ok := vertices[hash]; !ok {
+				t.Errorf("%s: vertex %v not found in graph: %v", name, vertex, vertices)
 			}
 
 			if test.properties == nil {
 				continue
 			}
 
-			if graph.vertexProperties[hash].Weight != test.expectedProperties.Weight {
-				t.Errorf("%s: edge weights don't match: expected weight %v, got %v", name, test.expectedProperties.Weight, graph.vertexProperties[hash].Weight)
+			if graphStore.vertexProperties[hash].Weight != test.expectedProperties.Weight {
+				t.Errorf("%s: edge weights don't match: expected weight %v, got %v", name, test.expectedProperties.Weight, graphStore.vertexProperties[hash].Weight)
 			}
 
-			if len(graph.vertexProperties[hash].Attributes) != len(test.expectedProperties.Attributes) {
-				t.Fatalf("%s: attributes lengths don't match: expcted %v, got %v", name, len(test.expectedProperties.Attributes), len(graph.vertexProperties[hash].Attributes))
+			if len(graphStore.vertexProperties[hash].Attributes) != len(test.expectedProperties.Attributes) {
+				t.Fatalf("%s: attributes lengths don't match: expcted %v, got %v", name, len(test.expectedProperties.Attributes), len(graphStore.vertexProperties[hash].Attributes))
 			}
 
 			for expectedKey, expectedValue := range test.expectedProperties.Attributes {
-				value, ok := graph.vertexProperties[hash].Attributes[expectedKey]
+				value, ok := graphStore.vertexProperties[hash].Attributes[expectedKey]
 				if !ok {
 					t.Errorf("%s: attribute keys don't match: expected key %v not found", name, expectedKey)
 				}
@@ -133,7 +136,7 @@ func TestUndirected_Vertex(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{})
+		graph := newUndirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -259,7 +262,7 @@ func TestUndirected_AddEdge(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, test.traits)
+		graph := newUndirected(IntHash, test.traits, newMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -289,7 +292,7 @@ func TestUndirected_AddEdge(t *testing.T) {
 			sourceHash := graph.hash(expectedEdge.Source)
 			targetHash := graph.hash(expectedEdge.Target)
 
-			edge, ok := graph.outEdges[sourceHash][targetHash]
+			edge, ok := graph.store.(*memoryStore[int, int]).outEdges[sourceHash][targetHash]
 			if !ok {
 				t.Fatalf("%s: edge with source %v and target %v not found", name, expectedEdge.Source, expectedEdge.Target)
 			}
@@ -346,7 +349,7 @@ func TestUndirected_Edge(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{})
+		graph := newUndirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -355,9 +358,12 @@ func TestUndirected_Edge(t *testing.T) {
 		sourceHash := graph.hash(test.vertices[0])
 		targetHash := graph.hash(test.vertices[1])
 
-		_ = graph.AddEdge(sourceHash, targetHash)
+		err := graph.AddEdge(sourceHash, targetHash)
+		if err != nil {
+			t.Fatalf("%s: error adding edge: %v", name, err)
+		}
 
-		_, err := graph.Edge(test.getEdgeHashes[0], test.getEdgeHashes[1])
+		_, err = graph.Edge(test.getEdgeHashes[0], test.getEdgeHashes[1])
 
 		if test.exists != (err == nil) {
 			t.Fatalf("%s: result expectancy doesn't match: expected %v, got %v", name, test.exists, err)
@@ -490,7 +496,7 @@ func TestUndirected_Adjacencies(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{})
+		graph := newUndirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -583,7 +589,7 @@ func TestUndirected_PredecessorMap(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{})
+		graph := newUndirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -669,31 +675,8 @@ func TestUndirected_Clone(t *testing.T) {
 			t.Errorf("%s: traits expectancy doesn't match: expected %v, got %v", name, expected.traits, actual.traits)
 		}
 
-		if len(actual.vertices) != len(expected.vertices) {
-			t.Fatalf("%s: vertices length expectancy doesn't match: expected %v, got %v", name, len(expected.vertices), len(actual.vertices))
-		}
-
-		for expectedHash, expectedVertex := range expected.vertices {
-			actualVertex, ok := actual.vertices[expectedHash]
-			if !ok {
-				t.Errorf("%s: vertex expectancy doesn't match: expected vertex %v doesn't exist", name, expectedVertex)
-			}
-			if actualVertex != expectedVertex {
-				t.Errorf("%s: vertex expectancy doesn't match: expected %v, got %v", name, expectedVertex, actualVertex)
-			}
-			if actual.vertexProperties[expectedHash].Weight != expected.vertexProperties[expectedHash].Weight {
-				t.Errorf("%s: vertex properties expectancy doesn't match: expected %v, got %v", name, expected.vertexProperties[expectedHash], actual.vertexProperties[expectedHash])
-			}
-			if actual.vertexProperties[expectedHash].Attributes["color"] != expected.vertexProperties[expectedHash].Attributes["color"] {
-				t.Errorf("%s: vertex properties expectancy doesn't match: expected %v, got %v", name, expected.vertexProperties[expectedHash], actual.vertexProperties[expectedHash])
-			}
-		}
-
-		if len(actual.inEdges) != len(expected.inEdges) {
-			t.Errorf("%s: number of inEdges doesn't match: expected %v, got %v", name, len(expected.inEdges), len(actual.inEdges))
-		}
-		if len(actual.outEdges) != len(expected.outEdges) {
-			t.Errorf("%s: number of outEdges doesn't match: expected %v, got %v", name, len(expected.outEdges), len(actual.outEdges))
+		if actual.store != expected.store {
+			t.Fatalf("%s: stores don't match", name)
 		}
 	}
 }
@@ -743,7 +726,7 @@ func TestUndirected_OrderAndSize(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{})
+		graph := newUndirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -755,8 +738,8 @@ func TestUndirected_OrderAndSize(t *testing.T) {
 			}
 		}
 
-		order := graph.Order()
-		size := graph.Size()
+		order, _ := graph.Order()
+		size, _ := graph.Size()
 
 		if order != test.expectedOrder {
 			t.Errorf("%s: order expectancy doesn't match: expected %d, got %d", name, test.expectedOrder, order)
@@ -792,7 +775,7 @@ func TestUndirected_edgesAreEqual(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{})
+		graph := newUndirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 		actual := graph.edgesAreEqual(test.a, test.b)
 
 		if actual != test.edgesAreEqual {
@@ -815,19 +798,24 @@ func TestUndirected_addEdge(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{})
+		graph := newUndirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 
 		for _, edge := range test.edges {
 			sourceHash := graph.hash(edge.Source)
 			TargetHash := graph.hash(edge.Target)
-			graph.addEdge(sourceHash, TargetHash, edge)
+			err := graph.addEdge(sourceHash, TargetHash, edge)
+			if err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
 		}
 
-		if len(graph.outEdges) != len(test.edges) {
-			t.Errorf("%s: number of outgoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(graph.outEdges))
+		outEdges := graph.store.(*memoryStore[int, int]).outEdges
+		if len(outEdges) != len(test.edges) {
+			t.Errorf("%s: number of outgoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(outEdges))
 		}
-		if len(graph.inEdges) != len(test.edges) {
-			t.Errorf("%s: number of ingoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(graph.inEdges))
+		inEdges := graph.store.(*memoryStore[int, int]).inEdges
+		if len(inEdges) != len(test.edges) {
+			t.Errorf("%s: number of ingoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(inEdges))
 		}
 	}
 }
@@ -905,7 +893,7 @@ func TestUndirected_adjacencies(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{})
+		graph := newUndirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -917,10 +905,27 @@ func TestUndirected_adjacencies(t *testing.T) {
 			}
 		}
 
-		adjacencies := graph.adjacencies(graph.hash(test.vertex))
+		adjacencies := adjacencies(graph.store, graph.hash(test.vertex))
 
 		if !slicesAreEqual(adjacencies, test.expectedAdjancencies) {
 			t.Errorf("%s: adjacencies don't match: expected %v, got %v", name, test.expectedAdjancencies, adjacencies)
 		}
 	}
+}
+
+func adjacencies[K comparable, T any](store Store[K, T], vertexHash K) []K {
+	var adjacencyHashes []K
+
+	// An undirected graph creates an undirected edge as two directed edges in the opposite
+	// direction, so both the in-edges and the out-edges work here.
+	inEdges, ok := store.(*memoryStore[K, T]).inEdges[vertexHash]
+	if !ok {
+		return adjacencyHashes
+	}
+
+	for hash := range inEdges {
+		adjacencyHashes = append(adjacencyHashes, hash)
+	}
+
+	return adjacencyHashes
 }

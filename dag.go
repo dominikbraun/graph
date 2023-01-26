@@ -52,7 +52,12 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 		}
 	}
 
-	if len(order) != g.Order() {
+	gOrder, err := g.Order()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get graph order: %w", err)
+	}
+
+	if len(order) != gOrder {
 		return nil, errors.New("topological sort cannot be computed on graph with cycles")
 	}
 
@@ -85,10 +90,14 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error
 		//
 		// These edges are redundant because their targets obviously are reachable through the DFS,
 		// hence they can be removed from the top-level vertex.
+		tOrder, err := transitiveReduction.Order()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get graph order: %w", err)
+		}
 		for successor := range successors {
-			stack := make([]K, 0, transitiveReduction.Order())
-			visited := make(map[K]struct{}, transitiveReduction.Order())
-			onStack := make(map[K]bool, transitiveReduction.Order())
+			stack := make([]K, 0, tOrder)
+			visited := make(map[K]struct{}, tOrder)
+			onStack := make(map[K]bool, tOrder)
 
 			stack = append(stack, successor)
 

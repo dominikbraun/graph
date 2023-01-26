@@ -6,14 +6,12 @@ linters:
   enable:
     - govet
     - gofumpt
-    - deadcode
     - errcheck
     - gosimple
     - ineffassign
     - staticcheck
     - typecheck
     - unused
-    - varcheck
 
 linters-settings:
   govet:

@@ -21,7 +21,7 @@ func TestDirected_Traits(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		g := newDirected(IntHash, test.traits)
+		g := newDirected(IntHash, test.traits, newMemoryStore[int, int]())
 		traits := g.Traits()
 
 		if !traitsAreEqual(traits, test.expected) {
@@ -60,7 +60,7 @@ func TestDirected_AddVertex(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{})
+		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 
 		var err error
 
@@ -80,30 +80,32 @@ func TestDirected_AddVertex(t *testing.T) {
 			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v", name, test.finallyExpectedError, err)
 		}
 
+		graphStore := graph.store.(*memoryStore[int, int])
 		for _, vertex := range test.vertices {
-			if len(graph.vertices) != len(test.expectedVertices) {
-				t.Errorf("%s: vertex count doesn't match: expected %v, got %v", name, len(test.expectedVertices), len(graph.vertices))
+			if len(graphStore.vertices) != len(test.expectedVertices) {
+				t.Errorf("%s: vertex count doesn't match: expected %v, got %v", name, len(test.expectedVertices), len(graphStore.vertices))
 			}
 
 			hash := graph.hash(vertex)
-			if _, ok := graph.vertices[hash]; !ok {
-				t.Errorf("%s: vertex %v not found in graph: %v", name, vertex, graph.vertices)
+			if _, _, err := graph.store.Vertex(hash); err != nil {
+				vertices := graphStore.vertices
+				t.Errorf("%s: vertex %v not found in graph: %v", name, vertex, vertices)
 			}
 
 			if test.properties == nil {
 				continue
 			}
 
-			if graph.vertexProperties[hash].Weight != test.expectedProperties.Weight {
-				t.Errorf("%s: edge weights don't match: expected weight %v, got %v", name, test.expectedProperties.Weight, graph.vertexProperties[hash].Weight)
+			if graphStore.vertexProperties[hash].Weight != test.expectedProperties.Weight {
+				t.Errorf("%s: edge weights don't match: expected weight %v, got %v", name, test.expectedProperties.Weight, graphStore.vertexProperties[hash].Weight)
 			}
 
-			if len(graph.vertexProperties[hash].Attributes) != len(test.expectedProperties.Attributes) {
-				t.Fatalf("%s: attributes lengths don't match: expcted %v, got %v", name, len(test.expectedProperties.Attributes), len(graph.vertexProperties[hash].Attributes))
+			if len(graphStore.vertexProperties[hash].Attributes) != len(test.expectedProperties.Attributes) {
+				t.Fatalf("%s: attributes lengths don't match: expcted %v, got %v", name, len(test.expectedProperties.Attributes), len(graphStore.vertexProperties[hash].Attributes))
 			}
 
 			for expectedKey, expectedValue := range test.expectedProperties.Attributes {
-				value, ok := graph.vertexProperties[hash].Attributes[expectedKey]
+				value, ok := graphStore.vertexProperties[hash].Attributes[expectedKey]
 				if !ok {
 					t.Errorf("%s: attribute keys don't match: expected key %v not found", name, expectedKey)
 				}
@@ -133,7 +135,7 @@ func TestDirected_Vertex(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{})
+		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -259,7 +261,7 @@ func TestDirected_AddEdge(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, test.traits)
+		graph := newDirected(IntHash, test.traits, newMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -274,7 +276,13 @@ func TestDirected_AddEdge(t *testing.T) {
 			// If there are edge attributes, iterate over them and call EdgeAttribute for each
 			// entry. An edge should only have one attribute so that AddEdge is invoked once.
 			for key, value := range edge.Properties.Attributes {
-				err = graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight), EdgeData(edge.Properties.Data), EdgeAttribute(key, value))
+				err = graph.AddEdge(
+					edge.Source,
+					edge.Target,
+					EdgeWeight(edge.Properties.Weight),
+					EdgeData(edge.Properties.Data),
+					EdgeAttribute(key, value),
+				)
 			}
 			if err != nil {
 				break
@@ -289,8 +297,8 @@ func TestDirected_AddEdge(t *testing.T) {
 			sourceHash := graph.hash(expectedEdge.Source)
 			targetHash := graph.hash(expectedEdge.Target)
 
-			edge, ok := graph.edges[sourceHash][targetHash]
-			if !ok {
+			edge, err := graph.Edge(sourceHash, targetHash)
+			if err != nil {
 				t.Fatalf("%s: edge with source %v and target %v not found", name, expectedEdge.Source, expectedEdge.Target)
 			}
 
@@ -345,8 +353,7 @@ func TestDirected_Edge(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{})
-
+		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
 		}
@@ -354,9 +361,12 @@ func TestDirected_Edge(t *testing.T) {
 		sourceHash := graph.hash(test.vertices[0])
 		targetHash := graph.hash(test.vertices[1])
 
-		_ = graph.AddEdge(sourceHash, targetHash)
+		err := graph.AddEdge(sourceHash, targetHash)
+		if err != nil {
+			t.Fatalf("%s: error adding edge: %v", name, err)
+		}
 
-		_, err := graph.Edge(test.getEdgeHashes[0], test.getEdgeHashes[1])
+		_, err = graph.Edge(test.getEdgeHashes[0], test.getEdgeHashes[1])
 
 		if test.exists != (err == nil) {
 			t.Fatalf("%s: result expectancy doesn't match: expected %v, got %v", name, test.exists, err)
@@ -480,7 +490,7 @@ func TestDirected_AdjacencyList(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{})
+		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -563,7 +573,7 @@ func TestDirected_PredecessorMap(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{})
+		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -649,34 +659,8 @@ func TestDirected_Clone(t *testing.T) {
 			t.Errorf("%s: traits expectancy doesn't match: expected %v, got %v", name, expected.traits, actual.traits)
 		}
 
-		if len(actual.vertices) != len(expected.vertices) {
-			t.Fatalf("%s: vertices length expectancy doesn't match: expected %v, got %v", name, len(expected.vertices), len(actual.vertices))
-		}
-
-		for expectedHash, expectedVertex := range expected.vertices {
-			actualVertex, ok := actual.vertices[expectedHash]
-			if !ok {
-				t.Errorf("%s: vertex expectancy doesn't match: expected vertex %v doesn't exist", name, expectedVertex)
-			}
-			if actualVertex != expectedVertex {
-				t.Errorf("%s: vertex expectancy doesn't match: expected %v, got %v", name, expectedVertex, actualVertex)
-			}
-			if actual.vertexProperties[expectedHash].Weight != expected.vertexProperties[expectedHash].Weight {
-				t.Errorf("%s: vertex properties expectancy doesn't match: expected %v, got %v", name, expected.vertexProperties[expectedHash], actual.vertexProperties[expectedHash])
-			}
-			if actual.vertexProperties[expectedHash].Attributes["color"] != expected.vertexProperties[expectedHash].Attributes["color"] {
-				t.Errorf("%s: vertex properties expectancy doesn't match: expected %v, got %v", name, expected.vertexProperties[expectedHash], actual.vertexProperties[expectedHash])
-			}
-		}
-
-		if len(actual.edges) != len(expected.edges) {
-			t.Errorf("%s: number of edges doesn't match: expected %v, got %v", name, len(expected.edges), len(actual.edges))
-		}
-		if len(actual.inEdges) != len(expected.inEdges) {
-			t.Errorf("%s: number of inEdges doesn't match: expected %v, got %v", name, len(expected.inEdges), len(actual.inEdges))
-		}
-		if len(actual.outEdges) != len(expected.outEdges) {
-			t.Errorf("%s: number of outEdges doesn't match: expected %v, got %v", name, len(expected.outEdges), len(actual.outEdges))
+		if actual.store != expected.store {
+			t.Fatalf("%s: stores don't match", name)
 		}
 	}
 }
@@ -727,7 +711,7 @@ func TestDirected_OrderAndSize(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{})
+		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -739,8 +723,8 @@ func TestDirected_OrderAndSize(t *testing.T) {
 			}
 		}
 
-		order := graph.Order()
-		size := graph.Size()
+		order, _ := graph.Order()
+		size, _ := graph.Size()
 
 		if order != test.expectedOrder {
 			t.Errorf("%s: order expectancy doesn't match: expected %d, got %d", name, test.expectedOrder, order)
@@ -771,7 +755,7 @@ func TestDirected_edgesAreEqual(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{})
+		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 		actual := graph.edgesAreEqual(test.a, test.b)
 
 		if actual != test.edgesAreEqual {
@@ -794,22 +778,24 @@ func TestDirected_addEdge(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{})
+		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 
 		for _, edge := range test.edges {
 			sourceHash := graph.hash(edge.Source)
 			TargetHash := graph.hash(edge.Target)
-			graph.addEdge(sourceHash, TargetHash, edge)
+			err := graph.addEdge(sourceHash, TargetHash, edge)
+			if err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
 		}
 
-		if len(graph.edges) != len(test.edges) {
-			t.Errorf("%s: number of edges doesn't match: expected %v, got %v", name, len(test.edges), len(graph.edges))
+		outEdges := graph.store.(*memoryStore[int, int]).outEdges
+		if len(outEdges) != len(test.edges) {
+			t.Errorf("%s: number of outgoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(outEdges))
 		}
-		if len(graph.outEdges) != len(test.edges) {
-			t.Errorf("%s: number of outgoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(graph.outEdges))
-		}
-		if len(graph.inEdges) != len(test.edges) {
-			t.Errorf("%s: number of ingoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(graph.inEdges))
+		inEdges := graph.store.(*memoryStore[int, int]).inEdges
+		if len(inEdges) != len(test.edges) {
+			t.Errorf("%s: number of ingoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(inEdges))
 		}
 	}
 }
@@ -855,7 +841,7 @@ func TestDirected_predecessors(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{})
+		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -867,7 +853,7 @@ func TestDirected_predecessors(t *testing.T) {
 			}
 		}
 
-		predecessors := graph.predecessors(graph.hash(test.vertex))
+		predecessors, _ := predecessors(graph, graph.hash(test.vertex))
 
 		if !slicesAreEqual(predecessors, test.expectedPredecessors) {
 			t.Errorf("%s: predecessors don't match: expected %v, got %v", name, test.expectedPredecessors, predecessors)
@@ -893,4 +879,19 @@ func slicesAreEqual[T comparable](a, b []T) bool {
 	}
 
 	return true
+}
+
+func predecessors[K comparable, T any](g *directed[K, T], vertexHash K) ([]K, error) {
+	var predecessorHashes []K
+
+	predecessorMap, err := g.PredecessorMap()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, edge := range predecessorMap[vertexHash] {
+		predecessorHashes = append(predecessorHashes, edge.Source)
+	}
+
+	return predecessorHashes, nil
 }

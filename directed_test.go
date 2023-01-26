@@ -884,12 +884,12 @@ func slicesAreEqual[T comparable](a, b []T) bool {
 func predecessors[K comparable, T any](g *directed[K, T], vertexHash K) ([]K, error) {
 	var predecessorHashes []K
 
-	predicessorsMap, err := g.PredecessorMap()
+	predecessorMap, err := g.PredecessorMap()
 	if err != nil {
 		return nil, err
 	}
 
-	for _, edge := range predicessorsMap[vertexHash] {
+	for _, edge := range predecessorMap[vertexHash] {
 		predecessorHashes = append(predecessorHashes, edge.Source)
 	}
 

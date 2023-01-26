@@ -165,19 +165,23 @@ type Hash[K comparable, T any] func(T) K
 //
 // Which Graph implementation will be returned depends on these traits.
 func New[K comparable, T any](hash Hash[K, T], options ...func(*Traits)) Graph[K, T] {
+	return NewWithStore(hash, newMemoryStore[K, T](), options...)
+}
+
+// NewWithStore creates a new graph same as New, but uses the provided store instead of the default
+// memory store.
+func NewWithStore[K comparable, T any](hash Hash[K, T], store Store[K, T], options ...func(*Traits)) Graph[K, T] {
 	var p Traits
 
 	for _, option := range options {
 		option(&p)
 	}
 
-	s := newMemoryStore[K, T]()
-
 	if p.IsDirected {
-		return newDirected(hash, &p, s)
+		return newDirected(hash, &p, store)
 	}
 
-	return newUndirected(hash, &p, s)
+	return newUndirected(hash, &p, store)
 }
 
 // StringHash is a hashing function that accepts a string and uses that exact string as a hash

@@ -68,7 +68,7 @@ func DFS[K comparable, T any](g Graph[K, T], start K, visit func(K) bool) error 
 	return nil
 }
 
-// BFS performs a breath-first search on the graph, starting from the given vertex. The visit
+// BFS performs a breadth-first search on the graph, starting from the given vertex. The visit
 // function will be invoked with the hash of the vertex currently visited. If it returns false, BFS
 // will continue traversing the graph, and if it returns true, the traversal will be stopped. In
 // case the graph is disconnected, only the vertices joined with the starting vertex are visited.

@@ -19,7 +19,7 @@ type Graph[K comparable, T any] interface {
 	Traits() *Traits
 
 	// AddVertex creates a new vertex in the graph. If the vertex already exists in the graph,
-	// ErrVertexAlreadyExists will be returned.
+	// ErrVertexAlreadyExists will be returned if no custom Store implementation is used.
 	//
 	// AddVertex accepts a variety of functional options to set further edge details such as the
 	// weight or an attribute:
@@ -54,7 +54,7 @@ type Graph[K comparable, T any] interface {
 	Edge(sourceHash, targetHash K) (Edge[T], error)
 
 	// RemoveEdge removes the edge between the given source and target vertices. If the edge doesn't
-	// exist, ErrEdgeNotFound will be returned.
+	// exist, ErrEdgeNotFound will be returned if no custom Store implementation is used.
 	RemoveEdge(source, target K) error
 
 	// AdjacencyMap computes and returns an adjacency map containing all vertices in the graph.

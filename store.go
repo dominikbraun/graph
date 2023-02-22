@@ -8,7 +8,6 @@ import "sync"
 // When implementing your own Store, make sure the individual methods and their behavior adhere to
 // this documentation. Otherwise, the graphs aren't guaranteed to behave as expected.
 type Store[K comparable, T any] interface {
-
 	// AddVertex should add the given vertex with the given hash value and vertex properties to the
 	// graph. If the vertex already exists, it is up to you whether ErrVertexAlreadyExists or no
 	// error should be returned.

@@ -38,8 +38,11 @@ type Store[K comparable, T any] interface {
 	// should be returned.
 	RemoveEdge(sourceHash, targetHash K) error
 
-	// Edge should return the edge joining the vertices with the given hash values. If the edge
-	// doesn't exist, ErrEdgeNotFound should be returned.
+	// Edge should return the edge joining the vertices with the given hash values. It should
+	// exclusively look for an edge between the source and the target vertex, not vice versa. The
+	// graph implementation does this for undirected graphs itself.
+	//
+	// If the edge doesn't exist, ErrEdgeNotFound should be returned.
 	Edge(sourceHash, targetHash K) (Edge[K], error)
 
 	// ListEdges should return all edges in the graph in a slice.
@@ -50,8 +53,11 @@ type memoryStore[K comparable, T any] struct {
 	lock             sync.RWMutex
 	vertices         map[K]T
 	vertexProperties map[K]VertexProperties
-	outEdges         map[K]map[K]Edge[K] // source -> target
-	inEdges          map[K]map[K]Edge[K] // target -> source
+
+	// outEdges and inEdges store all outgoing and ingoing edges for all vertices. For O(1) access,
+	// these edges themselves are stored in maps whose keys are the hashes of the target vertices.
+	outEdges map[K]map[K]Edge[K] // source -> target
+	inEdges  map[K]map[K]Edge[K] // target -> source
 }
 
 func newMemoryStore[K comparable, T any]() Store[K, T] {

@@ -49,8 +49,9 @@ type Graph[K comparable, T any] interface {
 	AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error
 
 	// Edge returns the edge joining two given vertices or an error if the edge doesn't exist. In an
-	// undirected graph, an edge with swapped source and target vertices does match. If the edge
-	// doesn't exist, ErrEdgeNotFound will be returned.
+	// undirected graph, an edge with swapped source and target vertices does match.
+	//
+	// If the edge doesn't exist, ErrEdgeNotFound will be returned.
 	Edge(sourceHash, targetHash K) (Edge[T], error)
 
 	// RemoveEdge removes the edge between the given source and target vertices. If the edge doesn't
@@ -212,8 +213,8 @@ func EdgeAttribute(key, value string) func(*EdgeProperties) {
 	}
 }
 
-// EdgeData returns a function that sets the data of an edge to the given value. This is a functional
-// option for the Edge and AddEdge methods.
+// EdgeData returns a function that sets the data of an edge to the given value. This is a
+// functional option for the Edge and AddEdge methods.
 func EdgeData(data any) func(*EdgeProperties) {
 	return func(e *EdgeProperties) {
 		e.Data = data

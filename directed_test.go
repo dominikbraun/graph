@@ -338,38 +338,45 @@ func TestDirected_AddEdge(t *testing.T) {
 func TestDirected_Edge(t *testing.T) {
 	tests := map[string]struct {
 		vertices      []int
-		getEdgeHashes [2]int
-		exists        bool
+		edges         []Edge[int]
+		args          [2]int
+		expectedError error
 	}{
 		"get edge of directed graph": {
-			vertices:      []int{1, 2, 3},
-			getEdgeHashes: [2]int{1, 2},
-			exists:        true,
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 2, Target: 3},
+			},
+			args: [2]int{2, 3},
 		},
 		"get non-existent edge of directed graph": {
-			vertices:      []int{1, 2, 3},
-			getEdgeHashes: [2]int{1, 3},
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+			},
+			args:          [2]int{2, 3},
+			expectedError: ErrEdgeNotFound,
 		},
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
+		graph := New(IntHash, Directed())
+
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
 		}
 
-		sourceHash := graph.hash(test.vertices[0])
-		targetHash := graph.hash(test.vertices[1])
-
-		err := graph.AddEdge(sourceHash, targetHash)
-		if err != nil {
-			t.Fatalf("%s: error adding edge: %v", name, err)
+		for _, edge := range test.edges {
+			if err := graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
 		}
 
-		_, err = graph.Edge(test.getEdgeHashes[0], test.getEdgeHashes[1])
+		_, err := graph.Edge(test.args[0], test.args[1])
 
-		if test.exists != (err == nil) {
-			t.Fatalf("%s: result expectancy doesn't match: expected %v, got %v", name, test.exists, err)
+		if !errors.Is(err, test.expectedError) {
+			t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v", name, test.expectedError, err)
 		}
 	}
 }

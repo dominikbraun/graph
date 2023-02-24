@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),  and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] - 2023-03-01
+
+**This release contains breaking changes of the public API (see "Changed").**
+
+### Added
+* Added the `Store` interface, introducing support for custom storage implementations.
+* Added the `NewWithStore` function for explicitly initializing a graph with a `Store` instance.
+* Added the `EdgeData` functional option that can be used with `AddEdge`, introducing support for arbitrary data.
+* Added the `Data` field to `EdgeProperties` for retrieving data added using `EdgeData`.
+
+### Changed
+* Changed `Order` to additionally return an error instance (breaking change).
+* Changed `Size` to additionally return an error instance (breaking change).
+
 ## [0.15.1] - 2023-01-18
 
 ### Changed

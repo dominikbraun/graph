@@ -78,7 +78,7 @@ type Graph[K comparable, T any] interface {
 
 	// PredecessorMap computes and returns a predecessors map containing all vertices in the graph.
 	//
-	// The map layout is the same as for Adjacencies.
+	// The map layout is the same as for AdjacencyMap.
 	//
 	// For an undirected graph, PredecessorMap is the same as AdjacencyMap. For a directed graph,
 	// PredecessorMap is the complement of AdjacencyMap. This is because in a directed graph, only

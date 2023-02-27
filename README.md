@@ -11,6 +11,7 @@ A library for creating generic graph data structures and modifying, analyzing, a
 * Algorithms for non-recursive graph traversal, such as DFS or BFS.
 * Vertices and edges with optional metadata, such as weights or custom attributes.
 * Visualization of graphs using the DOT language and Graphviz.
+* Integrate any storage backend by using your own `Store` implementation.
 * Extensive tests with ~90% coverage, and zero dependencies.
 
 > Status: Because `graph` is in version 0, the public API shouldn't be considered stable.
@@ -244,7 +245,7 @@ To generate an SVG from the created file using Graphviz, use a command such as t
 dot -Tsvg -O mygraph.gv
 ```
 
-## Setting edge attributes
+## Storing edge attributes
 
 Edges may have one or more attributes which can be used to store metadata. Attributes will be taken
 into account when [visualizing a graph](#visualize-a-graph-using-graphviz). For example, this edge
@@ -257,18 +258,61 @@ _ = g.AddEdge(1, 2, graph.EdgeAttribute("color", "red"))
 To get an overview of all supported attributes, take a look at the
 [DOT documentation](https://graphviz.org/doc/info/attrs.html).
 
-## Setting vertex attributes
+The stored attributes can be retrieved by getting the edge and accessing the `Properties.Attributes`
+field.
+
+```go
+edge, _ := g.Edge(1, 2)
+color := edge.Properties.Attributes["color"] 
+```
+
+## Storing edge data
+
+It is also possible to store arbitrary data inside edges, not just key-value string pairs. This data
+is of type `any`.
+
+```go
+_  = g.AddEdge(1, 2, graph.EdgeData(myData))
+```
+
+The stored data can be retrieved by getting the edge and accessing the `Properties.Data` field.
+
+```go
+edge, _ := g.Edge(1, 2)
+myData := edge.Properties.Data 
+```
+
+## Storing vertex attributes
 
 Vertices may have one or more attributes which can be used to store metadata. Attributes will be
 taken into account when [visualizing a graph](#visualize-a-graph-using-graphviz). For example, this
 vertex will be rendered in red color:
 
 ```go
-_ = g.AddVertex(1, graph.VertexAttribute("style", "filled"), graph.VertexAttribute("fillcolor", "red"))
+_ = g.AddVertex(1, graph.VertexAttribute("style", "filled"))
+```
+
+The stored data can be retrieved by getting the vertex using `VertexWithProperties` and accessing
+the `Attributes` field.
+
+```go
+vertex, properties, _ := g.VertexWithProperties(1)
+style := properties.Attributes["style"]
 ```
 
 To get an overview of all supported attributes, take a look at the
 [DOT documentation](https://graphviz.org/doc/info/attrs.html).
+
+## Store the graph in a custom storage
+
+You can integrate any storage backend by implementing the `Store` interface and initializing a new
+graph with it:
+
+```go
+g := graph.NewWithStore(graph.IntHash, myStore)
+```
+
+To implement the `Store` interface appropriately, take a look at the [documentation](https://pkg.go.dev/github.com/dominikbraun/graph#Store).
 
 # Concepts
 

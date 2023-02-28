@@ -21,5 +21,5 @@ linters-settings:
       - fieldalignment
 
   gofumpt:
-    extra-rules: true
+    extra-rules: false
     module-path: github.com/dominikbraun/graph

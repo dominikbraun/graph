@@ -125,6 +125,7 @@ func (u *undirected[K, T]) Edge(sourceHash, targetHash K) (Edge[T], error) {
 		Properties: EdgeProperties{
 			Weight:     edge.Properties.Weight,
 			Attributes: edge.Properties.Attributes,
+			Data:       edge.Properties.Data,
 		},
 	}, nil
 }

@@ -42,6 +42,9 @@ type Store[K comparable, T any] interface {
 	// exclusively look for an edge between the source and the target vertex, not vice versa. The
 	// graph implementation does this for undirected graphs itself.
 	//
+	// Note that unlike Graph.Edge, this function is supposed to return an Edge[K], i.e. an edge
+	// that only contains the vertex hashes instead of the vertices themselves.
+	//
 	// If the edge doesn't exist, ErrEdgeNotFound should be returned.
 	Edge(sourceHash, targetHash K) (Edge[K], error)
 

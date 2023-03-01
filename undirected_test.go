@@ -333,33 +333,41 @@ func TestUndirected_AddEdge(t *testing.T) {
 func TestUndirected_Edge(t *testing.T) {
 	tests := map[string]struct {
 		vertices      []int
-		edges         []Edge[int]
+		edge          Edge[int]
 		args          [2]int
 		expectedError error
 	}{
 		"get edge of undirected graph": {
 			vertices: []int{1, 2, 3},
-			edges: []Edge[int]{
-				{Source: 1, Target: 2},
-				{Source: 2, Target: 3},
-			},
-			args: [2]int{2, 3},
+			edge:     Edge[int]{Source: 1, Target: 2},
+			args:     [2]int{1, 2},
 		},
 		"get edge of undirected graph with swapped source and target": {
 			vertices: []int{1, 2, 3},
-			edges: []Edge[int]{
-				{Source: 1, Target: 2},
-				{Source: 2, Target: 3},
-			},
-			args: [2]int{3, 2},
+			edge:     Edge[int]{Source: 1, Target: 2},
+			args:     [2]int{2, 1},
 		},
 		"get non-existent edge of undirected graph": {
-			vertices: []int{1, 2, 3},
-			edges: []Edge[int]{
-				{Source: 1, Target: 2},
-			},
+			vertices:      []int{1, 2, 3},
+			edge:          Edge[int]{Source: 1, Target: 2},
 			args:          [2]int{2, 3},
 			expectedError: ErrEdgeNotFound,
+		},
+		"get edge with properties": {
+			vertices: []int{1, 2, 3},
+			edge: Edge[int]{
+				Source: 1,
+				Target: 2,
+				Properties: EdgeProperties{
+					// Attributes can't be tested at the moment, because there is no way to add
+					// multiple attributes at once (using a functional option like EdgeAttributes).
+					// ToDo: Add Attributes once an EdgeAttributes functional option exists.
+					Attributes: map[string]string{},
+					Weight:     10,
+					Data:       "this is an edge",
+				},
+			},
+			args: [2]int{1, 2},
 		},
 	}
 
@@ -370,16 +378,30 @@ func TestUndirected_Edge(t *testing.T) {
 			_ = graph.AddVertex(vertex)
 		}
 
-		for _, edge := range test.edges {
-			if err := graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
-				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
-			}
+		if err := graph.AddEdge(test.edge.Source, test.edge.Target, EdgeWeight(test.edge.Properties.Weight), EdgeData(test.edge.Properties.Data)); err != nil {
+			t.Fatalf("%s: failed to add edge: %s", name, err.Error())
 		}
 
-		_, err := graph.Edge(test.args[0], test.args[1])
+		edge, err := graph.Edge(test.args[0], test.args[1])
 
 		if !errors.Is(err, test.expectedError) {
 			t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v", name, test.expectedError, err)
+		}
+
+		if test.expectedError != nil {
+			continue
+		}
+
+		if edge.Source != test.args[0] {
+			t.Errorf("%s: source expectancy doesn't match: expected %v, got %v", name, test.args[0], edge.Source)
+		}
+
+		if edge.Target != test.args[1] {
+			t.Errorf("%s: target expectancy doesn't match: expected %v, got %v", name, test.args[1], edge.Target)
+		}
+
+		if !edgePropertiesAreEqual(edge.Properties, test.edge.Properties) {
+			t.Errorf("%s: edge property expectancy doesn't match: expected %v, got %v", name, test.edge.Properties, edge.Properties)
 		}
 	}
 }

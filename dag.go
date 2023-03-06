@@ -114,6 +114,7 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error
 
 				visited[current] = struct{}{}
 				onStack[current] = true
+				stack = append(stack, current)
 
 				// Also, if the vertex is a leaf node, remove it from the stack.
 				if len(adjacencyMap[current]) == 0 {

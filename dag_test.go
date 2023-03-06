@@ -130,6 +130,31 @@ func TestDirectedTransitiveReduction(t *testing.T) {
 			},
 			shouldFail: true,
 		},
+		"graph from issue 83": {
+			vertices: []string{"_root", "A", "B", "C", "D", "E", "F"},
+			edges: []Edge[string]{
+				{Source: "_root", Target: "A"},
+				{Source: "_root", Target: "B"},
+				{Source: "_root", Target: "C"},
+				{Source: "_root", Target: "D"},
+				{Source: "_root", Target: "E"},
+				{Source: "_root", Target: "F"},
+				{Source: "E", Target: "C"},
+				{Source: "F", Target: "D"},
+				{Source: "F", Target: "C"},
+				{Source: "F", Target: "E"},
+				{Source: "C", Target: "A"},
+				{Source: "C", Target: "B"},
+			},
+			expectedEdges: []Edge[string]{
+				{Source: "_root", Target: "F"},
+				{Source: "F", Target: "D"},
+				{Source: "F", Target: "E"},
+				{Source: "E", Target: "C"},
+				{Source: "C", Target: "A"},
+				{Source: "C", Target: "B"},
+			},
+		},
 	}
 
 	for name, test := range tests {

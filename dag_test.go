@@ -101,7 +101,7 @@ func TestDirectedTransitiveReduction(t *testing.T) {
 		expectedEdges []Edge[string]
 		shouldFail    bool
 	}{
-		"graph as on img/transitive-reduction.svg": {
+		"graph as on img/transitive-reduction-before.svg": {
 			vertices: []string{"A", "B", "C", "D", "E"},
 			edges: []Edge[string]{
 				{Source: "A", Target: "B"},

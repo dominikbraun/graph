@@ -188,15 +188,17 @@ fmt.Println(order)
 
 ## Perform a transitive reduction
 
-![transitive reduction](img/transitive-reduction.svg)
+![transitive reduction](img/transitive-reduction-before.svg)
 
 ```go
 g := graph.New(graph.StringHash, graph.Directed(), graph.PreventCycles())
 
 // Add vertices and edges ...
 
-_ := graph.TransitiveReduction(g)
+transitiveReduction, _ := graph.TransitiveReduction(g)
 ```
+
+![transitive reduction](img/transitive-reduction-after.svg)
 
 ## Prevent the creation of cycles
 
@@ -244,6 +246,51 @@ To generate an SVG from the created file using Graphviz, use a command such as t
 ```
 dot -Tsvg -O mygraph.gv
 ```
+
+### Draw a graph as in this documentation
+
+![simple graph](img/simple.svg)
+
+This graph has been rendered using the following program:
+
+```go
+package main
+
+import (
+	"os"
+
+	"github.com/dominikbraun/graph"
+	"github.com/dominikbraun/graph/draw"
+)
+
+func main() {
+	g := graph.New(graph.IntHash)
+
+	_ = g.AddVertex(1, graph.VertexAttribute("colorscheme", "blues3"), graph.VertexAttribute("style", "filled"), graph.VertexAttribute("color", "2"), graph.VertexAttribute("fillcolor", "1"))
+	_ = g.AddVertex(2, graph.VertexAttribute("colorscheme", "greens3"), graph.VertexAttribute("style", "filled"), graph.VertexAttribute("color", "2"), graph.VertexAttribute("fillcolor", "1"))
+	_ = g.AddVertex(3, graph.VertexAttribute("colorscheme", "purples3"), graph.VertexAttribute("style", "filled"), graph.VertexAttribute("color", "2"), graph.VertexAttribute("fillcolor", "1"))
+	_ = g.AddVertex(4, graph.VertexAttribute("colorscheme", "ylorbr3"), graph.VertexAttribute("style", "filled"), graph.VertexAttribute("color", "2"), graph.VertexAttribute("fillcolor", "1"))
+	_ = g.AddVertex(5, graph.VertexAttribute("colorscheme", "reds3"), graph.VertexAttribute("style", "filled"), graph.VertexAttribute("color", "2"), graph.VertexAttribute("fillcolor", "1"))
+
+	_ = g.AddEdge(1, 2)
+	_ = g.AddEdge(1, 4)
+	_ = g.AddEdge(2, 3)
+	_ = g.AddEdge(2, 4)
+	_ = g.AddEdge(2, 5)
+	_ = g.AddEdge(3, 5)
+
+	file, _ := os.Create("./simple.gv")
+	_ = draw.DOT(g, file)
+}
+```
+
+It has been rendered using the `neato` engine:
+
+```
+dot -Tsvg -Kneato -O simple.gv
+```
+
+The example uses the [Brewer color scheme](https://graphviz.org/doc/info/colors.html#brewer) supported by Graphviz.
 
 ## Storing edge attributes
 

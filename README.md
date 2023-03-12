@@ -360,6 +360,7 @@ g := graph.NewWithStore(graph.IntHash, myStore)
 ```
 
 To implement the `Store` interface appropriately, take a look at the [documentation](https://pkg.go.dev/github.com/dominikbraun/graph#Store).
+[`graph-sql`](https://github.com/dominikbraun/graph-sql) is a ready-to-use SQL store implementation.
 
 # Concepts
 

@@ -368,8 +368,8 @@ func TestDirected_Edge(t *testing.T) {
 				Target: 2,
 				Properties: EdgeProperties{
 					// Attributes can't be tested at the moment, because there
-					// is no way to add multiple attributes at once
-					// (using a functional option like EdgeAttributes).
+					// is no way to add multiple attributes at once (using a
+					// functional option like EdgeAttributes).
 					// ToDo: Add Attributes once EdgeAttributes exists.
 					Attributes: map[string]string{},
 					Weight:     10,
@@ -472,7 +472,8 @@ func TestDirected_RemoveEdge(t *testing.T) {
 			if err := graph.RemoveEdge(removeEdge.Source, removeEdge.Target); !errors.Is(err, test.expectedError) {
 				t.Errorf("%s: error expectancy doesn't match: expected %v, got %v", name, test.expectedError, err)
 			}
-			// After removing the edge, verify that it can't be retrieved using Edge anymore.
+			// After removing the edge, verify that it can't be retrieved using
+			// Edge anymore.
 			if _, err := graph.Edge(removeEdge.Source, removeEdge.Target); err != ErrEdgeNotFound {
 				t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v", name, ErrEdgeNotFound, err)
 			}

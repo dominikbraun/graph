@@ -36,8 +36,8 @@ func TestDirected_AddVertex(t *testing.T) {
 		properties         *VertexProperties
 		expectedVertices   []int
 		expectedProperties *VertexProperties
-		// Even though some AddVertex calls might work, at least one of them could fail, for example
-		// if the last call would add an existing vertex.
+		// Even though some AddVertex calls might work, at least one of them
+		// could fail, e.g. if the last call would add an existing vertex.
 		finallyExpectedError error
 	}{
 		"graph with 3 vertices": {
@@ -69,8 +69,9 @@ func TestDirected_AddVertex(t *testing.T) {
 				err = graph.AddVertex(vertex)
 				continue
 			}
-			// If there are vertex attributes, iterate over them and call VertexAttribute for each
-			// entry. A vertex should only have one attribute so that AddVertex is invoked once.
+			// If there are vertex attributes, iterate over them and call the
+			// VertexAttribute functional option for each entry. A vertex should
+			// only have one attribute so that AddVertex is invoked once.
 			for key, value := range test.properties.Attributes {
 				err = graph.AddVertex(vertex, VertexWeight(test.properties.Weight), VertexAttribute(key, value))
 			}
@@ -163,8 +164,8 @@ func TestDirected_AddEdge(t *testing.T) {
 		edges         []Edge[int]
 		traits        *Traits
 		expectedEdges []Edge[int]
-		// Even though some AddEdge calls might work, at least one of them could fail, for example
-		// if the last call would introduce a cycle.
+		// Even though some AddVertex calls might work, at least one of them
+		// could fail, e.g. if the last call would introduce a cycle.
 		finallyExpectedError error
 	}{
 		"graph with 2 edges": {
@@ -273,8 +274,9 @@ func TestDirected_AddEdge(t *testing.T) {
 			if len(edge.Properties.Attributes) == 0 {
 				err = graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight), EdgeData(edge.Properties.Data))
 			}
-			// If there are edge attributes, iterate over them and call EdgeAttribute for each
-			// entry. An edge should only have one attribute so that AddEdge is invoked once.
+			// If there are edge attributes, iterate over them and call the
+			// EdgeAttribute functional option for each entry. An edge should
+			// only have one attribute so that AddEdge is invoked once.
 			for key, value := range edge.Properties.Attributes {
 				err = graph.AddEdge(
 					edge.Source,
@@ -365,9 +367,10 @@ func TestDirected_Edge(t *testing.T) {
 				Source: 1,
 				Target: 2,
 				Properties: EdgeProperties{
-					// Attributes can't be tested at the moment, because there is no way to add
-					// multiple attributes at once (using a functional option like EdgeAttributes).
-					// ToDo: Add Attributes once an EdgeAttributes functional option exists.
+					// Attributes can't be tested at the moment, because there
+					// is no way to add multiple attributes at once
+					// (using a functional option like EdgeAttributes).
+					// ToDo: Add Attributes once EdgeAttributes exists.
 					Attributes: map[string]string{},
 					Weight:     10,
 					Data:       "this is an edge",
@@ -928,8 +931,8 @@ func edgePropertiesAreEqual(a, b EdgeProperties) bool {
 		return false
 	}
 
-	// A length check is required because in the iteration below, a.Attributes could be empty and
-	// thus circumvent the comparison.
+	// A length check is required because in the iteration below, a.Attributes
+	// could be empty and thus circumvent the comparison.
 	if len(a.Attributes) != len(b.Attributes) {
 		return false
 	}

@@ -5,12 +5,13 @@ import (
 	"fmt"
 )
 
-// TopologicalSort performs a topological sort on a given graph and returns the vertex hashes in
-// topological order. A topological order is a non-unique order of the vertices in a directed graph
-// where an edge from vertex A to vertex B implies that vertex A appears before vertex B.
+// TopologicalSort runs a topological sort on a given directed graph and returns
+// the vertex hashes in topological order. The topological order is a non-unique
+// order of vertices in a directed graph where an edge from vertex A to vertex B
+// implies that vertex A appears before vertex B.
 //
-// TopologicalSort only works for directed acyclic graphs. The current implementation works non-
-// recursively and uses Kahn's algorithm.
+// TopologicalSort only works for directed acyclic graphs. This implementation
+// works non-recursively and utilizes Kahn's algorithm.
 func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 	if !g.Traits().IsDirected {
 		return nil, fmt.Errorf("topological sort cannot be computed on undirected graph")
@@ -64,10 +65,11 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 	return order, nil
 }
 
-// TransitiveReduction returns a new graph with the same vertices and the same reachability as the
-// given graph, but with as few edges as possible. This significantly reduces its complexity.
+// TransitiveReduction returns a new graph with the same vertices and the same
+// reachability as the given graph, but with as few edges as possible. The graph
+// must be a directed acyclic graph.
 //
-// With a time complexity of O(V(V+E)), TransitiveReduction is a very costly operation. Note that
+// TransitiveReduction is a very expensive operation scaling with O(V(V+E)).
 func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error) {
 	if !g.Traits().IsDirected {
 		return nil, fmt.Errorf("transitive reduction cannot be performed on undirected graph")
@@ -83,13 +85,13 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error
 		return nil, fmt.Errorf("failed to get adajcency map: %w", err)
 	}
 
+	// For each vertex in the graph, run a depth-first search from each direct
+	// successor of that vertex. Then, for each vertex visited within the DFS,
+	// inspect all of its edges. Remove the edges that also appear in the edge
+	// set of the top-level vertex and target the current vertex. These edges
+	// are redundant because their targets apparently are not only reachable
+	// from the top-level vertex, but also through a DFS.
 	for vertex, successors := range adjacencyMap {
-		// For each direct successor of the current vertex, run a DFS starting from that successor.
-		// Then, for each vertex visited in the DFS, inspect all of its edges. Remove the edges that
-		// also appear in the edges of the top-level iteration vertex.
-		//
-		// These edges are redundant because their targets obviously are reachable through the DFS,
-		// hence they can be removed from the top-level vertex.
 		tOrder, err := transitiveReduction.Order()
 		if err != nil {
 			return nil, fmt.Errorf("failed to get graph order: %w", err)
@@ -105,8 +107,6 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error
 				current := stack[len(stack)-1]
 				stack = stack[:len(stack)-1]
 
-				// If the vertex has already been visited, remove it from the stack and continue
-				// with the next vertex. Otherwise, proceed by putting it onto the stack.
 				if _, ok := visited[current]; ok {
 					onStack[current] = false
 					continue
@@ -116,7 +116,6 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error
 				onStack[current] = true
 				stack = append(stack, current)
 
-				// Also, if the vertex is a leaf node, remove it from the stack.
 				if len(adjacencyMap[current]) == 0 {
 					onStack[current] = false
 				}
@@ -124,8 +123,8 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error
 				for adjacency := range adjacencyMap[current] {
 					if _, ok := visited[adjacency]; ok {
 						if onStack[adjacency] {
-							// If the current adjacency is both on the stack and has already been
-							// visited, there is a cycle and an error is returned.
+							// If the current adjacency is both on the stack and
+							// has already been visited, there is a cycle.
 							return nil, fmt.Errorf("transitive reduction cannot be performed on graph with cycle")
 						}
 						continue

@@ -4,28 +4,6 @@ import (
 	"testing"
 )
 
-func assertPriorityQueue[T comparable](t *testing.T, testName string, q *priorityQueue[T], expectedItems []*priorityItem[T]) {
-	if q.Len() != len(expectedItems) {
-		t.Fatalf("%s: item length expectancy doesn't match: expected %v, got %v", testName, len(expectedItems), q.Len())
-	}
-
-	poppedList := make([]T, q.Len())
-	for q.Len() > 0 {
-		poppedItem, _ := q.Pop()
-		poppedList = append(poppedList, poppedItem)
-	}
-
-	// Each time we pop from the given queue, it will return the item with the smallest priority.
-	// So we compare the expected item with popped list from the other direction.
-	n := len(poppedList)
-	for i, expectedItem := range expectedItems {
-		comparedToItem := poppedList[n-1-i]
-		if comparedToItem != expectedItem.value {
-			t.Errorf("%s: item doesn't match: expected %v at index %d, got %v", testName, expectedItem.value, i, comparedToItem)
-		}
-	}
-}
-
 func TestPriorityQueue_Push(t *testing.T) {
 	tests := map[string]struct {
 		items                 []int
@@ -52,7 +30,25 @@ func TestPriorityQueue_Push(t *testing.T) {
 			queue.Push(item, test.priorities[i])
 		}
 
-		assertPriorityQueue(t, name, queue, test.expectedPriorityItems)
+		if queue.Len() != len(test.expectedPriorityItems) {
+			t.Fatalf("%s: item length expectancy doesn't match: expected %v, got %v", name, len(test.expectedPriorityItems), queue.Len())
+		}
+
+		popped := make([]int, queue.Len())
+
+		for queue.Len() > 0 {
+			item, _ := queue.Pop()
+			popped = append(popped, item)
+		}
+
+		n := len(popped)
+
+		for i, item := range test.expectedPriorityItems {
+			poppedItem := popped[n-1-i]
+			if item.value != poppedItem {
+				t.Errorf("%s: item doesn't match: expected %v at index %d, got %v", name, item.value, i, poppedItem)
+			}
+		}
 	}
 }
 
@@ -167,7 +163,25 @@ func TestPriorityQueue_UpdatePriority(t *testing.T) {
 
 		queue.UpdatePriority(test.decreaseItem, test.decreasePriority)
 
-		assertPriorityQueue(t, name, queue, test.expectedPriorityItems)
+		if queue.Len() != len(test.expectedPriorityItems) {
+			t.Fatalf("%s: item length expectancy doesn't match: expected %v, got %v", name, len(test.expectedPriorityItems), queue.Len())
+		}
+
+		popped := make([]int, queue.Len())
+
+		for queue.Len() > 0 {
+			item, _ := queue.Pop()
+			popped = append(popped, item)
+		}
+
+		n := len(popped)
+
+		for i, item := range test.expectedPriorityItems {
+			poppedItem := popped[n-1-i]
+			if item.value != poppedItem {
+				t.Errorf("%s: item doesn't match: expected %v at index %d, got %v", name, item.value, i, poppedItem)
+			}
+		}
 	}
 }
 

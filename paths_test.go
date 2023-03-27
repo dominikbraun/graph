@@ -160,6 +160,7 @@ func TestDirectedShortestPath(t *testing.T) {
 	tests := map[string]struct {
 		vertices             []string
 		edges                []Edge[string]
+		isWeighted           bool
 		sourceHash           string
 		targetHash           string
 		expectedShortestPath []string
@@ -179,6 +180,7 @@ func TestDirectedShortestPath(t *testing.T) {
 				{Source: "F", Target: "G", Properties: EdgeProperties{Weight: 5}},
 				{Source: "G", Target: "B", Properties: EdgeProperties{Weight: 2}},
 			},
+			isWeighted:           true,
 			sourceHash:           "A",
 			targetHash:           "B",
 			expectedShortestPath: []string{"A", "C", "E", "B"},
@@ -191,6 +193,7 @@ func TestDirectedShortestPath(t *testing.T) {
 				{Source: "B", Target: "D", Properties: EdgeProperties{Weight: 2}},
 				{Source: "C", Target: "D", Properties: EdgeProperties{Weight: 2}},
 			},
+			isWeighted:           true,
 			sourceHash:           "A",
 			targetHash:           "D",
 			expectedShortestPath: []string{"A", "B", "D"},
@@ -218,6 +221,7 @@ func TestDirectedShortestPath(t *testing.T) {
 				{Source: "B", Target: "D", Properties: EdgeProperties{Weight: 2}},
 				{Source: "C", Target: "D", Properties: EdgeProperties{Weight: 2}},
 			},
+			isWeighted:           true,
 			sourceHash:           "B",
 			targetHash:           "B",
 			expectedShortestPath: []string{"B"},
@@ -228,6 +232,7 @@ func TestDirectedShortestPath(t *testing.T) {
 				{Source: "A", Target: "B", Properties: EdgeProperties{Weight: 2}},
 				{Source: "A", Target: "C", Properties: EdgeProperties{Weight: 4}},
 			},
+			isWeighted:           true,
 			sourceHash:           "A",
 			targetHash:           "D",
 			expectedShortestPath: []string{},
@@ -244,10 +249,25 @@ func TestDirectedShortestPath(t *testing.T) {
 			expectedShortestPath: []string{},
 			shouldFail:           true,
 		},
+		"graph from issue 88": {
+			vertices: []string{"A", "B", "C", "D"},
+			edges: []Edge[string]{
+				{Source: "A", Target: "B", Properties: EdgeProperties{Weight: 2}},
+				{Source: "A", Target: "C", Properties: EdgeProperties{Weight: 6}},
+				{Source: "B", Target: "C", Properties: EdgeProperties{Weight: 3}},
+				{Source: "B", Target: "D", Properties: EdgeProperties{Weight: 5}},
+				{Source: "C", Target: "D", Properties: EdgeProperties{Weight: 1}},
+			},
+			isWeighted:           true,
+			sourceHash:           "A",
+			targetHash:           "D",
+			expectedShortestPath: []string{"A", "B", "C", "D"},
+		},
 	}
 
 	for name, test := range tests {
 		graph := New(StringHash, Directed())
+		graph.(*directed[string, string]).traits.IsWeighted = test.isWeighted
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)

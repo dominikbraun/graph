@@ -36,8 +36,8 @@ func TestUndirected_AddVertex(t *testing.T) {
 		properties         *VertexProperties
 		expectedVertices   []int
 		expectedProperties *VertexProperties
-		// Even though some AddVertex calls might work, at least one of them could fail, for example
-		// if the last call would add an existing vertex.
+		// Even though some AddVertex calls might work, at least one of them
+		// could fail, e.g. if the last call would add an existing vertex.
 		finallyExpectedError error
 	}{
 		"graph with 3 vertices": {
@@ -69,8 +69,9 @@ func TestUndirected_AddVertex(t *testing.T) {
 				err = graph.AddVertex(vertex)
 				continue
 			}
-			// If there are vertex attributes, iterate over them and call VertexAttribute for each
-			// entry. A vertex should only have one attribute so that AddVertex is invoked once.
+			// If there are vertex attributes, iterate over them and call the
+			// VertexAttribute functional option for each entry. A vertex should
+			// only have one attribute so that AddVertex is invoked once.
 			for key, value := range test.properties.Attributes {
 				err = graph.AddVertex(vertex, VertexWeight(test.properties.Weight), VertexAttribute(key, value))
 			}
@@ -164,8 +165,8 @@ func TestUndirected_AddEdge(t *testing.T) {
 		edges         []Edge[int]
 		traits        *Traits
 		expectedEdges []Edge[int]
-		// Even though some AddEdge calls might work, at least one of them could fail, for example
-		// if the last call would introduce a cycle.
+		// Even though some AddVertex calls might work, at least one of them
+		// could fail, e.g. if the last call would introduce a cycle.
 		finallyExpectedError error
 	}{
 		"graph with 2 edges": {
@@ -274,8 +275,9 @@ func TestUndirected_AddEdge(t *testing.T) {
 			if len(edge.Properties.Attributes) == 0 {
 				err = graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight), EdgeData(edge.Properties.Data))
 			}
-			// If there are edge attributes, iterate over them and call EdgeAttribute for each
-			// entry. An edge should only have one attribute so that AddEdge is invoked once.
+			// If there are vertex attributes, iterate over them and call the
+			// VertexAttribute functional option for each entry. A vertex should
+			// only have one attribute so that AddVertex is invoked once.
 			for key, value := range edge.Properties.Attributes {
 				err = graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight), EdgeData(edge.Properties.Data), EdgeAttribute(key, value))
 			}
@@ -359,9 +361,10 @@ func TestUndirected_Edge(t *testing.T) {
 				Source: 1,
 				Target: 2,
 				Properties: EdgeProperties{
-					// Attributes can't be tested at the moment, because there is no way to add
-					// multiple attributes at once (using a functional option like EdgeAttributes).
-					// ToDo: Add Attributes once an EdgeAttributes functional option exists.
+					// Attributes can't be tested at the moment, because there
+					// is no way to add multiple attributes at once (using a
+					// functional option like EdgeAttributes).
+					// ToDo: Add Attributes once EdgeAttributes exists.
 					Attributes: map[string]string{},
 					Weight:     10,
 					Data:       "this is an edge",
@@ -463,7 +466,8 @@ func TestUndirected_RemoveEdge(t *testing.T) {
 			if err := graph.RemoveEdge(removeEdge.Source, removeEdge.Target); !errors.Is(err, test.expectedError) {
 				t.Errorf("%s: error expectancy doesn't match: expected %v, got %v", name, test.expectedError, err)
 			}
-			// After removing the edge, verify that it can't be retrieved using Edge anymore.
+			// After removing the edge, verify that it can't be retrieved using
+			// Edge anymore.
 			if _, err := graph.Edge(removeEdge.Source, removeEdge.Target); err != ErrEdgeNotFound {
 				t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v", name, ErrEdgeNotFound, err)
 			}
@@ -940,19 +944,19 @@ func TestUndirected_adjacencies(t *testing.T) {
 			}
 		}
 
-		adjacencies := adjacencies(graph.store, graph.hash(test.vertex))
+		adjacencyList := adjacencyList(graph.store, graph.hash(test.vertex))
 
-		if !slicesAreEqual(adjacencies, test.expectedAdjancencies) {
-			t.Errorf("%s: adjacencies don't match: expected %v, got %v", name, test.expectedAdjancencies, adjacencies)
+		if !slicesAreEqual(adjacencyList, test.expectedAdjancencies) {
+			t.Errorf("%s: adjacencies don't match: expected %v, got %v", name, test.expectedAdjancencies, adjacencyList)
 		}
 	}
 }
 
-func adjacencies[K comparable, T any](store Store[K, T], vertexHash K) []K {
+func adjacencyList[K comparable, T any](store Store[K, T], vertexHash K) []K {
 	var adjacencyHashes []K
 
-	// An undirected graph creates an undirected edge as two directed edges in the opposite
-	// direction, so both the in-edges and the out-edges work here.
+	// An undirected graph creates an undirected edge as two directed edges in
+	// the opposite direction, so both the in-edges and the out-edges work here.
 	inEdges, ok := store.(*memoryStore[K, T]).inEdges[vertexHash]
 	if !ok {
 		return adjacencyHashes

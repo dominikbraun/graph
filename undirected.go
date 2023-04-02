@@ -61,7 +61,7 @@ func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Ed
 		return fmt.Errorf("could not find target vertex with hash %v: %w", targetHash, err)
 	}
 
-	// nolint: govet // false positive err shawdowing
+	//nolint:govet // False positive.
 	if _, err := u.Edge(sourceHash, targetHash); !errors.Is(err, ErrEdgeNotFound) {
 		return ErrEdgeAlreadyExists
 	}
@@ -97,9 +97,9 @@ func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Ed
 }
 
 func (u *undirected[K, T]) Edge(sourceHash, targetHash K) (Edge[T], error) {
-	// In an undirected graph, since multigraphs aren't supported, the edge AB is the same as BA.
-	// Therefore, if source[target] cannot be found, this function also looks for target[source].
-
+	// In an undirected graph, since multigraphs aren't supported, the edge AB
+	// is the same as BA. Therefore, if source[target] cannot be found, this
+	// function also looks for target[source].
 	edge, err := u.store.Edge(sourceHash, targetHash)
 	if errors.Is(err, ErrEdgeNotFound) {
 		edge, err = u.store.Edge(targetHash, sourceHash)
@@ -195,15 +195,18 @@ func (u *undirected[K, T]) Order() (int, error) {
 
 func (u *undirected[K, T]) Size() (int, error) {
 	size := 0
+
 	outEdges, err := u.AdjacencyMap()
 	if err != nil {
 		return 0, fmt.Errorf("failed to get adjacency map: %w", err)
 	}
+
 	for _, outEdges := range outEdges {
 		size += len(outEdges)
 	}
 
-	// Divide by 2 since every add edge operation on undirected graph is counted twice.
+	// Divide by 2 since every add edge operation on undirected graph is counted
+	// twice.
 	return size / 2, nil
 }
 

@@ -8,21 +8,11 @@ import (
 
 var ErrTargetNotReachable = errors.New("target vertex not reachable from source")
 
-// CreatesCycle determines whether an edge between the given source and target vertices would
-// introduce a cycle. It won't create that edge in any case.
+// CreatesCycle determines whether adding an edge between the two given vertices
+// would introduce a cycle in the graph. CreatesCycle will not create an edge.
 //
-// A potential edge would create a cycle if the target vertex is also a parent of the source vertex.
-// Given a graph A-B-C-D, adding an edge DA would introduce a cycle:
-//
-//	A -
-//	|  |
-//	B  |
-//	|  |
-//	C  |
-//	|  |
-//	D -
-//
-// CreatesCycle backtracks the ingoing edges of D, resulting in a reverse walk C-B-A.
+// A potential edge would create a cycle if the target vertex is also a parent
+// of the source vertex. In order to determine this, CreatesCycle runs a DFS.
 func CreatesCycle[K comparable, T any](g Graph[K, T], source, target K) (bool, error) {
 	if _, err := g.Vertex(source); err != nil {
 		return false, fmt.Errorf("could not get vertex with hash %v: %w", source, err)
@@ -51,11 +41,12 @@ func CreatesCycle[K comparable, T any](g Graph[K, T], source, target K) (bool, e
 		stack = stack[:len(stack)-1]
 
 		if _, ok := visited[currentHash]; !ok {
-			// If the current vertex, e.g. an adjacency of the source vertex, also is the target
-			// vertex, an edge between these two would create a cycle.
+			// If the adjacent vertex also is the target vertex, the target is a
+			// parent of the source vertex. An edge would introduce a cycle.
 			if currentHash == target {
 				return true, nil
 			}
+
 			visited[currentHash] = true
 
 			for adjacency := range predecessorMap[currentHash] {
@@ -67,13 +58,15 @@ func CreatesCycle[K comparable, T any](g Graph[K, T], source, target K) (bool, e
 	return false, nil
 }
 
-// ShortestPath computes the shortest path between a source and a target vertex using the edge
-// weights and returns the hash values of the vertices forming that path using Dijkstra's algorithm.
-// This search runs in O(|V|+|E|log(|V|)) time.
+// ShortestPath computes the shortest path between a source and a target vertex
+// under consideration of the edge weights. It returns a slice of hash values of
+// the vertices forming that path.
 //
-// The returned path includes the source and target vertices. If the target cannot be reached
-// from the source vertex, ErrTargetNotReachable will be returned. If there are multiple shortest
-// paths, an arbitrary one will be returned.
+// The returned path includes the source and target vertices. If the target is
+// not reachable from the source, ErrTargetNotReachable will be returned. Should
+// there be multiple shortest paths, and arbitrary one will be returned.
+//
+// ShortestPath has a time complexity of O(|V|+|E|log(|V|)).
 func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, error) {
 	weights := make(map[K]float64)
 	visited := make(map[K]bool)
@@ -96,9 +89,9 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 		queue.Push(hash, weights[hash])
 	}
 
-	// bestPredecessors stores the best (i.e. cheapest or least-weighted) predecessor for each
-	// vertex. If there is an edge AC with weight 4 and an edge BC with weight 2, the best
-	// predecessor for C is B.
+	// bestPredecessors stores the cheapest or least-weighted predecessor for
+	// each vertex. Given an edge AC with weight=4 and an edge BC with weight=2,
+	// the cheapest predecessor for C is B.
 	bestPredecessors := make(map[K]K)
 
 	for queue.Len() > 0 {
@@ -125,18 +118,19 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 		}
 	}
 
-	// Backtrack the predecessors from target to source. These are the least-weighted edges.
 	path := []K{target}
-	hashCursor := target
+	current := target
 
-	for hashCursor != source {
-		// If hashCursor is not a present key in bestPredecessors, hashCursor is set to the zero
-		// value. Without this check, this leads to endless prepending of zeros to the path.
-		if _, ok := bestPredecessors[hashCursor]; !ok {
+	for current != source {
+		// If the current vertex is not present in bestPredecessors, current is
+		// set to the zero value of K. Without this check, this would lead to an
+		// endless prepending of zero values to the path. Also, the target would
+		// not be reachable from one of the preceding vertices.
+		if _, ok := bestPredecessors[current]; !ok {
 			return nil, ErrTargetNotReachable
 		}
-		hashCursor = bestPredecessors[hashCursor]
-		path = append([]K{hashCursor}, path...)
+		current = bestPredecessors[current]
+		path = append([]K{current}, path...)
 	}
 
 	return path, nil
@@ -153,10 +147,11 @@ type sccState[K comparable] struct {
 	time         int
 }
 
-// StronglyConnectedComponents detects all strongly connected components within the given graph
-// and returns the hashes of the vertices shaping these components, so each component is a []K.
+// StronglyConnectedComponents detects all strongly connected components within
+// the graph and returns the hashes of the vertices shaping these components, so
+// each component is represented by a []K.
 //
-// The current implementation uses Tarjan's algorithm and runs recursively.
+// StronglyConnectedComponents can only run on directed graphs.
 func StronglyConnectedComponents[K comparable, T any](g Graph[K, T]) ([][]K, error) {
 	if !g.Traits().IsDirected {
 		return nil, errors.New("SCCs can only be detected in directed graphs")
@@ -205,9 +200,10 @@ func findSCC[K comparable](vertexHash K, state *sccState[K]) {
 			)
 			state.lowlink[vertexHash] = int(smallestLowlink)
 		} else {
-			// If the adjacent vertex already is on the stack, the edge joining the current and the
-			// adjacent vertex is a back edge. Therefore, update the vertex' lowlink value to the
-			// index of the adjacent vertex if it is smaller than the lowlink value.
+			// If the adjacent vertex already is on the stack, the edge joining
+			// the current and the adjacent vertex is a back ege. Therefore, the
+			// lowlink value of the vertex has to be updated to the index of the
+			// adjacent vertex if it is smaller than the current lowlink value.
 			if state.onStack[adjacency] {
 				smallestLowlink := math.Min(
 					float64(state.lowlink[vertexHash]),
@@ -218,8 +214,9 @@ func findSCC[K comparable](vertexHash K, state *sccState[K]) {
 		}
 	}
 
-	// If the lowlink value of the vertex is equal to its DFS index, this is th head vertex of a
-	// strongly connected component, shaped by this vertex and the vertices on the stack.
+	// If the lowlink value of the vertex is equal to its DFS value, this is the
+	// head vertex of a strongly connected component that's shaped by the vertex
+	// and all vertices on the stack.
 	if state.lowlink[vertexHash] == state.index[vertexHash] {
 		var hash K
 		var component []K

@@ -101,10 +101,12 @@ func TestUndirectedDFS(t *testing.T) {
 		vertices  []int
 		edges     []Edge[int]
 		startHash int
-		// It is not possible to expect a strict list of vertices to be visited. If stopAtVertex is
-		// a neighbor of another vertex, that other vertex might be visited before stopAtVertex.
+		// It is not possible to expect a strict list of vertices to be visited.
+		// If stopAtVertex is a neighbor of another vertex, that other vertex
+		// might be visited before stopAtVertex.
 		expectedMinimumVisits []int
-		// In case stopAtVertex has downstream neighbors, those neighbors musn't be visited.
+		// In case stopAtVertex has downstream neighbors, those neighbors must
+		// not be visited.
 		forbiddenVisits []int
 		stopAtVertex    int
 	}{

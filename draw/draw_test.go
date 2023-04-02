@@ -11,20 +11,23 @@ import (
 func TestGenerateDOT(t *testing.T) {
 	tests := map[string]struct {
 		graph            graph.Graph[string, string]
+		attributes       map[string]string
 		vertices         []string
 		vertexProperties map[string]graph.VertexProperties
 		edges            []graph.Edge[string]
 		expected         description
 	}{
 		"3-vertex directed graph": {
-			graph:    graph.New(graph.StringHash, graph.Directed()),
-			vertices: []string{"1", "2", "3"},
+			graph:      graph.New(graph.StringHash, graph.Directed()),
+			attributes: map[string]string{},
+			vertices:   []string{"1", "2", "3"},
 			edges: []graph.Edge[string]{
 				{Source: "1", Target: "2"},
 				{Source: "1", Target: "3"},
 			},
 			expected: description{
 				GraphType:    "digraph",
+				Attributes:   map[string]string{},
 				EdgeOperator: "->",
 				Statements: []statement{
 					{Source: "1", Target: "2"},
@@ -36,8 +39,9 @@ func TestGenerateDOT(t *testing.T) {
 			},
 		},
 		"3-vertex directed, weighted graph with weights and attributes": {
-			graph:    graph.New(graph.StringHash, graph.Directed(), graph.Weighted()),
-			vertices: []string{"1", "2", "3"},
+			graph:      graph.New(graph.StringHash, graph.Directed(), graph.Weighted()),
+			attributes: map[string]string{},
+			vertices:   []string{"1", "2", "3"},
 			edges: []graph.Edge[string]{
 				{
 					Source: "1",
@@ -53,6 +57,7 @@ func TestGenerateDOT(t *testing.T) {
 			},
 			expected: description{
 				GraphType:    "digraph",
+				Attributes:   map[string]string{},
 				EdgeOperator: "->",
 				Statements: []statement{
 					{
@@ -71,8 +76,9 @@ func TestGenerateDOT(t *testing.T) {
 			},
 		},
 		"vertices with attributes": {
-			graph:    graph.New(graph.StringHash, graph.Directed(), graph.Weighted()),
-			vertices: []string{"1", "2"},
+			graph:      graph.New(graph.StringHash, graph.Directed(), graph.Weighted()),
+			attributes: map[string]string{},
+			vertices:   []string{"1", "2"},
 			vertexProperties: map[string]graph.VertexProperties{
 				"1": {
 					Attributes: map[string]string{
@@ -92,6 +98,7 @@ func TestGenerateDOT(t *testing.T) {
 			},
 			expected: description{
 				GraphType:    "digraph",
+				Attributes:   map[string]string{},
 				EdgeOperator: "->",
 				Statements: []statement{
 					{
@@ -115,6 +122,39 @@ func TestGenerateDOT(t *testing.T) {
 				},
 			},
 		},
+		"directed graph with attributes": {
+			graph: graph.New(graph.StringHash, graph.Directed()),
+			attributes: map[string]string{
+				"label":     "my-graph",
+				"normalize": "true",
+				"compound":  "false",
+			},
+			vertices: []string{"1", "2"},
+			edges: []graph.Edge[string]{
+				{Source: "1", Target: "2"},
+			},
+			expected: description{
+				GraphType: "digraph",
+				Attributes: map[string]string{
+					"label":     "my-graph",
+					"normalize": "true",
+					"compound":  "false",
+				},
+				EdgeOperator: "->",
+				Statements: []statement{
+					{
+						Source: "1",
+					},
+					{
+						Source: "2",
+					},
+					{
+						Source: "1",
+						Target: "2",
+					},
+				},
+			},
+		},
 	}
 
 	for name, test := range tests {
@@ -123,8 +163,9 @@ func TestGenerateDOT(t *testing.T) {
 				_ = test.graph.AddVertex(vertex)
 				continue
 			}
-			// If there are vertex attributes, iterate over them and call VertexAttribute for each
-			// entry. A vertex should only have one attribute so that AddVertex is invoked once.
+			// If there are vertex attributes, iterate over them and call
+			// VertexAttribute for each entry. A vertex should only have one
+			// attribute so that AddVertex is invoked once.
 			for key, value := range test.vertexProperties[vertex].Attributes {
 				weight := test.vertexProperties[vertex].Weight
 				// ToDo: Clarify how multiple functional options and attributes can be tested.
@@ -137,8 +178,9 @@ func TestGenerateDOT(t *testing.T) {
 			if len(edge.Properties.Attributes) == 0 {
 				err = test.graph.AddEdge(edge.Source, edge.Target, graph.EdgeWeight(edge.Properties.Weight))
 			}
-			// If there are edge attributes, iterate over them and call EdgeAttribute for each
-			// entry. An edge should only have one attribute so that AddEdge is invoked once.
+			// If there are edge attributes, iterate over them and call
+			// EdgeAttribute for each entry. An edge should only have one
+			// attribute so that AddEdge is invoked once.
 			for key, value := range edge.Properties.Attributes {
 				err = test.graph.AddEdge(edge.Source, edge.Target, graph.EdgeWeight(edge.Properties.Weight), graph.EdgeAttribute(key, value))
 			}
@@ -148,6 +190,10 @@ func TestGenerateDOT(t *testing.T) {
 		}
 
 		desc, _ := generateDOT(test.graph)
+
+		// Add the graph attributes manually instead of using the functional
+		// option. This is the reason why I dislike them more and more.
+		desc.Attributes = test.attributes
 
 		if desc.GraphType != test.expected.GraphType {
 			t.Errorf("%s: graph type expectancy doesn't match: expected %v, got %v", name, test.expected.GraphType, desc.GraphType)
@@ -160,6 +206,14 @@ func TestGenerateDOT(t *testing.T) {
 		if !slicesAreEqual(desc.Statements, test.expected.Statements, statementsAreEqual) {
 			t.Errorf("%s: statements expectancy doesn't match: expected %v, got %v", name, test.expected.Statements, desc.Statements)
 		}
+
+		stringsAreEqual := func(a, b string) bool {
+			return a == b
+		}
+
+		if !mapsAreEqual(desc.Attributes, test.expected.Attributes, stringsAreEqual) {
+			t.Errorf("%s: attributes expectancy doesn't match: expected %v, got %v", name, test.expected.Attributes, desc.Attributes)
+		}
 	}
 }
 
@@ -171,6 +225,7 @@ func TestRenderDOT(t *testing.T) {
 		"3-vertex directed graph": {
 			description: description{
 				GraphType:    "digraph",
+				Attributes:   map[string]string{},
 				EdgeOperator: "->",
 				Statements: []statement{
 					{Source: 1, Target: 2},
@@ -191,6 +246,7 @@ func TestRenderDOT(t *testing.T) {
 		"custom edge attributes": {
 			description: description{
 				GraphType:    "digraph",
+				Attributes:   map[string]string{},
 				EdgeOperator: "->",
 				Statements: []statement{
 					{
@@ -223,6 +279,7 @@ func TestRenderDOT(t *testing.T) {
 		"vertices containing special characters": {
 			description: description{
 				GraphType:    "digraph",
+				Attributes:   map[string]string{},
 				EdgeOperator: "->",
 				Statements: []statement{
 					{Source: "/home", Target: "projects/graph"},
@@ -239,6 +296,7 @@ func TestRenderDOT(t *testing.T) {
 		"vertices with attributes": {
 			description: description{
 				GraphType:    "digraph",
+				Attributes:   map[string]string{},
 				EdgeOperator: "->",
 				Statements: []statement{
 					{
@@ -265,6 +323,30 @@ func TestRenderDOT(t *testing.T) {
 				"1" [ color="red", weight=10 ];
 				"2" [ color="blue", weight=20 ];
 				"1" -> "2" [ weight=0 ];
+			}`,
+		},
+		"3-vertex directed graph with attributes": {
+			description: description{
+				GraphType: "digraph",
+				Attributes: map[string]string{
+					"label": "my-graph",
+				},
+				EdgeOperator: "->",
+				Statements: []statement{
+					{Source: 1, Target: 2},
+					{Source: 1, Target: 3},
+					{Source: 1},
+					{Source: 2},
+					{Source: 3},
+				},
+			},
+			expected: `strict digraph {
+				label="my-graph";
+				"1" -> "2" [ weight=0 ];
+				"1" -> "3" [ weight=0 ];
+				"1" [ weight=0 ];
+				"2" [ weight=0 ];
+				"3" [ weight=0 ];
 			}`,
 		},
 	}
@@ -295,6 +377,24 @@ func slicesAreEqual[T any](a, b []T, equals func(a, b T) bool) bool {
 			}
 		}
 		if !found {
+			return false
+		}
+	}
+
+	return true
+}
+
+func mapsAreEqual[K comparable, V any](a, b map[K]V, equals func(a, b V) bool) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for aKey, aValue := range a {
+		bValue, ok := b[aKey]
+		if !ok {
+			return false
+		}
+		if !equals(aValue, bValue) {
 			return false
 		}
 	}

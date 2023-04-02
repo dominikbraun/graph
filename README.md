@@ -247,6 +247,12 @@ To generate an SVG from the created file using Graphviz, use a command such as t
 dot -Tsvg -O mygraph.gv
 ```
 
+The `DOT` function also supports rendering graph attributes:
+
+```go
+_ = draw.DOT(g, file, draw.GraphAttribute("label", "my-graph"))
+```
+
 ### Draw a graph as in this documentation
 
 ![simple graph](img/simple.svg)

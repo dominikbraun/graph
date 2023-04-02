@@ -1,5 +1,6 @@
-// Package draw provides functions for visualizing graph structures. At this time, draw supports
-// the DOT language which can be interpreted by Graphviz, Grappa, and others.
+// Package draw provides functions for visualizing graph structures. At this
+// time, draw supports the DOT language which can be interpreted by Graphviz,
+// Grappa, and others.
 package draw
 
 import (
@@ -12,6 +13,9 @@ import (
 
 // ToDo: This template should be simplified and split into multiple templates.
 const dotTemplate = `strict {{.GraphType}} {
+{{range $k, $v := .Attributes}}
+	{{$k}}="{{$v}}";
+{{end}}
 {{range $s := .Statements}}
 	"{{.Source}}" {{if .Target}}{{$.EdgeOperator}} "{{.Target}}" [ {{range $k, $v := .EdgeAttributes}}{{$k}}="{{$v}}", {{end}} weight={{.EdgeWeight}} ]{{else}}[ {{range $k, $v := .SourceAttributes}}{{$k}}="{{$v}}", {{end}} weight={{.SourceWeight}} ]{{end}};
 {{end}}
@@ -20,6 +24,7 @@ const dotTemplate = `strict {{.GraphType}} {
 
 type description struct {
 	GraphType    string
+	Attributes   map[string]string
 	EdgeOperator string
 	Statements   []statement
 }
@@ -33,8 +38,9 @@ type statement struct {
 	EdgeAttributes   map[string]string
 }
 
-// DOT renders the given graph structure in DOT language into an io.Writer, for example a file. The
-// generated output can be passed to Graphviz or other visualization tools supporting DOT.
+// DOT renders the given graph structure in DOT language into an io.Writer, for
+// example a file. The generated output can be passed to Graphviz or other
+// visualization tools supporting DOT.
 //
 // The following example renders a directed graph into a file my-graph.gv:
 //
@@ -50,16 +56,22 @@ type statement struct {
 //	file, _ := os.Create("./my-graph.gv")
 //	_ = draw.DOT(g, file)
 //
-// To generate an SVG from the created file using Graphviz, use a command such as the following:
+// To generate an SVG from the created file using Graphviz, use a command such
+// as the following:
 //
 //	dot -Tsvg -O my-graph.gv
 //
-// Another possibility is to use os.Stdout as an io.Writer, print the DOT output to stdout, and
-// pipe it as follows:
+// Another possibility is to use os.Stdout as an io.Writer, print the DOT output
+// to stdout, and pipe it as follows:
 //
 //	go run main.go | dot -Tsvg > output.svg
-func DOT[K comparable, T any](g graph.Graph[K, T], w io.Writer) error {
-	desc, err := generateDOT(g)
+//
+// DOT also accepts the [draw.GraphAttribute] functional option, which can be
+// used to add global attributes when rendering the graph:
+//
+//	_ = draw.DOT(g, file, draw.GraphAttribute("label", "my-graph"))
+func DOT[K comparable, T any](g graph.Graph[K, T], w io.Writer, options ...func(*description)) error {
+	desc, err := generateDOT(g, options...)
 	if err != nil {
 		return fmt.Errorf("failed to generate DOT description: %w", err)
 	}
@@ -67,11 +79,23 @@ func DOT[K comparable, T any](g graph.Graph[K, T], w io.Writer) error {
 	return renderDOT(w, desc)
 }
 
-func generateDOT[K comparable, T any](g graph.Graph[K, T]) (description, error) {
+// GraphAttribute is a functional option for the [draw.DOT] method.
+func GraphAttribute(key, value string) func(*description) {
+	return func(d *description) {
+		d.Attributes[key] = value
+	}
+}
+
+func generateDOT[K comparable, T any](g graph.Graph[K, T], options ...func(*description)) (description, error) {
 	desc := description{
 		GraphType:    "graph",
+		Attributes:   make(map[string]string),
 		EdgeOperator: "--",
 		Statements:   make([]statement, 0),
+	}
+
+	for _, option := range options {
+		option(&desc)
 	}
 
 	if g.Traits().IsDirected {

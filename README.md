@@ -335,6 +335,19 @@ edge, _ := g.Edge(1, 2)
 myData := edge.Properties.Data 
 ```
 
+### Updating edge data
+
+At the time being, edge properties are immutable. This will change in the future. A possible workaround
+is to remove the edge and re-create it with the new data. You even might create a small helper function
+for that purpose, for example to update the edge weight:
+
+```go
+func updateEdgeWeight[T any, K comparable](g graph.Graph[K, T], source, target K, value int) {
+	_ = g.RemoveEdge(source, target)
+	_ = g.AddEdge(source, target, graph.EdgeWeight(value))
+}
+```
+
 ## Storing vertex attributes
 
 Vertices may have one or more attributes which can be used to store metadata. Attributes will be

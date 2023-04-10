@@ -5,7 +5,7 @@
 //
 // A graph consists of vertices of type T, which are identified by a hash value
 // of type K. The hash value for a given vertex is obtained using the hashing
-// function passed to [graph.New]. A hashing function takes a T and returns a K.
+// function passed to [New]. A hashing function takes a T and returns a K.
 //
 // For primitive types like integers, you may use a predefined hashing function
 // such as [IntHash] – a function that takes an integer and uses that integer as
@@ -27,7 +27,7 @@
 //
 // # Operations
 //
-// Adding vertices to a graph of integers is simple. [Graph.AddVertex]
+// Adding vertices to a graph of integers is simple. [graph.Graph.AddVertex]
 // takes a vertex and adds it to the graph.
 //
 //	g := graph.New(graph.IntHash)
@@ -38,13 +38,13 @@
 // Most functions accept and return only hash values instead of entire instances
 // of the vertex type T. For example, [graph.Graph.AddEdge] creates an edge
 // between two vertices and accepts the hash values of those vertices. Because
-// this graph uses the [graph.IntHash] hashing function, the vertex values and hash
+// this graph uses the [IntHash] hashing function, the vertex values and hash
 // values are the same.
 //
 //	_ = g.AddEdge(1, 2)
 //
-// All operations that modify the graph itself are methods of [graph.Graph]. All
-// other operations are top-level functions of by this library.
+// All operations that modify the graph itself are methods of [Graph]. All other
+// operations are top-level functions of by this library.
 //
 // For detailed usage examples, take a look at the README.
 package graph
@@ -203,12 +203,12 @@ type Hash[K comparable, T any] func(T) K
 // type K. These hash values will be obtained using the provided hash function.
 //
 // The graph will use the default in-memory store for persisting vertices and
-// edges. To use a different [graph.Store], use [graph.NewWithStore].
+// edges. To use a different [Store], use [NewWithStore].
 func New[K comparable, T any](hash Hash[K, T], options ...func(*Traits)) Graph[K, T] {
 	return NewWithStore(hash, newMemoryStore[K, T](), options...)
 }
 
-// NewWithStore creates a new graph same as New but uses the provided store
+// NewWithStore creates a new graph same as [New] but uses the provided store
 // instead of the default memory store.
 func NewWithStore[K comparable, T any](hash Hash[K, T], store Store[K, T], options ...func(*Traits)) Graph[K, T] {
 	var p Traits
@@ -237,8 +237,8 @@ func IntHash(v int) int {
 }
 
 // EdgeWeight returns a function that sets the weight of an edge to the given
-// weight. This is a functional option for the [Graph.Edge] and [Graph.AddEdge]
-// methods.
+// weight. This is a functional option for the [graph.Graph.Edge] and
+// [graph.Graph.AddEdge] methods.
 func EdgeWeight(weight int) func(*EdgeProperties) {
 	return func(e *EdgeProperties) {
 		e.Weight = weight
@@ -246,8 +246,8 @@ func EdgeWeight(weight int) func(*EdgeProperties) {
 }
 
 // EdgeAttribute returns a function that adds the given key-value pair to the
-// attributes of an edge. This is a functional option for the [Graph.Edge] and
-// [Graph.AddEdge] methods.
+// attributes of an edge. This is a functional option for the [graph.Graph.Edge]
+// and [graph.Graph.AddEdge] methods.
 func EdgeAttribute(key, value string) func(*EdgeProperties) {
 	return func(e *EdgeProperties) {
 		e.Attributes[key] = value
@@ -255,7 +255,8 @@ func EdgeAttribute(key, value string) func(*EdgeProperties) {
 }
 
 // EdgeData returns a function that sets the data of an edge to the given value.
-// This is a functional option for the [Graph.Edge] and [Graph.AddEdge] methods.
+// This is a functional option for the [graph.Graph.Edge] and
+// [graph.Graph.AddEdge] methods.
 func EdgeData(data any) func(*EdgeProperties) {
 	return func(e *EdgeProperties) {
 		e.Data = data
@@ -275,8 +276,8 @@ type VertexProperties struct {
 }
 
 // VertexWeight returns a function that sets the weight of a vertex to the given
-// weight. This is a functional option for the [Graph.Vertex] and
-// [Graph.AddVertex] methods.
+// weight. This is a functional option for the [graph.Graph.Vertex] and
+// [graph.Graph.AddVertex] methods.
 func VertexWeight(weight int) func(*VertexProperties) {
 	return func(e *VertexProperties) {
 		e.Weight = weight
@@ -284,8 +285,8 @@ func VertexWeight(weight int) func(*VertexProperties) {
 }
 
 // VertexAttribute returns a function that adds the given key-value pair to the
-// vertex attributes. This is a functional option for the [Graph.Vertex] and
-// [Graph.AddVertex] methods.
+// vertex attributes. This is a functional option for the [graph.Graph.Vertex]
+// and [graph.Graph.AddVertex] methods.
 func VertexAttribute(key, value string) func(*VertexProperties) {
 	return func(e *VertexProperties) {
 		e.Attributes[key] = value

@@ -27,7 +27,7 @@
 //
 // # Operations
 //
-// Adding vertices to a graph of integers is simple. [graph.Graph.AddVertex]
+// Adding vertices to a graph of integers is simple. [Graph.AddVertex]
 // takes a vertex and adds it to the graph.
 //
 //	g := graph.New(graph.IntHash)

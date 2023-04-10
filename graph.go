@@ -8,8 +8,8 @@
 // function passed to [graph.New]. A hashing function takes a T and returns a K.
 //
 // For primitive types like integers, you may use a predefined hashing function
-// such as [graph.IntHash] – a function that takes an integer and uses that
-// integer as the hash value at the same time:
+// such as [IntHash] – a function that takes an integer and uses that integer as
+// the hash value at the same time:
 //
 //	g := graph.New(graph.IntHash)
 //
@@ -36,9 +36,9 @@
 //	_ = g.AddVertex(2)
 //
 // Most functions accept and return only hash values instead of entire instances
-// of the vertex type T. For example, [Graph.AddEdge] creates an edge between
-// two vertices and accepts the hash values of those vertices. Because this
-// graph uses the [graph.IntHash] hashing function, the vertex values and hash
+// of the vertex type T. For example, [graph.Graph.AddEdge] creates an edge
+// between two vertices and accepts the hash values of those vertices. Because
+// this graph uses the [graph.IntHash] hashing function, the vertex values and hash
 // values are the same.
 //
 //	_ = g.AddEdge(1, 2)

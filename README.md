@@ -1,6 +1,7 @@
 # ![dominikbraun/graph](img/logo.svg)
 
-A library for creating generic graph data structures and modifying, analyzing, and visualizing them.
+A library for creating generic graph data structures and modifying, analyzing,
+and visualizing them.
 
 # Features
 
@@ -68,7 +69,7 @@ _ = g.AddEdge(3, 4)
 
 ## Create a graph of a custom type
 
-To understand this example in detail, see the [concept of hashes](#hashes).
+To understand this example in detail, see the [concept of hashes](https://pkg.go.dev/github.com/dominikbraun/graph@v0.17.0-rc4#hdr-Hashes).
 
 ```go
 type City struct {
@@ -380,52 +381,6 @@ g := graph.NewWithStore(graph.IntHash, myStore)
 
 To implement the `Store` interface appropriately, take a look at the [documentation](https://pkg.go.dev/github.com/dominikbraun/graph#Store).
 [`graph-sql`](https://github.com/dominikbraun/graph-sql) is a ready-to-use SQL store implementation.
-
-# Concepts
-
-## Hashes
-
-A graph consists of nodes (or vertices) of type `T`, which are identified by a hash value of type
-`K`. The hash value is obtained using the hashing function passed to `graph.New`.
-
-### Primitive types
-
-For primitive types such as `string` or `int`, you may use a predefined hashing function such as
-`graph.IntHash` – a function that takes an integer and uses it as a hash value at the same time:
-
-```go
-g := graph.New(graph.IntHash)
-```
-
-> This also means that only one vertex with a value like `5` can exist in the graph if
-> `graph.IntHash` used.
-
-### Custom types
-
-For storing custom data types, you need to provide your own hashing function. This example function
-takes a `City` and returns the city name as an unique hash value:
-
-```go
-cityHash := func(c City) string {
-    return c.Name
-}
-```
-
-Creating a graph using this hashing function will yield a graph with vertices of type `City`
-identified by hash values of type `string`.
-
-```go
-g := graph.New(cityHash)
-```
-
-## Traits
-
-The behavior of a graph, for example when adding or retrieving edges, depends on its traits. You
-can set the graph's traits using the functional options provided by this library:
-
-```go
-g := graph.New(graph.IntHash, graph.Directed(), graph.Weighted())
-```
 
 # Documentation
 

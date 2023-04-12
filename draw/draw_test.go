@@ -282,12 +282,14 @@ func TestRenderDOT(t *testing.T) {
 				Attributes:   map[string]string{},
 				EdgeOperator: "->",
 				Statements: []statement{
+					{Source: "A quote: \""},
 					{Source: "/home", Target: "projects/graph"},
 					{Source: "/home", Target: ".config"},
 					{Source: ".config", Target: "my file.txt"},
 				},
 			},
 			expected: `strict digraph {
+				"A quote: \""
 				"/home" -> "projects/graph" [ weight=0 ];
 				"/home" -> ".config" [ weight=0 ];
 				".config" -> "my file.txt" [ weight=0 ];

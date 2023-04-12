@@ -364,6 +364,39 @@ func TestRenderDOT(t *testing.T) {
 	}
 }
 
+func TestGraphAttribute(t *testing.T) {
+	tests := map[string]struct {
+		attribute [2]string
+		expected  *description
+	}{
+		"label attribute": {
+			attribute: [2]string{"label", "my-graph"},
+			expected: &description{
+				Attributes: map[string]string{
+					"label": "my-graph",
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		d := &description{
+			Attributes: make(map[string]string),
+		}
+
+		GraphAttribute(test.attribute[0], test.attribute[1])(d)
+
+		stringsAreEqual := func(a, b string) bool {
+			return a == b
+		}
+
+		if !mapsAreEqual(test.expected.Attributes, d.Attributes, stringsAreEqual) {
+			t.Errorf("%s: graph attribute expectation doesn't match: expected %v, got %v", name, test.expected.Attributes, d.Attributes)
+		}
+	}
+
+}
+
 func slicesAreEqual[T any](a, b []T, equals func(a, b T) bool) bool {
 	if len(a) != len(b) {
 		return false

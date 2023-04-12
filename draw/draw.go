@@ -66,8 +66,8 @@ type statement struct {
 //
 //	go run main.go | dot -Tsvg > output.svg
 //
-// DOT also accepts the [draw.GraphAttribute] functional option, which can be
-// used to add global attributes when rendering the graph:
+// DOT also accepts the [GraphAttribute] functional option, which can be used to
+// add global attributes when rendering the graph:
 //
 //	_ = draw.DOT(g, file, draw.GraphAttribute("label", "my-graph"))
 func DOT[K comparable, T any](g graph.Graph[K, T], w io.Writer, options ...func(*description)) error {
@@ -79,7 +79,7 @@ func DOT[K comparable, T any](g graph.Graph[K, T], w io.Writer, options ...func(
 	return renderDOT(w, desc)
 }
 
-// GraphAttribute is a functional option for the [draw.DOT] method.
+// GraphAttribute is a functional option for the [DOT] method.
 func GraphAttribute(key, value string) func(*description) {
 	return func(d *description) {
 		d.Attributes[key] = value

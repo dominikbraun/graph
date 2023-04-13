@@ -52,6 +52,10 @@ func (u *undirected[K, T]) VertexWithProperties(hash K) (T, VertexProperties, er
 	return vertex, prop, nil
 }
 
+func (u *undirected[K, T]) RemoveVertex(hash K) error {
+	return u.store.RemoveVertex(hash)
+}
+
 func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
 	if _, _, err := u.store.Vertex(sourceHash); err != nil {
 		return fmt.Errorf("could not find source vertex with hash %v: %w", sourceHash, err)

@@ -17,6 +17,11 @@ type Store[K comparable, T any] interface {
 	// vertex doesn't exist, ErrVertexNotFound should be returned.
 	Vertex(hash K) (T, VertexProperties, error)
 
+	// RemoveVertex should remove the vertex with the given hash value. If the vertex doesn't
+	// exist, ErrVertexNotFound should be returned. If the vertex has edges to other vertices,
+	// ErrVertexHasEdges should be returned.
+	RemoveVertex(hash K) error
+
 	// ListVertices should return all vertices in the graph in a slice.
 	ListVertices() ([]K, error)
 
@@ -109,15 +114,36 @@ func (s *memoryStore[K, T]) Vertex(k K) (T, VertexProperties, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
-	var v T
-	var ok bool
-	v, ok = s.vertices[k]
+	v, ok := s.vertices[k]
 	if !ok {
 		return v, VertexProperties{}, ErrVertexNotFound
 	}
 
 	p := s.vertexProperties[k]
+
 	return v, p, nil
+}
+
+func (s *memoryStore[K, T]) RemoveVertex(k K) error {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+
+	if _, ok := s.vertices[k]; !ok {
+		return ErrVertexNotFound
+	}
+
+	if _, ok := s.inEdges[k]; ok {
+		return ErrVertexHasEdges
+	}
+
+	if _, ok := s.outEdges[k]; ok {
+		return ErrVertexHasEdges
+	}
+
+	delete(s.vertices, k)
+	delete(s.vertexProperties, k)
+
+	return nil
 }
 
 func (s *memoryStore[K, T]) AddEdge(sourceHash, targetHash K, edge Edge[K]) error {

@@ -158,6 +158,56 @@ func TestDirected_Vertex(t *testing.T) {
 	}
 }
 
+func TestDirected_RemoveVertex(t *testing.T) {
+	tests := map[string]struct {
+		vertices      []int
+		edges         []Edge[int]
+		vertex        int
+		expectedError error
+	}{
+		"existing disconnected vertex": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 2, Target: 3},
+			},
+			vertex: 1,
+		},
+		"existing connected vertex": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 2, Target: 3},
+			},
+			vertex:        1,
+			expectedError: ErrVertexHasEdges,
+		},
+		"non-existent vertex": {
+			vertices:      []int{1, 2, 3},
+			edges:         []Edge[int]{},
+			vertex:        4,
+			expectedError: ErrVertexNotFound,
+		},
+	}
+
+	for name, test := range tests {
+		graph := New(IntHash, Directed())
+
+		for _, vertex := range test.vertices {
+			_ = graph.AddVertex(vertex)
+		}
+
+		for _, edge := range test.edges {
+			_ = graph.AddEdge(edge.Source, edge.Target)
+		}
+
+		err := graph.RemoveVertex(test.vertex)
+
+		if !errors.Is(err, test.expectedError) {
+			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v", name, test.expectedError, err)
+		}
+	}
+}
+
 func TestDirected_AddEdge(t *testing.T) {
 	tests := map[string]struct {
 		vertices      []int

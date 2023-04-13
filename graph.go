@@ -57,6 +57,7 @@ var (
 	ErrEdgeNotFound        = errors.New("edge not found")
 	ErrEdgeAlreadyExists   = errors.New("edge already exists")
 	ErrEdgeCreatesCycle    = errors.New("edge would create a cycle")
+	ErrVertexHasEdges      = errors.New("vertex has edges")
 )
 
 // Graph represents a generic graph data structure consisting of vertices of
@@ -83,6 +84,13 @@ type Graph[K comparable, T any] interface {
 	// VertexWithProperties returns the vertex with the given hash along with
 	// its properties or ErrVertexNotFound if it doesn't exist.
 	VertexWithProperties(hash K) (T, VertexProperties, error)
+
+	// RemoveVertex removes the vertex with the given hash value from the graph.
+	//
+	// The vertex is not allowed to have edges and thus must be disconnected.
+	// Potential edges must be removed first. Otherwise, ErrVertexHasEdges will
+	// be returned. If the vertex doesn't exist, ErrVertexNotFound is returned.
+	RemoveVertex(hash K) error
 
 	// AddEdge creates an edge between the source and the target vertex.
 	//

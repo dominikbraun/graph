@@ -11,6 +11,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Added the `Graph.RemoveVertex` method for removing a vertex.
 * Added the `Store.RemoveVertex` method for removing a vertex.
 * Added the `ErrVertexHasEdges` error instance.
+* Added the `Union` function for combining two graphs into one.
 
 ## [0.17.0] - 2023-04-12
 

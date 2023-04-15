@@ -191,7 +191,7 @@ func TestDirectedUnion(t *testing.T) {
 			}
 		}
 
-		for actualHash, _ := range unionAdjacencyMap {
+		for actualHash := range unionAdjacencyMap {
 			if _, ok := test.expectedAdjacencyMap[actualHash]; !ok {
 				t.Errorf("%s: unexpected key %v in union adjacency map", name, actualHash)
 			}

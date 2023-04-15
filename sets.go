@@ -22,8 +22,8 @@ func Union[K comparable, T any](g, h Graph[K, T]) (Graph[K, T], error) {
 
 	addedEdges := make(map[K]map[K]struct{})
 
-	for currentHash, _ := range adjacencyMap {
-		vertex, properties, err := h.VertexWithProperties(currentHash)
+	for currentHash := range adjacencyMap {
+		vertex, properties, err := h.VertexWithProperties(currentHash) //nolint:govet
 		if err != nil {
 			return union, fmt.Errorf("failed to get vertex %v: %w", currentHash, err)
 		}

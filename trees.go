@@ -1,5 +1,8 @@
 package graph
 
+// unionFind implements a union-find or disjoint set data structure that works
+// with vertex hashes as vertices. It's an internal helper type at the moment,
+// but could perhaps be exposed publicly in the future.
 type unionFind[K comparable] struct {
 	parents map[K]K
 }

@@ -2,6 +2,29 @@ package graph
 
 import "testing"
 
+func TestUnionFind_add(t *testing.T) {
+	tests := map[string]struct {
+		vertex         int
+		expectedParent int
+	}{
+		"add vertex 1": {
+			vertex:         1,
+			expectedParent: 1,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			u := newUnionFind[int]()
+			u.add(test.vertex)
+
+			if u.parents[test.vertex] != test.expectedParent {
+				t.Errorf("expected parent %v, got %v", test.expectedParent, u.parents[test.vertex])
+			}
+		})
+	}
+}
+
 func TestUnionFind_union(t *testing.T) {
 	tests := map[string]struct {
 		vertices        []int
@@ -22,7 +45,7 @@ func TestUnionFind_union(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			u := newUnionFind(test.vertices)
+			u := newUnionFind(test.vertices...)
 			u.union(test.args[0], test.args[1])
 
 			for expectedKey, expectedValue := range test.expectedParents {

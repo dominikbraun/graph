@@ -169,6 +169,18 @@ fmt.Println(path)
 [A C E B]
 ```
 
+## Find spanning trees
+
+![minimum spanning tree](img/mst.svg)
+
+```go
+g := graph.New(graph.StringHash, graph.Weighted())
+
+// Add vertices and edges ...
+
+mst, _ := graph.MinimumSpanningTree(g)
+```
+
 ## Perform a topological sort
 
 ![topological sort](img/topological-sort.svg)

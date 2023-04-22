@@ -59,6 +59,61 @@ func Union[K comparable, T any](g, h Graph[K, T]) (Graph[K, T], error) {
 	return union, nil
 }
 
+// unionFind implements a union-find or disjoint set data structure that works
+// with vertex hashes as vertices. It's an internal helper type at the moment,
+// but could perhaps be exposed publicly in the future.
+//
+// unionFind is not related to the Union function.
+type unionFind[K comparable] struct {
+	parents map[K]K
+}
+
+func newUnionFind[K comparable](vertices ...K) *unionFind[K] {
+	u := &unionFind[K]{
+		parents: make(map[K]K),
+	}
+
+	for _, vertex := range vertices {
+		u.parents[vertex] = vertex
+	}
+
+	return u
+}
+
+func (u *unionFind[K]) add(vertex K) {
+	u.parents[vertex] = vertex
+}
+
+func (u *unionFind[K]) union(vertex1, vertex2 K) {
+	root1 := u.find(vertex1)
+	root2 := u.find(vertex2)
+
+	if root1 == root2 {
+		return
+	}
+
+	u.parents[root2] = root1
+}
+
+func (u *unionFind[K]) find(vertex K) K {
+	root := vertex
+
+	for u.parents[root] != root {
+		root = u.parents[root]
+	}
+
+	// Perform a path compression in order to optimize of future find calls.
+	current := vertex
+
+	for u.parents[current] != root {
+		parent := u.parents[vertex]
+		u.parents[vertex] = root
+		current = parent
+	}
+
+	return root
+}
+
 func copyVertexProperties(source VertexProperties) func(*VertexProperties) {
 	return func(p *VertexProperties) {
 		for k, v := range source.Attributes {

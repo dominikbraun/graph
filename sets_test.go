@@ -157,44 +157,10 @@ func TestDirectedUnion(t *testing.T) {
 			t.Fatalf("%s: unexpected adjaceny map error: %s", name, err.Error())
 		}
 
-		for expectedHash, expectedAdjacencies := range test.expectedAdjacencyMap {
-			actualAdjacencies, ok := unionAdjacencyMap[expectedHash]
-			if !ok {
-				t.Errorf("%s: key %v doesn't exist in adjacency map", name, expectedHash)
-				continue
-			}
+		edgesAreEqual := g.(*directed[int, int]).edgesAreEqual
 
-			for expectedAdjacency, expectedEdge := range expectedAdjacencies {
-				actualEdge, ok := actualAdjacencies[expectedAdjacency]
-				if !ok {
-					t.Errorf("%s: key %v doesn't exist in adjacencies of %v", name, expectedAdjacency, expectedHash)
-					continue
-				}
-
-				if !union.(*directed[int, int]).edgesAreEqual(expectedEdge, actualEdge) {
-					t.Errorf("%s: expected edge %v, got %v at AdjacencyMap[%v][%v]", name, expectedEdge, actualEdge, expectedHash, expectedAdjacency)
-				}
-
-				for expectedKey, expectedValue := range expectedEdge.Properties.Attributes {
-					actualValue, ok := actualEdge.Properties.Attributes[expectedKey]
-					if !ok {
-						t.Errorf("%s: expected attribute %v to exist in edge %v", name, expectedKey, actualEdge)
-					}
-					if actualValue != expectedValue {
-						t.Errorf("%s: expected value %v for key %v in edge %v, got %v", name, expectedValue, expectedKey, expectedEdge, actualValue)
-					}
-				}
-
-				if actualEdge.Properties.Weight != expectedEdge.Properties.Weight {
-					t.Errorf("%s: expected weight %v for edge %v, got %v", name, expectedEdge.Properties.Weight, expectedEdge, actualEdge.Properties.Weight)
-				}
-			}
-		}
-
-		for actualHash := range unionAdjacencyMap {
-			if _, ok := test.expectedAdjacencyMap[actualHash]; !ok {
-				t.Errorf("%s: unexpected key %v in union adjacency map", name, actualHash)
-			}
+		if !adjacencyMapsAreEqual(test.expectedAdjacencyMap, unionAdjacencyMap, edgesAreEqual) {
+			t.Fatalf("expected adjacency map %v, got %v", test.expectedAdjacencyMap, unionAdjacencyMap)
 		}
 	}
 }
@@ -317,4 +283,46 @@ func TestUnionFind_find(t *testing.T) {
 			}
 		})
 	}
+}
+
+func adjacencyMapsAreEqual[K comparable](a, b map[K]map[K]Edge[K], edgesAreEqual func(a, b Edge[K]) bool) bool {
+	for aHash, aAdjacencies := range a {
+		bAdjacencies, ok := b[aHash]
+		if !ok {
+			return false
+		}
+
+		for aAdjacency, aEdge := range aAdjacencies {
+			bEdge, ok := bAdjacencies[aAdjacency]
+			if !ok {
+				return false
+			}
+
+			if !edgesAreEqual(aEdge, bEdge) {
+				return false
+			}
+
+			for aKey, aValue := range aEdge.Properties.Attributes {
+				bValue, ok := bEdge.Properties.Attributes[aKey]
+				if !ok {
+					return false
+				}
+				if bValue != aValue {
+					return false
+				}
+			}
+
+			if bEdge.Properties.Weight != aEdge.Properties.Weight {
+				return false
+			}
+		}
+	}
+
+	for aHash := range a {
+		if _, ok := b[aHash]; !ok {
+			return false
+		}
+	}
+
+	return true
 }

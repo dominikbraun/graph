@@ -77,6 +77,13 @@ type Graph[K comparable, T any] interface {
 	//
 	AddVertex(value T, options ...func(*VertexProperties)) error
 
+	// AddVerticesFrom adds all vertices along with their properties from the
+	// given graph to the receiving graph.
+	//
+	// All vertices will be added until an error occurs. If one of the vertices
+	// already exists, ErrVertexAlreadyExists will be returned.
+	AddVerticesFrom(g Graph[K, T]) error
+
 	// Vertex returns the vertex with the given hash or ErrVertexNotFound if it
 	// doesn't exist.
 	Vertex(hash K) (T, error)

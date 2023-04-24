@@ -100,6 +100,26 @@ func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Ed
 	return nil
 }
 
+func (u *undirected[K, T]) AddVerticesFrom(g Graph[K, T]) error {
+	adjacencyMap, err := g.AdjacencyMap()
+	if err != nil {
+		return fmt.Errorf("failed to get adjacency map: %w", err)
+	}
+
+	for hash := range adjacencyMap {
+		vertex, properties, err := g.VertexWithProperties(hash)
+		if err != nil {
+			return fmt.Errorf("failed to get vertex %v: %w", hash, err)
+		}
+
+		if err = u.AddVertex(vertex, copyVertexProperties(properties)); err != nil {
+			return fmt.Errorf("failed to add vertex %v: %w", hash, err)
+		}
+	}
+
+	return nil
+}
+
 func (u *undirected[K, T]) Edge(sourceHash, targetHash K) (Edge[T], error) {
 	// In an undirected graph, since multigraphs aren't supported, the edge AB
 	// is the same as BA. Therefore, if source[target] cannot be found, this

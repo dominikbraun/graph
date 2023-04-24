@@ -118,6 +118,99 @@ func TestDirected_AddVertex(t *testing.T) {
 	}
 }
 
+func TestDirected_AddVerticesFrom(t *testing.T) {
+	tests := map[string]struct {
+		vertices           []int
+		properties         map[int]VertexProperties
+		existingVertices   []int
+		expectedVertices   []int
+		expectedProperties map[int]VertexProperties
+		expectedError      error
+	}{
+		"graph with 3 vertices": {
+			vertices: []int{1, 2, 3},
+			properties: map[int]VertexProperties{
+				1: {
+					Attributes: map[string]string{"color": "red"},
+					Weight:     10,
+				},
+				2: {
+					Attributes: map[string]string{"color": "green"},
+					Weight:     20,
+				},
+				3: {
+					Attributes: map[string]string{"color": "blue"},
+					Weight:     30,
+				},
+			},
+			existingVertices: []int{},
+			expectedVertices: []int{1, 2, 3},
+			expectedProperties: map[int]VertexProperties{
+				1: {
+					Attributes: map[string]string{"color": "red"},
+					Weight:     10,
+				},
+				2: {
+					Attributes: map[string]string{"color": "green"},
+					Weight:     20,
+				},
+				3: {
+					Attributes: map[string]string{"color": "blue"},
+					Weight:     30,
+				},
+			},
+		},
+		"graph with duplicated vertex": {
+			vertices:           []int{1, 2, 3},
+			properties:         map[int]VertexProperties{},
+			existingVertices:   []int{2},
+			expectedVertices:   []int{1},
+			expectedProperties: map[int]VertexProperties{},
+			expectedError:      ErrVertexAlreadyExists,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			source := New(IntHash, Directed())
+
+			for _, vertex := range test.vertices {
+				_ = source.AddVertex(vertex, copyVertexProperties(test.properties[vertex]))
+			}
+
+			g := New(IntHash, Directed())
+
+			for _, vertex := range test.existingVertices {
+				_ = g.AddVertex(vertex)
+			}
+
+			err := g.AddVerticesFrom(source)
+
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error %v, got %v", test.expectedError, err)
+			}
+
+			if err != nil {
+				return
+			}
+
+			for _, vertex := range test.expectedVertices {
+				_, actualProperties, err := g.VertexWithProperties(vertex)
+				if err != nil {
+					t.Errorf("failed to get vertex %v with properties: %v", vertex, err.Error())
+					return
+				}
+
+				if expectedProperties, ok := test.expectedProperties[vertex]; ok {
+					if !vertexPropertiesAreEqual(expectedProperties, actualProperties) {
+						t.Errorf("expected properties %v for %v, got %v", expectedProperties, vertex, actualProperties)
+					}
+				}
+			}
+		})
+	}
+}
+
 func TestDirected_Vertex(t *testing.T) {
 	tests := map[string]struct {
 		vertices      []int
@@ -966,6 +1059,27 @@ func slicesAreEqual[T comparable](a, b []T) bool {
 			}
 		}
 		if !found {
+			return false
+		}
+	}
+
+	return true
+}
+
+func vertexPropertiesAreEqual(a, b VertexProperties) bool {
+	if a.Weight != b.Weight {
+		return false
+	}
+
+	// A length check is required because in the iteration below, a.Attributes
+	// could be empty and thus circumvent the comparison.
+	if len(a.Attributes) != len(b.Attributes) {
+		return false
+	}
+
+	for key, aValue := range a.Attributes {
+		bValue, ok := b.Attributes[key]
+		if !ok || aValue != bValue {
 			return false
 		}
 	}

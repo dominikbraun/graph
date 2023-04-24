@@ -37,6 +37,26 @@ func (d *directed[K, T]) AddVertex(value T, options ...func(*VertexProperties)) 
 	return d.store.AddVertex(hash, value, properties)
 }
 
+func (d *directed[K, T]) AddVerticesFrom(g Graph[K, T]) error {
+	adjacencyMap, err := g.AdjacencyMap()
+	if err != nil {
+		return fmt.Errorf("failed to get adjacency map: %w", err)
+	}
+
+	for hash := range adjacencyMap {
+		vertex, properties, err := g.VertexWithProperties(hash)
+		if err != nil {
+			return fmt.Errorf("failed to get vertex %v: %w", hash, err)
+		}
+
+		if err = d.AddVertex(vertex, copyVertexProperties(properties)); err != nil {
+			return fmt.Errorf("failed to add vertex %v: %w", hash, err)
+		}
+	}
+
+	return nil
+}
+
 func (d *directed[K, T]) Vertex(hash K) (T, error) {
 	vertex, _, err := d.store.Vertex(hash)
 	return vertex, err

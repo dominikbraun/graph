@@ -629,7 +629,7 @@ func TestDirected_AddEdgesFrom(t *testing.T) {
 					t.Errorf("expected edge weight %v, got %v", edge.Properties.Weight, actualEdge.Properties.Weight)
 				}
 
-				if len(edge.Properties.Attributes) != len(edge.Properties.Attributes) {
+				if len(actualEdge.Properties.Attributes) != len(edge.Properties.Attributes) {
 					t.Fatalf("expcted %v attributes, got %v", len(edge.Properties.Attributes), len(edge.Properties.Attributes))
 				}
 
@@ -643,7 +643,7 @@ func TestDirected_AddEdgesFrom(t *testing.T) {
 					}
 				}
 
-				if edge.Properties.Data != edge.Properties.Data {
+				if actualEdge.Properties.Data != edge.Properties.Data {
 					t.Errorf("expected data %v, got %v", edge.Properties.Data, edge.Properties.Data)
 				}
 			}

@@ -574,7 +574,7 @@ func TestUndirected_AddEdgesFrom(t *testing.T) {
 					t.Errorf("expected edge weight %v, got %v", edge.Properties.Weight, actualEdge.Properties.Weight)
 				}
 
-				if len(edge.Properties.Attributes) != len(edge.Properties.Attributes) {
+				if len(actualEdge.Properties.Attributes) != len(edge.Properties.Attributes) {
 					t.Fatalf("expcted %v attributes, got %v", len(edge.Properties.Attributes), len(edge.Properties.Attributes))
 				}
 

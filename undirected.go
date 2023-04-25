@@ -100,6 +100,21 @@ func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Ed
 	return nil
 }
 
+func (u *undirected[K, T]) AddEdgesFrom(g Graph[K, T]) error {
+	edges, err := g.Edges()
+	if err != nil {
+		return fmt.Errorf("failed to get edges: %w", err)
+	}
+
+	for _, edge := range edges {
+		if err := u.AddEdge(copyEdge(edge)); err != nil {
+			return fmt.Errorf("failed to add (%v, %v): %w", edge.Source, edge.Target, err)
+		}
+	}
+
+	return nil
+}
+
 func (u *undirected[K, T]) AddVerticesFrom(g Graph[K, T]) error {
 	adjacencyMap, err := g.AdjacencyMap()
 	if err != nil {
@@ -152,6 +167,10 @@ func (u *undirected[K, T]) Edge(sourceHash, targetHash K) (Edge[T], error) {
 			Data:       edge.Properties.Data,
 		},
 	}, nil
+}
+
+func (u *undirected[K, T]) Edges() ([]Edge[K], error) {
+	return u.store.ListEdges()
 }
 
 func (u *undirected[K, T]) RemoveEdge(source, target K) error {

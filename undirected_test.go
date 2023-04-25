@@ -425,6 +425,177 @@ func TestUndirected_AddEdge(t *testing.T) {
 	}
 }
 
+func TestUndirected_AddEdgesFrom(t *testing.T) {
+	tests := map[string]struct {
+		vertices         []int
+		edges            []Edge[int]
+		existingVertices []int
+		existingEdges    []Edge[int]
+		expectedEdges    []Edge[int]
+		expectedError    error
+	}{
+		"graph with 3 edges": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{
+					Source: 1,
+					Target: 2,
+					Properties: EdgeProperties{
+						Weight: 10,
+						Attributes: map[string]string{
+							"color": "red",
+						},
+					},
+				},
+				{
+					Source: 2,
+					Target: 3,
+					Properties: EdgeProperties{
+						Weight: 20,
+						Attributes: map[string]string{
+							"color": "green",
+						},
+					},
+				},
+				{
+					Source: 3,
+					Target: 1,
+					Properties: EdgeProperties{
+						Weight: 30,
+						Attributes: map[string]string{
+							"color": "blue",
+						},
+					},
+				},
+			},
+			existingVertices: []int{1, 2, 3},
+			existingEdges:    []Edge[int]{},
+			expectedEdges: []Edge[int]{
+				{
+					Source: 1,
+					Target: 2,
+					Properties: EdgeProperties{
+						Weight: 10,
+						Attributes: map[string]string{
+							"color": "red",
+						},
+					},
+				},
+				{
+					Source: 2,
+					Target: 3,
+					Properties: EdgeProperties{
+						Weight: 20,
+						Attributes: map[string]string{
+							"color": "green",
+						},
+					},
+				},
+				{
+					Source: 3,
+					Target: 1,
+					Properties: EdgeProperties{
+						Weight: 30,
+						Attributes: map[string]string{
+							"color": "blue",
+						},
+					},
+				},
+			},
+			expectedError: nil,
+		},
+		"edge with non-existing vertex": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 3},
+			},
+			existingVertices: []int{1, 2},
+			existingEdges:    []Edge[int]{},
+			expectedEdges:    []Edge[int]{},
+			expectedError:    ErrVertexNotFound,
+		},
+		"graph with duplicated edge": {
+			vertices: []int{1, 2},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+			},
+			existingVertices: []int{1, 2},
+			existingEdges: []Edge[int]{
+				{Source: 1, Target: 2},
+			},
+			expectedEdges: []Edge[int]{},
+			expectedError: ErrEdgeAlreadyExists,
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			source := New(IntHash)
+
+			for _, vertex := range test.vertices {
+				_ = source.AddVertex(vertex)
+			}
+
+			for _, edge := range test.edges {
+				_ = source.AddEdge(copyEdge(edge))
+			}
+
+			g := New(IntHash, Directed())
+
+			for _, vertex := range test.existingVertices {
+				_ = g.AddVertex(vertex)
+			}
+
+			for _, edge := range test.existingEdges {
+				_ = g.AddEdge(copyEdge(edge))
+			}
+
+			err := g.AddEdgesFrom(source)
+
+			if !errors.Is(err, test.expectedError) {
+				t.Fatalf("expected error %v, got %v", test.expectedError, err)
+			}
+
+			for _, edge := range test.expectedEdges {
+				actualEdge, err := g.Edge(edge.Source, edge.Target)
+				if err != nil {
+					t.Fatalf("failed to get edge: %v", err.Error())
+				}
+
+				if actualEdge.Source != edge.Source {
+					t.Errorf("expected edge source %v, got %v", edge.Source, actualEdge.Source)
+				}
+
+				if actualEdge.Target != edge.Target {
+					t.Errorf("expected edge target %v, got %v", edge.Source, actualEdge.Source)
+				}
+
+				if actualEdge.Properties.Weight != edge.Properties.Weight {
+					t.Errorf("expected edge weight %v, got %v", edge.Properties.Weight, actualEdge.Properties.Weight)
+				}
+
+				if len(actualEdge.Properties.Attributes) != len(edge.Properties.Attributes) {
+					t.Fatalf("expcted %v attributes, got %v", len(edge.Properties.Attributes), len(edge.Properties.Attributes))
+				}
+
+				for expectedKey, expectedValue := range edge.Properties.Attributes {
+					value, ok := actualEdge.Properties.Attributes[expectedKey]
+					if !ok {
+						t.Errorf("expected attribute %v not found", expectedKey)
+					}
+					if value != expectedValue {
+						t.Errorf("expected value %v for attribute %v, got %v", expectedValue, expectedKey, value)
+					}
+				}
+
+				if edge.Properties.Data != edge.Properties.Data {
+					t.Errorf("expected data %v, got %v", edge.Properties.Data, edge.Properties.Data)
+				}
+			}
+		})
+	}
+}
+
 func TestUndirected_RemoveVertex(t *testing.T) {
 	tests := map[string]struct {
 		vertices      []int
@@ -549,6 +720,139 @@ func TestUndirected_Edge(t *testing.T) {
 		if !edgePropertiesAreEqual(edge.Properties, test.edge.Properties) {
 			t.Errorf("%s: edge property expectancy doesn't match: expected %v, got %v", name, test.edge.Properties, edge.Properties)
 		}
+	}
+}
+
+func TestUndirected_Edges(t *testing.T) {
+	tests := map[string]struct {
+		vertices      []int
+		edges         []Edge[int]
+		expectedEdges []Edge[int]
+	}{
+		"graph with 3 edges": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{
+					Source: 1,
+					Target: 2,
+					Properties: EdgeProperties{
+						Weight: 10,
+						Attributes: map[string]string{
+							"color": "red",
+						},
+					},
+				},
+				{
+					Source: 2,
+					Target: 3,
+					Properties: EdgeProperties{
+						Weight: 20,
+						Attributes: map[string]string{
+							"color": "green",
+						},
+					},
+				},
+				{
+					Source: 3,
+					Target: 1,
+					Properties: EdgeProperties{
+						Weight: 30,
+						Attributes: map[string]string{
+							"color": "blue",
+						},
+					},
+				},
+			},
+			expectedEdges: []Edge[int]{
+				{
+					Source: 1,
+					Target: 2,
+					Properties: EdgeProperties{
+						Weight: 10,
+						Attributes: map[string]string{
+							"color": "red",
+						},
+					},
+				},
+				{
+					Source: 2,
+					Target: 3,
+					Properties: EdgeProperties{
+						Weight: 20,
+						Attributes: map[string]string{
+							"color": "green",
+						},
+					},
+				},
+				{
+					Source: 3,
+					Target: 1,
+					Properties: EdgeProperties{
+						Weight: 30,
+						Attributes: map[string]string{
+							"color": "blue",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			g := New(IntHash)
+
+			for _, vertex := range test.vertices {
+				_ = g.AddVertex(vertex)
+			}
+
+			for _, edge := range test.edges {
+				_ = g.AddEdge(copyEdge(edge))
+			}
+
+			edges, err := g.Edges()
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err.Error())
+			}
+
+			for _, expectedEdge := range test.expectedEdges {
+				for _, actualEdge := range edges {
+					if actualEdge.Source != expectedEdge.Source || actualEdge.Target != expectedEdge.Target {
+						continue
+					}
+
+					if actualEdge.Source != expectedEdge.Source {
+						t.Errorf("expected edge source %v, got %v", expectedEdge.Source, actualEdge.Source)
+					}
+
+					if actualEdge.Target != expectedEdge.Target {
+						t.Errorf("expected edge target %v, got %v", expectedEdge.Source, actualEdge.Source)
+					}
+
+					if actualEdge.Properties.Weight != expectedEdge.Properties.Weight {
+						t.Errorf("expected edge weight %v, got %v", expectedEdge.Properties.Weight, actualEdge.Properties.Weight)
+					}
+
+					if len(actualEdge.Properties.Attributes) != len(expectedEdge.Properties.Attributes) {
+						t.Fatalf("expcted %v attributes, got %v", len(expectedEdge.Properties.Attributes), len(expectedEdge.Properties.Attributes))
+					}
+
+					for expectedKey, expectedValue := range expectedEdge.Properties.Attributes {
+						value, ok := actualEdge.Properties.Attributes[expectedKey]
+						if !ok {
+							t.Errorf("expected attribute %v not found", expectedKey)
+						}
+						if value != expectedValue {
+							t.Errorf("expected value %v for attribute %v, got %v", expectedValue, expectedKey, value)
+						}
+					}
+
+					if actualEdge.Properties.Data != expectedEdge.Properties.Data {
+						t.Errorf("expected data %v, got %v", expectedEdge.Properties.Data, expectedEdge.Properties.Data)
+					}
+				}
+			}
+		})
 	}
 }
 

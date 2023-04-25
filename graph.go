@@ -113,10 +113,22 @@ type Graph[K comparable, T any] interface {
 	//
 	AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error
 
+	// AddEdgesFrom adds all edges along with their properties from the given
+	// graph to the receiving graph.
+	//
+	// All vertices that the edges are joining have to exist already. If needed,
+	// these vertices can be added using AddVerticesFrom first. Depending on the
+	// situation, it also might make sense to clone the entire original graph.
+	AddEdgesFrom(g Graph[K, T]) error
+
 	// Edge returns the edge joining two given vertices or ErrEdgeNotFound if
 	// the edge doesn't exist. In an undirected graph, an edge with swapped
 	// source and target vertices does match.
 	Edge(sourceHash, targetHash K) (Edge[T], error)
+
+	// Edges returns a slice of all edges in the graph. These edges are of type
+	// Edge[K] and hence will contain the vertex hashes, not the vertex values.
+	Edges() ([]Edge[K], error)
 
 	// RemoveEdge removes the edge between the given source and target vertices.
 	// If the edge cannot be found, ErrEdgeNotFound will be returned.

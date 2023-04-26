@@ -1241,8 +1241,10 @@ func TestDirected_Clone(t *testing.T) {
 			t.Errorf("%s: traits expectancy doesn't match: expected %v, got %v", name, expected.traits, actual.traits)
 		}
 
-		if actual.store != expected.store {
-			t.Fatalf("%s: stores don't match", name)
+		_ = clonedGraph.AddVertex(10)
+
+		if _, err := graph.Vertex(10); err == nil {
+			t.Errorf("%s: vertex 10 shouldn't exist in original graph", name)
 		}
 	}
 }

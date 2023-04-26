@@ -253,7 +253,7 @@ func (d *directed[K, T]) Clone() (Graph[K, T], error) {
 	return &directed[K, T]{
 		hash:   d.hash,
 		traits: traits,
-		store:  d.store,
+		store:  newMemoryStore[K, T](),
 	}, nil
 }
 

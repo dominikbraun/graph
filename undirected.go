@@ -249,7 +249,7 @@ func (u *undirected[K, T]) Clone() (Graph[K, T], error) {
 	return &undirected[K, T]{
 		hash:   u.hash,
 		traits: traits,
-		store:  u.store,
+		store:  newMemoryStore[K, T](),
 	}, nil
 }
 

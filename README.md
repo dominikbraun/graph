@@ -350,16 +350,14 @@ myData := edge.Properties.Data
 
 ### Updating edge data
 
-At the time being, edge properties are immutable. This will change in the future. A possible workaround
-is to remove the edge and re-create it with the new data. You even might create a small helper function
-for that purpose, for example to update the edge weight:
+Edge properties can be updated using `Graph.UpdateEdge`. The following example adds a new `color`
+attribute to the edge (A,B) and sets the edge weight to 10.
 
 ```go
-func updateEdgeWeight[T any, K comparable](g graph.Graph[K, T], source, target K, value int) {
-	_ = g.RemoveEdge(source, target)
-	_ = g.AddEdge(source, target, graph.EdgeWeight(value))
-}
+_ = g.UpdateEdge("A", "B", graph.EdgeAttribute("color", "red"), graph.EdgeWeight(10))
 ```
+
+The method signature and the accepted functional options are exactly the same as for `Graph.AddEdge`.
 
 ## Storing vertex attributes
 

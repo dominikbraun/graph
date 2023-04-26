@@ -862,6 +862,99 @@ func TestDirected_Edges(t *testing.T) {
 	}
 }
 
+func TestDirected_UpdateEdge(t *testing.T) {
+	tests := map[string]struct {
+		vertices    []int
+		edges       []Edge[int]
+		updateEdge  Edge[int]
+		expectedErr error
+	}{
+		"update an edge": {
+			vertices: []int{1, 2},
+			edges: []Edge[int]{
+				{
+					Source: 1,
+					Target: 2,
+					Properties: EdgeProperties{
+						Weight: 10,
+						Attributes: map[string]string{
+							"color": "red",
+						},
+						Data: "my-edge",
+					},
+				},
+			},
+			updateEdge: Edge[int]{
+				Source: 1,
+				Target: 2,
+				Properties: EdgeProperties{
+					Weight: 20,
+					Attributes: map[string]string{
+						"color": "blue",
+						"label": "a blue edge",
+					},
+					Data: "my-updated-edge",
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			g := New(IntHash, Directed())
+
+			for _, vertex := range test.vertices {
+				_ = g.AddVertex(vertex)
+			}
+
+			for _, edge := range test.edges {
+				_ = g.AddEdge(copyEdge(edge))
+			}
+
+			err := g.UpdateEdge(copyEdge(test.updateEdge))
+
+			if !errors.Is(err, test.expectedErr) {
+				t.Fatalf("expected error %v, got %v", test.expectedErr, err)
+			}
+
+			actualEdge, err := g.Edge(test.updateEdge.Source, test.updateEdge.Target)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err.Error())
+			}
+
+			if actualEdge.Source != test.updateEdge.Source {
+				t.Errorf("expected edge source %v, got %v", test.updateEdge.Source, actualEdge.Source)
+			}
+
+			if actualEdge.Target != test.updateEdge.Target {
+				t.Errorf("expected edge target %v, got %v", test.updateEdge.Source, actualEdge.Source)
+			}
+
+			if actualEdge.Properties.Weight != test.updateEdge.Properties.Weight {
+				t.Errorf("expected edge weight %v, got %v", test.updateEdge.Properties.Weight, actualEdge.Properties.Weight)
+			}
+
+			if len(actualEdge.Properties.Attributes) != len(test.updateEdge.Properties.Attributes) {
+				t.Fatalf("expcted %v attributes, got %v", len(test.updateEdge.Properties.Attributes), len(test.updateEdge.Properties.Attributes))
+			}
+
+			for expectedKey, expectedValue := range test.updateEdge.Properties.Attributes {
+				value, ok := actualEdge.Properties.Attributes[expectedKey]
+				if !ok {
+					t.Errorf("expected attribute %v not found", expectedKey)
+				}
+				if value != expectedValue {
+					t.Errorf("expected value %v for attribute %v, got %v", expectedValue, expectedKey, value)
+				}
+			}
+
+			if actualEdge.Properties.Data != test.updateEdge.Properties.Data {
+				t.Errorf("expected data %v, got %v", test.updateEdge.Properties.Data, test.updateEdge.Properties.Data)
+			}
+		})
+	}
+}
+
 func TestDirected_RemoveEdge(t *testing.T) {
 	tests := map[string]struct {
 		vertices      []int

@@ -35,6 +35,10 @@ type Store[K comparable, T any] interface {
 	// vertex. If the edge already exists, ErrEdgeAlreadyExists should be returned.
 	AddEdge(sourceHash, targetHash K, edge Edge[K]) error
 
+	// UpdateEdge should update the edge between the given vertices with the data of the given
+	// Edge instance. If the edge doesn't exist, ErrEdgeNotFound should be returned.
+	UpdateEdge(sourceHash, targetHash K, edge Edge[K]) error
+
 	// RemoveEdge should remove the edge between the vertices with the given source and target
 	// hashes.
 	//
@@ -160,6 +164,20 @@ func (s *memoryStore[K, T]) AddEdge(sourceHash, targetHash K, edge Edge[K]) erro
 		s.inEdges[targetHash] = make(map[K]Edge[K])
 	}
 
+	s.inEdges[targetHash][sourceHash] = edge
+
+	return nil
+}
+
+func (s *memoryStore[K, T]) UpdateEdge(sourceHash, targetHash K, edge Edge[K]) error {
+	if _, err := s.Edge(sourceHash, targetHash); err != nil {
+		return err
+	}
+
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	s.outEdges[sourceHash][targetHash] = edge
 	s.inEdges[targetHash][sourceHash] = edge
 
 	return nil

@@ -130,6 +130,23 @@ type Graph[K comparable, T any] interface {
 	// Edge[K] and hence will contain the vertex hashes, not the vertex values.
 	Edges() ([]Edge[K], error)
 
+	// UpdateEdge updates the edge joining the two given vertices with the data
+	// provided in the given functional options. Valid functional options are:
+	// - EdgeWeight: Sets a new weight for the edge properties.
+	// - EdgeAttribute: Adds a new attribute to the edge properties.
+	// - EdgeAttributes: Sets a new attributes map for the edge properties.
+	// - EdgeData: Sets a new Data field for the edge properties.
+	//
+	// UpdateEdge accepts the same functional options as AddEdge. For example,
+	// setting the weight of an edge (A,B) to 10 would look as follows:
+	//
+	//	_ = g.UpdateEdge("A", "B", graph.EdgeWeight(10))
+	//
+	// Removing a particular edge attribute is not possible at the moment. A
+	// workaround is to create a new map without the respective element and
+	// overwrite the existing attributes using the EdgeAttributes option.
+	UpdateEdge(source, target K, options ...func(properties *EdgeProperties)) error
+
 	// RemoveEdge removes the edge between the given source and target vertices.
 	// If the edge cannot be found, ErrEdgeNotFound will be returned.
 	RemoveEdge(source, target K) error
@@ -278,6 +295,15 @@ func EdgeWeight(weight int) func(*EdgeProperties) {
 func EdgeAttribute(key, value string) func(*EdgeProperties) {
 	return func(e *EdgeProperties) {
 		e.Attributes[key] = value
+	}
+}
+
+// EdgeAttributes returns a function that sets the given map as the attributes
+// of an edge. This is a functional option for the [graph.Graph.AddEdge] and
+// [graph.Graph.UpdateEdge] methods.
+func EdgeAttributes(attributes map[string]string) func(*EdgeProperties) {
+	return func(e *EdgeProperties) {
+		e.Attributes = attributes
 	}
 }
 

@@ -173,6 +173,27 @@ func (u *undirected[K, T]) Edges() ([]Edge[K], error) {
 	return u.store.ListEdges()
 }
 
+func (u *undirected[K, T]) UpdateEdge(source, target K, options ...func(properties *EdgeProperties)) error {
+	existingEdge, err := u.store.Edge(source, target)
+	if err != nil {
+		return err
+	}
+
+	for _, option := range options {
+		option(&existingEdge.Properties)
+	}
+
+	if err := u.store.UpdateEdge(source, target, existingEdge); err != nil {
+		return err
+	}
+
+	reversedEdge := existingEdge
+	reversedEdge.Source = existingEdge.Target
+	reversedEdge.Target = existingEdge.Source
+
+	return u.store.UpdateEdge(target, source, reversedEdge)
+}
+
 func (u *undirected[K, T]) RemoveEdge(source, target K) error {
 	if _, err := u.Edge(source, target); err != nil {
 		return err

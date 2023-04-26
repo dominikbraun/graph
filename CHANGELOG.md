@@ -11,6 +11,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Added the `Graph.AddVerticesFrom` method for adding all vertices from another graph.
 * Added the `Graph.AddEdgesFrom` method for adding all edges from another graph.
 * Added the `Graph.Edges` method for obtaining all edges as a slice.
+* Added the `Graph.UpdateEdge` method for updating the properties of an edge.
+* Added the `EdgeAttributes` functional option for setting an entire edge attributes map.
 
 ## [0.19.0] - 2023-04-23
 

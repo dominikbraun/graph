@@ -162,6 +162,19 @@ func (d *directed[K, T]) Edges() ([]Edge[K], error) {
 	return d.store.ListEdges()
 }
 
+func (d *directed[K, T]) UpdateEdge(source, target K, options ...func(properties *EdgeProperties)) error {
+	existingEdge, err := d.store.Edge(source, target)
+	if err != nil {
+		return err
+	}
+
+	for _, option := range options {
+		option(&existingEdge.Properties)
+	}
+
+	return d.store.UpdateEdge(source, target, existingEdge)
+}
+
 func (d *directed[K, T]) RemoveEdge(source, target K) error {
 	if _, err := d.Edge(source, target); err != nil {
 		return err

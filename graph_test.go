@@ -33,6 +33,61 @@ func TestNew(t *testing.T) {
 	}
 }
 
+func TestNewLike(t *testing.T) {
+	tests := map[string]struct {
+		g Graph[int, int]
+	}{
+		"new directed graph of integers": {
+			g: New(IntHash, Directed()),
+		},
+		"new undirected weighted graph of integers": {
+			g: New(IntHash, Weighted()),
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			h := NewLike(test.g)
+
+			if test.g.Traits().IsDirected {
+				actual, ok := h.(*directed[int, int])
+				if !ok {
+					t.Fatalf("type assertion to *directed failed")
+				}
+
+				expected := test.g.(*directed[int, int])
+
+				if actual.hash(42) != expected.hash(42) {
+					t.Errorf("expected hash %v, got %v", expected.hash, actual.hash)
+				}
+
+				if actual.store != expected.store {
+					t.Errorf("expected store %v, got %v", expected.store, actual.store)
+				}
+			} else {
+				actual, ok := h.(*undirected[int, int])
+				if !ok {
+					t.Fatalf("type assertion to *directed failed")
+				}
+
+				expected := test.g.(*undirected[int, int])
+
+				if actual.hash(42) != expected.hash(42) {
+					t.Errorf("expected hash %v, got %v", expected.hash, actual.hash)
+				}
+
+				if actual.store != expected.store {
+					t.Errorf("expected store %v, got %v", expected.store, actual.store)
+				}
+			}
+
+			if !traitsAreEqual(h.Traits(), test.g.Traits()) {
+				t.Errorf("expected traits %+v, got %+v", test.g.Traits(), h.Traits())
+			}
+		})
+	}
+}
+
 func TestStringHash(t *testing.T) {
 	tests := map[string]struct {
 		value        string

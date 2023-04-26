@@ -252,6 +252,41 @@ func New[K comparable, T any](hash Hash[K, T], options ...func(*Traits)) Graph[K
 	return NewWithStore(hash, newMemoryStore[K, T](), options...)
 }
 
+// NewLike creates a new graph that is "like" the given graph: It has the same
+// type, the same hashing function, the same store, and the same traits.
+//
+//	g := graph.New(graph.IntHash, graph.Directed())
+//	h := graph.NewLike(g)
+//
+// In this example, h is a directed graph of integers. Both graphs will be
+// independent of each other.
+func NewLike[K comparable, T any](g Graph[K, T]) Graph[K, T] {
+	var (
+		hash  Hash[K, T]
+		store Store[K, T]
+	)
+
+	if g.Traits().IsDirected {
+		d := g.(*directed[K, T])
+		hash = d.hash
+		store = d.store
+	} else {
+		u := g.(*undirected[K, T])
+		hash = u.hash
+		store = u.store
+	}
+
+	copyTraitsFromG := func(traits *Traits) {
+		traits.IsDirected = g.Traits().IsDirected
+		traits.IsAcyclic = g.Traits().IsAcyclic
+		traits.IsWeighted = g.Traits().IsWeighted
+		traits.IsRooted = g.Traits().IsRooted
+		traits.PreventCycles = g.Traits().PreventCycles
+	}
+
+	return NewWithStore(hash, store, copyTraitsFromG)
+}
+
 // NewWithStore creates a new graph same as [New] but uses the provided store
 // instead of the default memory store.
 func NewWithStore[K comparable, T any](hash Hash[K, T], store Store[K, T], options ...func(*Traits)) Graph[K, T] {

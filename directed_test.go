@@ -1241,8 +1241,17 @@ func TestDirected_Clone(t *testing.T) {
 			t.Errorf("%s: traits expectancy doesn't match: expected %v, got %v", name, expected.traits, actual.traits)
 		}
 
-		if actual.store != expected.store {
-			t.Fatalf("%s: stores don't match", name)
+		expectedAdjacencyMap, _ := graph.AdjacencyMap()
+		actualAdjacencyMap, _ := actual.AdjacencyMap()
+
+		if !adjacencyMapsAreEqual(expectedAdjacencyMap, actualAdjacencyMap, expected.edgesAreEqual) {
+			t.Errorf("%s: expected adjacency map %v, got %v", name, expectedAdjacencyMap, actualAdjacencyMap)
+		}
+
+		_ = clonedGraph.AddVertex(10)
+
+		if _, err := graph.Vertex(10); err == nil {
+			t.Errorf("%s: vertex 10 shouldn't exist in original graph", name)
 		}
 	}
 }

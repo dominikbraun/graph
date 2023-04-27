@@ -540,7 +540,7 @@ func TestUndirected_AddEdgesFrom(t *testing.T) {
 				_ = source.AddEdge(copyEdge(edge))
 			}
 
-			g := New(IntHash, Directed())
+			g := New(IntHash)
 
 			for _, vertex := range test.existingVertices {
 				_ = g.AddVertex(vertex)
@@ -559,7 +559,7 @@ func TestUndirected_AddEdgesFrom(t *testing.T) {
 			for _, edge := range test.expectedEdges {
 				actualEdge, err := g.Edge(edge.Source, edge.Target)
 				if err != nil {
-					t.Fatalf("failed to get edge: %v", err.Error())
+					t.Fatalf("failed to get edge (%v, %v): %v", edge.Source, edge.Target, err.Error())
 				}
 
 				if actualEdge.Source != edge.Source {
@@ -1254,8 +1254,17 @@ func TestUndirected_Clone(t *testing.T) {
 			t.Errorf("%s: traits expectancy doesn't match: expected %v, got %v", name, expected.traits, actual.traits)
 		}
 
-		if actual.store != expected.store {
-			t.Fatalf("%s: stores don't match", name)
+		expectedAdjacencyMap, _ := graph.AdjacencyMap()
+		actualAdjacencyMap, _ := actual.AdjacencyMap()
+
+		if !adjacencyMapsAreEqual(expectedAdjacencyMap, actualAdjacencyMap, expected.edgesAreEqual) {
+			t.Errorf("%s: expected adjacency map %v, got %v", name, expectedAdjacencyMap, actualAdjacencyMap)
+		}
+
+		_ = clonedGraph.AddVertex(10)
+
+		if _, err := graph.Vertex(10); err == nil {
+			t.Errorf("%s: vertex 10 shouldn't exist in original graph", name)
 		}
 	}
 }

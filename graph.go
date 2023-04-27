@@ -197,6 +197,10 @@ type Graph[K comparable, T any] interface {
 	PredecessorMap() (map[K]map[K]Edge[K], error)
 
 	// Clone creates a deep copy of the graph and returns that cloned graph.
+	//
+	// The cloned graph will use the default in-memory store for storing the
+	// vertices and edges. If you want to utilize a custom store instead, create
+	// a new graph using NewWithStore and use AddVerticesFrom and AddEdgesFrom.
 	Clone() (Graph[K, T], error)
 
 	// Order returns the number of vertices in the graph.

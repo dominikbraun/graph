@@ -15,6 +15,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 * Added the `Store.UpdateEdge` method for updating the properties of an edge.
 * Added the `EdgeAttributes` functional option for setting an entire edge attributes map.
 
+### Changed
+* Changed `Graph.Clone` to use the built-in in-memory store for storing vertices and edges for cloned graphs.
+
 ## [0.19.0] - 2023-04-23
 
 ### Added

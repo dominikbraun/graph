@@ -299,8 +299,7 @@ func (u *undirected[K, T]) Clone() (Graph[K, T], error) {
 		return nil, fmt.Errorf("failed to add vertices: %w", err)
 	}
 
-	err := clone.AddEdgesFrom(u)
-	if err != nil && !errors.Is(err, ErrEdgeAlreadyExists) {
+	if err := clone.AddEdgesFrom(u); err != nil {
 		return nil, fmt.Errorf("failed to add edges: %w", err)
 	}
 

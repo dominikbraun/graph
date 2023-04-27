@@ -221,3 +221,42 @@ func (s *memoryStore[K, T]) ListEdges() ([]Edge[K], error) {
 	}
 	return res, nil
 }
+
+func (s *memoryStore[K, T]) clone() *memoryStore[K, T] {
+	store := &memoryStore[K, T]{
+		vertices:         make(map[K]T),
+		vertexProperties: make(map[K]VertexProperties),
+		outEdges:         make(map[K]map[K]Edge[K]),
+		inEdges:          make(map[K]map[K]Edge[K]),
+	}
+
+	for hash, value := range s.vertices {
+		store.vertices[hash] = value
+	}
+
+	for hash, property := range s.vertexProperties {
+		store.vertexProperties[hash] = property
+	}
+
+	for hash, edges := range s.outEdges {
+		if _, ok := store.outEdges[hash]; !ok {
+			store.outEdges[hash] = make(map[K]Edge[K])
+		}
+
+		for neighborHash, edge := range edges {
+			store.outEdges[hash][neighborHash] = edge
+		}
+	}
+
+	for hash, edges := range s.inEdges {
+		if _, ok := store.inEdges[hash]; !ok {
+			store.inEdges[hash] = make(map[K]Edge[K])
+		}
+
+		for neighborHash, edge := range edges {
+			store.inEdges[hash][neighborHash] = edge
+		}
+	}
+
+	return store
+}

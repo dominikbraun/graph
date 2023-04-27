@@ -169,8 +169,51 @@ func (u *undirected[K, T]) Edge(sourceHash, targetHash K) (Edge[T], error) {
 	}, nil
 }
 
+type tuple[K comparable] struct {
+	source, target K
+}
+
 func (u *undirected[K, T]) Edges() ([]Edge[K], error) {
-	return u.store.ListEdges()
+	storedEdges, err := u.store.ListEdges()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get edges: %w", err)
+	}
+
+	// An undirected graph creates each edge twice internally: The edge (A,B) is
+	// stored both as (A,B) and (B,A). The Edges method is supposed to return
+	// one of these two edges, because from an outside perspective, it only is
+	// a single edge.
+	//
+	// To achieve this, Edges keeps track of already-added edges. For each edge,
+	// it also checks if the reversed edge has already been added - e.g., for
+	// an edge (A,B), Edges checks if the edge has been added as (B,A).
+	//
+	// These reversed edges are built as a custom tuple type, which is then used
+	// as a map key for access in O(1) time. It looks scarier than it is.
+	edges := make([]Edge[K], 0, len(storedEdges)/2)
+
+	added := make(map[tuple[K]]struct{})
+
+	for _, storedEdge := range storedEdges {
+		reversedEdge := tuple[K]{
+			source: storedEdge.Target,
+			target: storedEdge.Source,
+		}
+		if _, ok := added[reversedEdge]; ok {
+			continue
+		}
+
+		edges = append(edges, storedEdge)
+
+		addedEdge := tuple[K]{
+			source: storedEdge.Source,
+			target: storedEdge.Target,
+		}
+
+		added[addedEdge] = struct{}{}
+	}
+
+	return edges, nil
 }
 
 func (u *undirected[K, T]) UpdateEdge(source, target K, options ...func(properties *EdgeProperties)) error {
@@ -246,11 +289,22 @@ func (u *undirected[K, T]) Clone() (Graph[K, T], error) {
 		IsRooted:   u.traits.IsRooted,
 	}
 
-	return &undirected[K, T]{
+	clone := &undirected[K, T]{
 		hash:   u.hash,
 		traits: traits,
 		store:  newMemoryStore[K, T](),
-	}, nil
+	}
+
+	if err := clone.AddVerticesFrom(u); err != nil {
+		return nil, fmt.Errorf("failed to add vertices: %w", err)
+	}
+
+	err := clone.AddEdgesFrom(u)
+	if err != nil && !errors.Is(err, ErrEdgeAlreadyExists) {
+		return nil, fmt.Errorf("failed to add edges: %w", err)
+	}
+
+	return clone, nil
 }
 
 func (u *undirected[K, T]) Order() (int, error) {

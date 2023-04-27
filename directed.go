@@ -244,17 +244,28 @@ func (d *directed[K, T]) addEdge(sourceHash, targetHash K, edge Edge[K]) error {
 
 func (d *directed[K, T]) Clone() (Graph[K, T], error) {
 	traits := &Traits{
-		IsDirected: d.traits.IsDirected,
-		IsAcyclic:  d.traits.IsAcyclic,
-		IsWeighted: d.traits.IsWeighted,
-		IsRooted:   d.traits.IsRooted,
+		IsDirected:    d.traits.IsDirected,
+		IsAcyclic:     d.traits.IsAcyclic,
+		IsWeighted:    d.traits.IsWeighted,
+		IsRooted:      d.traits.IsRooted,
+		PreventCycles: d.traits.PreventCycles,
 	}
 
-	return &directed[K, T]{
+	clone := &directed[K, T]{
 		hash:   d.hash,
 		traits: traits,
 		store:  newMemoryStore[K, T](),
-	}, nil
+	}
+
+	if err := clone.AddVerticesFrom(d); err != nil {
+		return nil, fmt.Errorf("failed to add vertices: %w", err)
+	}
+
+	if err := clone.AddEdgesFrom(d); err != nil {
+		return nil, fmt.Errorf("failed to add edges: %w", err)
+	}
+
+	return clone, nil
 }
 
 func (d *directed[K, T]) Order() (int, error) {

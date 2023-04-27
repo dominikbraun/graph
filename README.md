@@ -1,4 +1,4 @@
-# ![dominikbraun/graph](img/logo.svg)
+# <img src="img/logo.svg" width="300">
 
 A library for creating generic graph data structures and modifying, analyzing,
 and visualizing them.

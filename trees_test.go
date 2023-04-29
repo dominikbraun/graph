@@ -94,7 +94,7 @@ func TestUndirectedMinimumSpanningTree(t *testing.T) {
 			}
 
 			for _, edge := range test.edges {
-				_ = g.AddEdge(edge.Source, edge.Target, copyEdgeProperties(edge.Properties))
+				_ = g.AddEdge(copyEdge(edge))
 			}
 
 			mst, _ := MinimumSpanningTree(g)
@@ -199,7 +199,7 @@ func TestUndirectedMaximumSpanningTree(t *testing.T) {
 			}
 
 			for _, edge := range test.edges {
-				_ = g.AddEdge(edge.Source, edge.Target, copyEdgeProperties(edge.Properties))
+				_ = g.AddEdge(copyEdge(edge))
 			}
 
 			mst, _ := MaximumSpanningTree(g)

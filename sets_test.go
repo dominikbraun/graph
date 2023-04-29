@@ -134,7 +134,7 @@ func TestDirectedUnion(t *testing.T) {
 		}
 
 		for _, edge := range test.gEdges {
-			_ = g.AddEdge(edge.Source, edge.Target, copyEdgeProperties(edge.Properties))
+			_ = g.AddEdge(copyEdge(edge))
 		}
 
 		h := New(IntHash, Directed())
@@ -144,7 +144,7 @@ func TestDirectedUnion(t *testing.T) {
 		}
 
 		for _, edge := range test.hEdges {
-			_ = h.AddEdge(edge.Source, edge.Target, copyEdgeProperties(edge.Properties))
+			_ = h.AddEdge(copyEdge(edge))
 		}
 
 		union, err := Union(g, h)

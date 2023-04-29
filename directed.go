@@ -295,6 +295,19 @@ func (d *directed[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	return aSourceHash == bSourceHash && aTargetHash == bTargetHash
 }
 
+// copyEdge returns an argument list suitable for the Graph.AddEdge method. This
+// argument list is derived from the given edge, hence the name copyEdge.
+//
+// The last argument is a custom functional option that sets the edge properties
+// to the properties of the original edge.
 func copyEdge[K comparable](edge Edge[K]) (K, K, func(properties *EdgeProperties)) {
-	return edge.Source, edge.Target, copyEdgeProperties(edge.Properties)
+	copyProperties := func(p *EdgeProperties) {
+		for k, v := range edge.Properties.Attributes {
+			p.Attributes[k] = v
+		}
+		p.Weight = edge.Properties.Weight
+		p.Data = edge.Properties.Data
+	}
+
+	return edge.Source, edge.Target, copyProperties
 }

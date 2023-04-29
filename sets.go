@@ -44,7 +44,7 @@ func Union[K comparable, T any](g, h Graph[K, T]) (Graph[K, T], error) {
 				}
 			}
 
-			err = union.AddEdge(edge.Source, edge.Target, copyEdgeProperties(edge.Properties))
+			err = union.AddEdge(copyEdge(edge))
 			if err != nil {
 				return union, fmt.Errorf("failed to add edge (%v, %v): %w", edge.Source, edge.Target, err)
 			}
@@ -120,15 +120,5 @@ func copyVertexProperties(source VertexProperties) func(*VertexProperties) {
 			p.Attributes[k] = v
 		}
 		p.Weight = source.Weight
-	}
-}
-
-func copyEdgeProperties(source EdgeProperties) func(properties *EdgeProperties) {
-	return func(p *EdgeProperties) {
-		for k, v := range source.Attributes {
-			p.Attributes[k] = v
-		}
-		p.Weight = source.Weight
-		p.Data = source.Data
 	}
 }

@@ -447,34 +447,8 @@ func TestDirected_AddEdge(t *testing.T) {
 				t.Fatalf("%s: edge with source %v and target %v not found", name, expectedEdge.Source, expectedEdge.Target)
 			}
 
-			if edge.Source != expectedEdge.Source {
-				t.Errorf("%s: edge sources don't match: expected source %v, got %v", name, expectedEdge.Source, edge.Source)
-			}
-
-			if edge.Target != expectedEdge.Target {
-				t.Errorf("%s: edge targets don't match: expected target %v, got %v", name, expectedEdge.Target, edge.Target)
-			}
-
-			if edge.Properties.Weight != expectedEdge.Properties.Weight {
-				t.Errorf("%s: edge weights don't match: expected weight %v, got %v", name, expectedEdge.Properties.Weight, edge.Properties.Weight)
-			}
-
-			if len(edge.Properties.Attributes) != len(expectedEdge.Properties.Attributes) {
-				t.Fatalf("%s: attributes length don't match: expcted %v, got %v", name, len(expectedEdge.Properties.Attributes), len(edge.Properties.Attributes))
-			}
-
-			for expectedKey, expectedValue := range expectedEdge.Properties.Attributes {
-				value, ok := edge.Properties.Attributes[expectedKey]
-				if !ok {
-					t.Errorf("%s: attribute keys don't match: expected key %v not found", name, expectedKey)
-				}
-				if value != expectedValue {
-					t.Errorf("%s: attribute values don't match: expected value %v for key %v, got %v", name, expectedValue, expectedKey, value)
-				}
-			}
-
-			if edge.Properties.Data != expectedEdge.Properties.Data {
-				t.Errorf("%s: edge data doesn't match: expected data %v, got %v", name, expectedEdge.Properties.Data, edge.Properties.Data)
+			if !edgesAreEqual(expectedEdge, edge, true) {
+				t.Errorf("%s: expected edge %v, got %v", name, expectedEdge, edge)
 			}
 		}
 	}
@@ -617,34 +591,8 @@ func TestDirected_AddEdgesFrom(t *testing.T) {
 					t.Fatalf("failed to get edge: %v", err.Error())
 				}
 
-				if actualEdge.Source != edge.Source {
-					t.Errorf("expected edge source %v, got %v", edge.Source, actualEdge.Source)
-				}
-
-				if actualEdge.Target != edge.Target {
-					t.Errorf("expected edge target %v, got %v", edge.Source, actualEdge.Source)
-				}
-
-				if actualEdge.Properties.Weight != edge.Properties.Weight {
-					t.Errorf("expected edge weight %v, got %v", edge.Properties.Weight, actualEdge.Properties.Weight)
-				}
-
-				if len(actualEdge.Properties.Attributes) != len(edge.Properties.Attributes) {
-					t.Fatalf("expcted %v attributes, got %v", len(edge.Properties.Attributes), len(edge.Properties.Attributes))
-				}
-
-				for expectedKey, expectedValue := range edge.Properties.Attributes {
-					value, ok := actualEdge.Properties.Attributes[expectedKey]
-					if !ok {
-						t.Errorf("expected attribute %v not found", expectedKey)
-					}
-					if value != expectedValue {
-						t.Errorf("expected value %v for attribute %v, got %v", expectedValue, expectedKey, value)
-					}
-				}
-
-				if actualEdge.Properties.Data != edge.Properties.Data {
-					t.Errorf("expected data %v, got %v", edge.Properties.Data, edge.Properties.Data)
+				if !edgesAreEqual(edge, actualEdge, true) {
+					t.Errorf("expected edge %v, got %v", edge, actualEdge)
 				}
 			}
 		})
@@ -723,8 +671,8 @@ func TestDirected_Edge(t *testing.T) {
 			t.Errorf("%s: target expectancy doesn't match: expected %v, got %v", name, test.args[1], edge.Target)
 		}
 
-		if !edgePropertiesAreEqual(edge.Properties, test.edge.Properties) {
-			t.Errorf("%s: edge property expectancy doesn't match: expected %v, got %v", name, test.edge.Properties, edge.Properties)
+		if !edgesAreEqual(test.edge, edge, true) {
+			t.Errorf("%s: expected edge %v, got %v", name, test.edge, edge)
 		}
 	}
 }
@@ -826,35 +774,8 @@ func TestDirected_Edges(t *testing.T) {
 					if actualEdge.Source != expectedEdge.Source || actualEdge.Target != expectedEdge.Target {
 						continue
 					}
-
-					if actualEdge.Source != expectedEdge.Source {
-						t.Errorf("expected edge source %v, got %v", expectedEdge.Source, actualEdge.Source)
-					}
-
-					if actualEdge.Target != expectedEdge.Target {
-						t.Errorf("expected edge target %v, got %v", expectedEdge.Source, actualEdge.Source)
-					}
-
-					if actualEdge.Properties.Weight != expectedEdge.Properties.Weight {
-						t.Errorf("expected edge weight %v, got %v", expectedEdge.Properties.Weight, actualEdge.Properties.Weight)
-					}
-
-					if len(actualEdge.Properties.Attributes) != len(expectedEdge.Properties.Attributes) {
-						t.Fatalf("expcted %v attributes, got %v", len(expectedEdge.Properties.Attributes), len(expectedEdge.Properties.Attributes))
-					}
-
-					for expectedKey, expectedValue := range expectedEdge.Properties.Attributes {
-						value, ok := actualEdge.Properties.Attributes[expectedKey]
-						if !ok {
-							t.Errorf("expected attribute %v not found", expectedKey)
-						}
-						if value != expectedValue {
-							t.Errorf("expected value %v for attribute %v, got %v", expectedValue, expectedKey, value)
-						}
-					}
-
-					if actualEdge.Properties.Data != expectedEdge.Properties.Data {
-						t.Errorf("expected data %v, got %v", expectedEdge.Properties.Data, expectedEdge.Properties.Data)
+					if !edgesAreEqual(expectedEdge, actualEdge, true) {
+						t.Errorf("%s: expected edge %v, got %v", name, expectedEdge, actualEdge)
 					}
 				}
 			}
@@ -922,34 +843,8 @@ func TestDirected_UpdateEdge(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err.Error())
 			}
 
-			if actualEdge.Source != test.updateEdge.Source {
-				t.Errorf("expected edge source %v, got %v", test.updateEdge.Source, actualEdge.Source)
-			}
-
-			if actualEdge.Target != test.updateEdge.Target {
-				t.Errorf("expected edge target %v, got %v", test.updateEdge.Source, actualEdge.Source)
-			}
-
-			if actualEdge.Properties.Weight != test.updateEdge.Properties.Weight {
-				t.Errorf("expected edge weight %v, got %v", test.updateEdge.Properties.Weight, actualEdge.Properties.Weight)
-			}
-
-			if len(actualEdge.Properties.Attributes) != len(test.updateEdge.Properties.Attributes) {
-				t.Fatalf("expcted %v attributes, got %v", len(test.updateEdge.Properties.Attributes), len(test.updateEdge.Properties.Attributes))
-			}
-
-			for expectedKey, expectedValue := range test.updateEdge.Properties.Attributes {
-				value, ok := actualEdge.Properties.Attributes[expectedKey]
-				if !ok {
-					t.Errorf("expected attribute %v not found", expectedKey)
-				}
-				if value != expectedValue {
-					t.Errorf("expected value %v for attribute %v, got %v", expectedValue, expectedKey, value)
-				}
-			}
-
-			if actualEdge.Properties.Data != test.updateEdge.Properties.Data {
-				t.Errorf("expected data %v, got %v", test.updateEdge.Properties.Data, test.updateEdge.Properties.Data)
+			if !edgesAreEqual(test.updateEdge, actualEdge, true) {
+				t.Errorf("expected edge %v, got %v", test.updateEdge, actualEdge)
 			}
 		})
 	}
@@ -1493,24 +1388,42 @@ func vertexPropertiesAreEqual(a, b VertexProperties) bool {
 	return true
 }
 
-func edgePropertiesAreEqual(a, b EdgeProperties) bool {
-	if a.Weight != b.Weight {
+func edgesAreEqual[K comparable](a, b Edge[K], directed bool) bool {
+	directedOk := a.Source == b.Source &&
+		a.Target == b.Target
+
+	undirectedOk := directedOk ||
+		a.Source == b.Target &&
+			a.Target == b.Source
+
+	if directed && !directedOk {
 		return false
 	}
 
-	if a.Data != b.Data {
+	if !directed && !undirectedOk {
 		return false
 	}
 
-	// A length check is required because in the iteration below, a.Attributes
-	// could be empty and thus circumvent the comparison.
-	if len(a.Attributes) != len(b.Attributes) {
+	if a.Properties.Weight != b.Properties.Weight {
 		return false
 	}
 
-	for key, aValue := range a.Attributes {
-		bValue, ok := b.Attributes[key]
-		if !ok || aValue != bValue {
+	if len(a.Properties.Attributes) != len(b.Properties.Attributes) {
+		return false
+	}
+
+	for aKey, aValue := range a.Properties.Attributes {
+		bValue, ok := b.Properties.Attributes[aKey]
+		if !ok {
+			return false
+		}
+		if bValue != aValue {
+			return false
+		}
+	}
+
+	for bKey := range b.Properties.Attributes {
+		if _, ok := a.Properties.Attributes[bKey]; !ok {
 			return false
 		}
 	}

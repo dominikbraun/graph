@@ -38,7 +38,7 @@ func spanningTree[K comparable, T any](g Graph[K, T], maximum bool) (Graph[K, T]
 	mst := New(g.(*undirected[K, T]).hash)
 
 	for v, adjacencies := range adjacencyMap {
-		vertex, properties, err := g.VertexWithProperties(v)
+		vertex, properties, err := g.VertexWithProperties(v) //nolint:govet
 		if err != nil {
 			return nil, fmt.Errorf("failed to get vertex %v: %w", v, err)
 		}
@@ -72,8 +72,7 @@ func spanningTree[K comparable, T any](g Graph[K, T], maximum bool) (Graph[K, T]
 		if sourceRoot != targetRoot {
 			subtrees.union(sourceRoot, targetRoot)
 
-			err := mst.AddEdge(edge.Source, edge.Target, copyEdgeProperties(edge.Properties))
-			if err != nil {
+			if err = mst.AddEdge(copyEdge(edge)); err != nil {
 				return nil, fmt.Errorf("failed to add edge (%v, %v): %w", edge.Source, edge.Target, err)
 			}
 		}

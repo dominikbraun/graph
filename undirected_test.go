@@ -665,7 +665,7 @@ func TestUndirected_Edge(t *testing.T) {
 			t.Errorf("%s: target expectancy doesn't match: expected %v, got %v", name, test.args[1], edge.Target)
 		}
 
-		if !edgesAreEqual(test.edge, edge, true) {
+		if !edgesAreEqual(test.edge, edge, false) {
 			t.Errorf("%s: expected edge %v, got %v", name, test.edge, edge)
 		}
 	}

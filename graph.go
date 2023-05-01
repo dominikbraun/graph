@@ -272,6 +272,28 @@ func NewWithStore[K comparable, T any](hash Hash[K, T], store Store[K, T], optio
 	return newUndirected(hash, &p, store)
 }
 
+func NewLike[K comparable, T any](g Graph[K, T]) Graph[K, T] {
+	copyTraits := func(t *Traits) {
+		t = &Traits{
+			IsDirected:    g.Traits().IsDirected,
+			IsAcyclic:     g.Traits().IsAcyclic,
+			IsWeighted:    g.Traits().IsWeighted,
+			IsRooted:      g.Traits().IsRooted,
+			PreventCycles: g.Traits().PreventCycles,
+		}
+	}
+
+	var hash Hash[K, T]
+
+	if g.Traits().IsDirected {
+		hash = g.(*directed[K, T]).hash
+	} else {
+		hash = g.(*undirected[K, T]).hash
+	}
+
+	return New(hash, copyTraits)
+}
+
 // StringHash is a hashing function that accepts a string and uses that exact
 // string as a hash value. Using it as Hash will yield a Graph[string, string].
 func StringHash(v string) string {

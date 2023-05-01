@@ -272,6 +272,34 @@ func NewWithStore[K comparable, T any](hash Hash[K, T], store Store[K, T], optio
 	return newUndirected(hash, &p, store)
 }
 
+// NewLike creates a graph that is "like" the given graph: It has the same type,
+// the same hashing function, and the same traits. The new graph is independent
+// of the original graph and uses the default in-memory storage.
+//
+//	g := graph.New(graph.IntHash, graph.Directed())
+//	h := graph.NewLike(g)
+//
+// In the example above, h is a new directed graph of integers derived from g.
+func NewLike[K comparable, T any](g Graph[K, T]) Graph[K, T] {
+	copyTraits := func(t *Traits) {
+		t.IsDirected = g.Traits().IsDirected
+		t.IsAcyclic = g.Traits().IsAcyclic
+		t.IsWeighted = g.Traits().IsWeighted
+		t.IsRooted = g.Traits().IsRooted
+		t.PreventCycles = g.Traits().PreventCycles
+	}
+
+	var hash Hash[K, T]
+
+	if g.Traits().IsDirected {
+		hash = g.(*directed[K, T]).hash
+	} else {
+		hash = g.(*undirected[K, T]).hash
+	}
+
+	return New(hash, copyTraits)
+}
+
 // StringHash is a hashing function that accepts a string and uses that exact
 // string as a hash value. Using it as Hash will yield a Graph[string, string].
 func StringHash(v string) string {

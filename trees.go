@@ -35,7 +35,7 @@ func spanningTree[K comparable, T any](g Graph[K, T], maximum bool) (Graph[K, T]
 	edges := make([]Edge[K], 0)
 	subtrees := newUnionFind[K]()
 
-	mst := New(g.(*undirected[K, T]).hash)
+	mst := NewLike(g)
 
 	for v, adjacencies := range adjacencyMap {
 		vertex, properties, err := g.VertexWithProperties(v) //nolint:govet

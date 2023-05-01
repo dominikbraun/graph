@@ -7,6 +7,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.20.0] - 2023-05-01
 
+[graph Version 0.20 Is Out](https://dominikbraun.io/blog/graph-version-0.20-is-out/)
+
 ### Added
 * Added the `Graph.AddVerticesFrom` method for adding all vertices from another graph.
 * Added the `Graph.AddEdgesFrom` method for adding all edges from another graph.

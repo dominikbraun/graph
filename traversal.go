@@ -135,3 +135,18 @@ func BFS[K comparable, T any](g Graph[K, T], start K, visit func(K) bool) error 
 
 	return nil
 }
+
+func FullTraverse[K comparable, T any](g Graph[K, T], visit func(K) bool) error {
+	entries, err := TopologicalEntries(g)
+	if err != nil {
+		return err
+	}
+
+	for _, eachEntry := range entries {
+		err = BFS(g, eachEntry, visit)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

@@ -22,13 +22,7 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 		return nil, fmt.Errorf("failed to get predecessor map: %w", err)
 	}
 
-	queue := make([]K, 0)
-
-	for vertex, predecessors := range predecessorMap {
-		if len(predecessors) == 0 {
-			queue = append(queue, vertex)
-		}
-	}
+	queue := topologicalEntriesFromPredecessorMap(predecessorMap)
 
 	order := make([]K, 0, len(predecessorMap))
 	visited := make(map[K]struct{})
@@ -63,6 +57,27 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 	}
 
 	return order, nil
+}
+
+func TopologicalEntries[K comparable, T any](g Graph[K, T]) ([]K, error) {
+	predecessorMap, err := g.PredecessorMap()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get predecessor map: %w", err)
+	}
+
+	return topologicalEntriesFromPredecessorMap(predecessorMap), nil
+}
+
+func topologicalEntriesFromPredecessorMap[K comparable](predecessorMap map[K]map[K]Edge[K]) []K {
+	queue := make([]K, 0)
+
+	for vertex, predecessors := range predecessorMap {
+		if len(predecessors) == 0 {
+			queue = append(queue, vertex)
+		}
+	}
+
+	return queue
 }
 
 // TransitiveReduction returns a new graph with the same vertices and the same

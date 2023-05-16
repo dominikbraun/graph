@@ -65,6 +65,14 @@ func TestDirectedTopologicalSort(t *testing.T) {
 				t.Errorf("%s: order expectancy doesn't match: expected %v at %d, got %v", name, expectedVertex, i, order[i])
 			}
 		}
+
+		entries, err := TopologicalEntries(graph)
+		if err != nil {
+			t.Errorf("failed to create topological entries")
+		}
+		if len(entries) == 0 {
+			t.Errorf("topological entries is empty")
+		}
 	}
 }
 

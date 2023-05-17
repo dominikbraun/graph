@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"log"
 	"testing"
 )
 
@@ -318,6 +319,19 @@ func TestDirectedBFS(t *testing.T) {
 				t.Errorf("%s: expected vertex %v to be visited, but it isn't", name, expectedVisit)
 			}
 		}
+
+		visitWithDepth := func(value int, depth int) bool {
+			visited[value] = struct{}{}
+			log.Printf("cur depth: %d", depth)
+
+			if test.stopAtVertex != -1 {
+				if value == test.stopAtVertex {
+					return true
+				}
+			}
+			return false
+		}
+		_ = BFSWithDepth(graph, test.startHash, visitWithDepth)
 	}
 }
 

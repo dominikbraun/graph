@@ -6,24 +6,24 @@ import (
 )
 
 func TestRemoveEdge(t *testing.T) {
-	build := func(nodes []string, edges [][]string) Store[string, string] {
-		store := newMemoryStore[string, string]()
-		for _, n := range nodes {
-			store.AddVertex(n, n, VertexProperties{})
-		}
-		for _, e := range edges {
-			store.AddEdge(e[0], e[1], Edge[string]{
-				Source: e[0],
-				Target: e[1],
-			})
-		}
-		return store
-	}
-
 	noerr := func(err error) {
 		if err != nil {
 			panic(err)
 		}
+	}
+
+	build := func(nodes []string, edges [][]string) Store[string, string] {
+		store := newMemoryStore[string, string]()
+		for _, n := range nodes {
+			noerr(store.AddVertex(n, n, VertexProperties{}))
+		}
+		for _, e := range edges {
+			noerr(store.AddEdge(e[0], e[1], Edge[string]{
+				Source: e[0],
+				Target: e[1],
+			}))
+		}
+		return store
 	}
 
 	t.Run("normal remove", func(t *testing.T) {

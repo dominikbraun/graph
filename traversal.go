@@ -107,7 +107,7 @@ func BFS[K comparable, T any](g Graph[K, T], start K, visit func(K) bool) error 
 
 // BFSWithDepth works just as BFS and performs a breadth-first search on the graph, but its
 // visit function is passed the current depth level as a second argument. Consequently, the
-// current depth and be used for deciding whether or not to proceed past a certain depth.
+// current depth can be used for deciding whether or not to proceed past a certain depth.
 //
 //	_ = graph.BFSWithDepth(g, 1, func(value int, depth int) bool {
 //		fmt.Println(value)

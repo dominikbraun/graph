@@ -136,12 +136,18 @@ func (s *memoryStore[K, T]) RemoveVertex(k K) error {
 		return ErrVertexNotFound
 	}
 
-	if _, ok := s.inEdges[k]; ok {
-		return ErrVertexHasEdges
+	if edges, ok := s.inEdges[k]; ok {
+		if len(edges) > 0 {
+			return ErrVertexHasEdges
+		}
+		delete(s.inEdges, k)
 	}
 
-	if _, ok := s.outEdges[k]; ok {
-		return ErrVertexHasEdges
+	if edges, ok := s.outEdges[k]; ok {
+		if len(edges) > 0 {
+			return ErrVertexHasEdges
+		}
+		delete(s.outEdges, k)
 	}
 
 	delete(s.vertices, k)
@@ -187,7 +193,7 @@ func (s *memoryStore[K, T]) RemoveEdge(sourceHash, targetHash K) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	delete(s.inEdges[sourceHash], targetHash)
+	delete(s.inEdges[targetHash], sourceHash)
 	delete(s.outEdges[sourceHash], targetHash)
 	return nil
 }

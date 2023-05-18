@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),  and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.21.0] - 2023-05-18
+
+### Added
+* Added the `BFSWithDepth` function for performing a BFS with depth information.
+
+### Fixed
+* Fixed false positives of `ErrVertexHasEdges` when removing a vertex.
+
 ## [0.20.0] - 2023-05-01
 
 **Release post: [graph Version 0.20 Is Out](https://dominikbraun.io/blog/graph-version-0.20-is-out/)**

@@ -105,6 +105,17 @@ func BFS[K comparable, T any](g Graph[K, T], start K, visit func(K) bool) error 
 	return BFSWithDepth(g, start, ignoreDepth)
 }
 
+// BFSWithDepth works just as BFS and performs a breadth-first search on the graph, but its
+// visit function is passed the current depth level as a second argument. Consequently, the
+// current depth and be used for deciding whether or not to proceed past a certain depth.
+//
+//	_ = graph.BFSWithDepth(g, 1, func(value int, depth int) bool {
+//		fmt.Println(value)
+//		return depth > 3
+//	})
+//
+// With the visit function from the example, the BFS traversal will stop once a depth greater
+// than 3 is reached.
 func BFSWithDepth[K comparable, T any](g Graph[K, T], start K, visit func(K, int) bool) error {
 	adjacencyMap, err := g.AdjacencyMap()
 	if err != nil {

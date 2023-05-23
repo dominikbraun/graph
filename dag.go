@@ -3,6 +3,7 @@ package graph
 import (
 	"errors"
 	"fmt"
+	"sort"
 )
 
 // TopologicalSort runs a topological sort on a given directed graph and returns
@@ -13,6 +14,15 @@ import (
 // TopologicalSort only works for directed acyclic graphs. This implementation
 // works non-recursively and utilizes Kahn's algorithm.
 func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
+	return StableTopologicalSort(g, func(_, _ K) bool {
+		return false
+	})
+}
+
+// StableTopologicalSort does the same as [TopologicalSort], but takes a function
+// for comparing (and then ordering) two given vertices. This allows for a stable
+// and deterministic output even for graphs with multiple topological orderings.
+func StableTopologicalSort[K comparable, T any](g Graph[K, T], less func(K, K) bool) ([]K, error) {
 	if !g.Traits().IsDirected {
 		return nil, fmt.Errorf("topological sort cannot be computed on undirected graph")
 	}
@@ -33,6 +43,10 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 	order := make([]K, 0, len(predecessorMap))
 	visited := make(map[K]struct{})
 
+	sort.Slice(queue, func(i, j int) bool {
+		return less(queue[i], queue[j])
+	})
+
 	for len(queue) > 0 {
 		currentVertex := queue[0]
 		queue = queue[1:]
@@ -49,6 +63,10 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 
 			if len(predecessors) == 0 {
 				queue = append(queue, vertex)
+
+				sort.Slice(queue, func(i, j int) bool {
+					return less(queue[i], queue[j])
+				})
 			}
 		}
 	}

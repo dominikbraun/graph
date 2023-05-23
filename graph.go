@@ -377,3 +377,11 @@ func VertexAttribute(key, value string) func(*VertexProperties) {
 		e.Attributes[key] = value
 	}
 }
+
+// VertexAttributes returns a function that sets the given map as the attributes
+// of a vertex. This is a functional option for the [graph.Graph.AddVertex] methods.
+func VertexAttributes(attributes map[string]string) func(*VertexProperties) {
+	return func(e *VertexProperties) {
+		e.Attributes = attributes
+	}
+}

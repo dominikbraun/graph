@@ -191,6 +191,7 @@ g := graph.New(graph.IntHash, graph.Directed(), graph.PreventCycles())
 
 // Add vertices and edges ...
 
+// For a deterministic topological ordering, use StableTopologicalSort.
 order, _ := graph.TopologicalSort(g)
 
 fmt.Println(order)

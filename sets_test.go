@@ -326,3 +326,24 @@ func adjacencyMapsAreEqual[K comparable](a, b map[K]map[K]Edge[K], edgesAreEqual
 
 	return true
 }
+
+func mapsAreEqual[K comparable](a, b map[K]K) bool {
+	for aHash, aValue := range a {
+		bValue, ok := b[aHash]
+		if !ok {
+			return false
+		}
+
+		if aValue != bValue {
+			return false
+		}
+	}
+
+	for aHash := range a {
+		if _, ok := b[aHash]; !ok {
+			return false
+		}
+	}
+
+	return true
+}

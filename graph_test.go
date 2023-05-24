@@ -175,21 +175,124 @@ func TestEdgeAttribute(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		properties := EdgeProperties{
-			Attributes: make(map[string]string),
-		}
+		t.Run(name, func(t *testing.T) {
+			properties := EdgeProperties{
+				Attributes: make(map[string]string),
+			}
 
-		EdgeAttribute(test.key, test.value)(&properties)
+			EdgeAttribute(test.key, test.value)(&properties)
 
-		value, ok := properties.Attributes[test.key]
-		if !ok {
-			t.Errorf("%s: attribute expectaton doesn't match: key %v doesn't exist", name, test.key)
-		}
+			value, ok := properties.Attributes[test.key]
+			if !ok {
+				t.Errorf("attribute expectaton doesn't match: key %v doesn't exist", test.key)
+			}
 
-		expectedValue := test.expected.Attributes[test.key]
+			expectedValue := test.expected.Attributes[test.key]
 
-		if value != expectedValue {
-			t.Errorf("%s: value expectation doesn't match: expected %v, got %v", name, expectedValue, value)
-		}
+			if value != expectedValue {
+				t.Errorf("value expectation doesn't match: expected %v, got %v", expectedValue, value)
+			}
+		})
+
+	}
+}
+
+func TestEdgeAttributes(t *testing.T) {
+	tests := map[string]struct {
+		attributes map[string]string
+		expected   map[string]string
+	}{
+		"attribute label=my-label": {
+			attributes: map[string]string{
+				"label": "my-label",
+			},
+			expected: map[string]string{
+				"label": "my-label",
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			properties := EdgeProperties{
+				Attributes: make(map[string]string),
+			}
+
+			EdgeAttributes(test.attributes)(&properties)
+
+			if !mapsAreEqual(test.expected, properties.Attributes) {
+				t.Errorf("expected %v, got %v", test.expected, properties.Attributes)
+			}
+		})
+	}
+}
+
+func TestVertexAttribute(t *testing.T) {
+	tests := map[string]struct {
+		key      string
+		value    string
+		expected VertexProperties
+	}{
+		"attribute label=my-label": {
+			key:   "label",
+			value: "my-label",
+			expected: VertexProperties{
+				Attributes: map[string]string{
+					"label": "my-label",
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			properties := VertexProperties{
+				Attributes: make(map[string]string),
+			}
+
+			VertexAttribute(test.key, test.value)(&properties)
+
+			value, ok := properties.Attributes[test.key]
+			if !ok {
+				t.Errorf("attribute expectaton doesn't match: key %v doesn't exist", test.key)
+			}
+
+			expectedValue := test.expected.Attributes[test.key]
+
+			if value != expectedValue {
+				t.Errorf("value expectation doesn't match: expected %v, got %v", expectedValue, value)
+			}
+		})
+
+	}
+}
+
+func TestVertexAttributes(t *testing.T) {
+	tests := map[string]struct {
+		attributes map[string]string
+		expected   map[string]string
+	}{
+		"attribute label=my-label": {
+			attributes: map[string]string{
+				"label": "my-label",
+			},
+			expected: map[string]string{
+				"label": "my-label",
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			properties := VertexProperties{
+				Attributes: make(map[string]string),
+			}
+
+			VertexAttributes(test.attributes)(&properties)
+
+			if !mapsAreEqual(test.expected, properties.Attributes) {
+				t.Errorf("expected %v, got %v", test.expected, properties.Attributes)
+			}
+		})
 	}
 }

@@ -11,6 +11,10 @@ import (
 // order of vertices in a directed graph where an edge from vertex A to vertex B
 // implies that vertex A appears before vertex B.
 //
+// Note that TopologicalSort doesn't make any guarantees about the order. If there
+// are multiple valid topological orderings, an arbitrary one will be returned.
+// To make the output deterministic, use [StableTopologicalSort].
+//
 // TopologicalSort only works for directed acyclic graphs. This implementation
 // works non-recursively and utilizes Kahn's algorithm.
 func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {

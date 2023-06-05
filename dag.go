@@ -84,10 +84,12 @@ func StableTopologicalSort[K comparable, T any](g Graph[K, T], less func(K, K) b
 	}
 
 	queue := make([]K, 0)
+	queued := make(map[K]struct{})
 
 	for vertex, predecessors := range predecessorMap {
 		if len(predecessors) == 0 {
 			queue = append(queue, vertex)
+			queued[vertex] = struct{}{}
 		}
 	}
 
@@ -112,14 +114,21 @@ func StableTopologicalSort[K comparable, T any](g Graph[K, T], less func(K, K) b
 		for vertex, predecessors := range predecessorMap {
 			delete(predecessors, currentVertex)
 
-			if len(predecessors) == 0 {
-				queue = append(queue, vertex)
-
-				sort.Slice(queue, func(i, j int) bool {
-					return less(queue[i], queue[j])
-				})
+			if len(predecessors) != 0 {
+				continue
 			}
+
+			if _, ok := queued[vertex]; ok {
+				continue
+			}
+
+			queue = append(queue, vertex)
+			queued[vertex] = struct{}{}
 		}
+
+		sort.Slice(queue, func(i, j int) bool {
+			return less(queue[i], queue[j])
+		})
 	}
 
 	gOrder, err := g.Order()

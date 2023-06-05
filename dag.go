@@ -18,9 +18,56 @@ import (
 // TopologicalSort only works for directed acyclic graphs. This implementation
 // works non-recursively and utilizes Kahn's algorithm.
 func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
-	return StableTopologicalSort(g, func(_, _ K) bool {
-		return false
-	})
+	if !g.Traits().IsDirected {
+		return nil, fmt.Errorf("topological sort cannot be computed on undirected graph")
+	}
+
+	predecessorMap, err := g.PredecessorMap()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get predecessor map: %w", err)
+	}
+
+	queue := make([]K, 0)
+
+	for vertex, predecessors := range predecessorMap {
+		if len(predecessors) == 0 {
+			queue = append(queue, vertex)
+		}
+	}
+
+	order := make([]K, 0, len(predecessorMap))
+	visited := make(map[K]struct{})
+
+	for len(queue) > 0 {
+		currentVertex := queue[0]
+		queue = queue[1:]
+
+		if _, ok := visited[currentVertex]; ok {
+			continue
+		}
+
+		order = append(order, currentVertex)
+		visited[currentVertex] = struct{}{}
+
+		for vertex, predecessors := range predecessorMap {
+			delete(predecessors, currentVertex)
+
+			if len(predecessors) == 0 {
+				queue = append(queue, vertex)
+			}
+		}
+	}
+
+	gOrder, err := g.Order()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get graph order: %w", err)
+	}
+
+	if len(order) != gOrder {
+		return nil, errors.New("topological sort cannot be computed on graph with cycles")
+	}
+
+	return order, nil
 }
 
 // StableTopologicalSort does the same as [TopologicalSort], but takes a function

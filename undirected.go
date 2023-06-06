@@ -264,7 +264,7 @@ func (u *undirected[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {
 		return nil, fmt.Errorf("failed to list edges: %w", err)
 	}
 
-	m := make(map[K]map[K]Edge[K])
+	m := make(map[K]map[K]Edge[K], len(vertices))
 
 	for _, vertex := range vertices {
 		m[vertex] = make(map[K]Edge[K])

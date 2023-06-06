@@ -198,7 +198,7 @@ func (d *directed[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {
 		return nil, fmt.Errorf("failed to list edges: %w", err)
 	}
 
-	m := make(map[K]map[K]Edge[K])
+	m := make(map[K]map[K]Edge[K], len(vertices))
 
 	for _, vertex := range vertices {
 		m[vertex] = make(map[K]Edge[K])
@@ -212,8 +212,6 @@ func (d *directed[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {
 }
 
 func (d *directed[K, T]) PredecessorMap() (map[K]map[K]Edge[K], error) {
-	m := make(map[K]map[K]Edge[K])
-
 	vertices, err := d.store.ListVertices()
 	if err != nil {
 		return nil, fmt.Errorf("failed to list vertices: %w", err)
@@ -223,6 +221,8 @@ func (d *directed[K, T]) PredecessorMap() (map[K]map[K]Edge[K], error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to list edges: %w", err)
 	}
+
+	m := make(map[K]map[K]Edge[K], len(vertices))
 
 	for _, vertex := range vertices {
 		m[vertex] = make(map[K]Edge[K])

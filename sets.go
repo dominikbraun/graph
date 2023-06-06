@@ -70,7 +70,7 @@ type unionFind[K comparable] struct {
 
 func newUnionFind[K comparable](vertices ...K) *unionFind[K] {
 	u := &unionFind[K]{
-		parents: make(map[K]K),
+		parents: make(map[K]K, len(vertices)),
 	}
 
 	for _, vertex := range vertices {

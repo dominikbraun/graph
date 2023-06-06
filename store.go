@@ -1,6 +1,9 @@
 package graph
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+)
 
 // Store represents a storage for vertices and edges. The graph library provides an in-memory store
 // by default and accepts any Store implementation to work with - for example, an SQL store.
@@ -226,4 +229,48 @@ func (s *memoryStore[K, T]) ListEdges() ([]Edge[K], error) {
 		}
 	}
 	return res, nil
+}
+
+// CreatesCycle is a fastpath version of [CreatesCycle] that avoids calling
+// [PredecessorMap], which generates large amounts of garbage to collect.
+//
+// Because CreatesCycle doesn't need to modify the PredecessorMap, we can use
+// inEdges instead to compute the same thing without creating any copies.
+func (s *memoryStore[K, T]) CreatesCycle(source, target K) (bool, error) {
+	if _, _, err := s.Vertex(source); err != nil {
+		return false, fmt.Errorf("could not get vertex with hash %v: %w", source, err)
+	}
+
+	if _, _, err := s.Vertex(target); err != nil {
+		return false, fmt.Errorf("could not get vertex with hash %v: %w", target, err)
+	}
+
+	if source == target {
+		return true, nil
+	}
+
+	stack := make([]K, 0)
+	visited := make(map[K]struct{})
+
+	stack = append(stack, source)
+	for len(stack) > 0 {
+		currentHash := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+
+		if _, ok := visited[currentHash]; !ok {
+			// If the adjacent vertex also is the target vertex, the target is a
+			// parent of the source vertex. An edge would introduce a cycle.
+			if currentHash == target {
+				return true, nil
+			}
+
+			visited[currentHash] = struct{}{}
+
+			for adjacency := range s.inEdges[currentHash] {
+				stack = append(stack, adjacency)
+			}
+		}
+	}
+
+	return false, nil
 }

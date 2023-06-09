@@ -102,7 +102,7 @@ func (s *memoryStore[K, T]) ListVertices() ([]K, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
-	var hashes []K
+	hashes := make([]K, 0, len(s.vertices))
 	for k := range s.vertices {
 		hashes = append(hashes, k)
 	}

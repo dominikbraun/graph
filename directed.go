@@ -92,7 +92,7 @@ func (d *directed[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Edge
 
 	// If the user opted in to preventing cycles, run a cycle check.
 	if d.traits.PreventCycles {
-		createsCycle, err := CreatesCycle[K, T](d, sourceHash, targetHash)
+		createsCycle, err := d.createsCycle(sourceHash, targetHash)
 		if err != nil {
 			return fmt.Errorf("check for cycles: %w", err)
 		}
@@ -293,6 +293,18 @@ func (d *directed[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	bTargetHash := d.hash(b.Target)
 
 	return aSourceHash == bSourceHash && aTargetHash == bTargetHash
+}
+
+func (d *directed[K, T]) createsCycle(source, target K) (bool, error) {
+	// If the underlying store implements CreatesCycle, use that fast path.
+	if cc, ok := d.store.(interface {
+		CreatesCycle(source, target K) (bool, error)
+	}); ok {
+		return cc.CreatesCycle(source, target)
+	}
+
+	// Slow path.
+	return CreatesCycle(Graph[K, T](d), source, target)
 }
 
 // copyEdge returns an argument list suitable for the Graph.AddEdge method. This

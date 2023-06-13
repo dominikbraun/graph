@@ -106,3 +106,56 @@ func (m *minHeap[T]) Pop() interface{} {
 
 	return item
 }
+
+type stack[T any] interface {
+	push(T)
+	pop() (T, error)
+	top() (T, error)
+	isEmpty() bool
+	// forEach iterate the stack from bottom to top
+	forEach(func(T))
+}
+
+func newStack[T any]() stack[T] {
+	return &stackImpl[T]{
+		elements: make([]T, 0),
+	}
+}
+
+type stackImpl[T any] struct {
+	elements []T
+}
+
+func (s *stackImpl[T]) push(t T) {
+	s.elements = append(s.elements, t)
+}
+
+func (s *stackImpl[T]) pop() (T, error) {
+	e, err := s.top()
+	if err != nil {
+		var defaultValue T
+		return defaultValue, err
+	}
+
+	s.elements = s.elements[:len(s.elements)-1]
+	return e, nil
+}
+
+func (s *stackImpl[T]) top() (T, error) {
+	if s.isEmpty() {
+		var defaultValue T
+		return defaultValue, errors.New("no element in stack")
+	}
+
+	return s.elements[len(s.elements)-1], nil
+}
+
+func (s *stackImpl[T]) isEmpty() bool {
+	return len(s.elements) == 0
+}
+
+func (s *stackImpl[T]) forEach(f func(T)) {
+	for _, e := range s.elements {
+		f(e)
+	}
+}

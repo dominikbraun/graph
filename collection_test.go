@@ -222,3 +222,31 @@ func TestPriorityQueue_Len(t *testing.T) {
 		}
 	}
 }
+
+func TestStack(t *testing.T) {
+	s := newStack[int]()
+
+	assert := func(expression bool) {
+		if !expression {
+			t.Fatal()
+		}
+	}
+
+	assert(s.isEmpty())
+
+	s.push(1)
+	assert(!s.isEmpty())
+	e, _ := s.top()
+	assert(e == 1)
+	e, _ = s.pop()
+	assert(e == 1)
+	assert(s.isEmpty())
+
+	s.push(1)
+	s.push(2)
+	s.push(3)
+	e, _ = s.pop()
+	assert(e == 3)
+	e, _ = s.top()
+	assert(e == 2)
+}

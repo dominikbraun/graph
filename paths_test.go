@@ -1,6 +1,8 @@
 package graph
 
 import (
+	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -494,5 +496,176 @@ func TestUndirectedStronglyConnectedComponents(t *testing.T) {
 		if test.expectedSCCs == nil && sccs != nil {
 			t.Errorf("%s: SCC expectancy doesn't match: expcted %v, got %v", name, test.expectedSCCs, sccs)
 		}
+	}
+}
+
+func TestAllPathBetweenTwoVertices(t *testing.T) {
+	type args[K comparable, T any] struct {
+		g     Graph[K, T]
+		start K
+		end   K
+	}
+	type testCase[K comparable, T any] struct {
+		name    string
+		args    args[K, T]
+		want    [][]K
+		wantErr bool
+	}
+	tests := []testCase[int, int]{
+		{
+			name: "directed",
+			args: args[int, int]{
+				g: func() Graph[int, int] {
+					g := New(IntHash, Directed())
+					for i := 0; i <= 8; i++ {
+						_ = g.AddVertex(i)
+					}
+					_ = g.AddEdge(0, 2)
+					_ = g.AddEdge(1, 0)
+					_ = g.AddEdge(1, 4)
+					_ = g.AddEdge(2, 6)
+					_ = g.AddEdge(3, 1)
+					_ = g.AddEdge(3, 7)
+					_ = g.AddEdge(4, 5)
+					_ = g.AddEdge(5, 2)
+					_ = g.AddEdge(5, 6)
+					_ = g.AddEdge(6, 8)
+					_ = g.AddEdge(7, 4)
+					return g
+				}(),
+				start: 3,
+				end:   6,
+			},
+			want: func() [][]int {
+				allPath := make([][]int, 0)
+				addPath := func(elements ...int) {
+					allPath = append(allPath, elements)
+				}
+				addPath(3, 1, 0, 2, 6)
+				addPath(3, 1, 4, 5, 6)
+				addPath(3, 1, 4, 5, 2, 6)
+				addPath(3, 7, 4, 5, 2, 6)
+				addPath(3, 7, 4, 5, 6)
+				return allPath
+			}(),
+			wantErr: false,
+		},
+		{
+			name: "undirected",
+			args: args[int, int]{
+				g: func() Graph[int, int] {
+					g := New(IntHash)
+					for i := 0; i <= 8; i++ {
+						_ = g.AddVertex(i)
+					}
+					_ = g.AddEdge(0, 1)
+					_ = g.AddEdge(0, 2)
+					_ = g.AddEdge(1, 3)
+					_ = g.AddEdge(1, 4)
+					_ = g.AddEdge(2, 5)
+					_ = g.AddEdge(2, 6)
+					_ = g.AddEdge(3, 7)
+					_ = g.AddEdge(4, 5)
+					_ = g.AddEdge(4, 7)
+					_ = g.AddEdge(5, 6)
+					_ = g.AddEdge(6, 8)
+					return g
+				}(),
+				start: 3,
+				end:   6,
+			},
+			want: func() [][]int {
+				allPath := make([][]int, 0)
+				addPath := func(elements ...int) {
+					allPath = append(allPath, elements)
+				}
+				addPath(3, 1, 0, 2, 6)
+				addPath(3, 1, 0, 2, 5, 6)
+				addPath(3, 1, 4, 5, 6)
+				addPath(3, 1, 4, 5, 2, 6)
+				addPath(3, 7, 4, 5, 2, 6)
+				addPath(3, 7, 4, 5, 6)
+				addPath(3, 7, 4, 1, 0, 2, 6)
+				addPath(3, 7, 4, 1, 0, 2, 5, 6)
+				return allPath
+			}(),
+			wantErr: false,
+		},
+		{
+			name: "undirected (complex)",
+			args: args[int, int]{
+				g: func() Graph[int, int] {
+					g := New(IntHash)
+					for i := 0; i <= 9; i++ {
+						_ = g.AddVertex(i)
+					}
+					_ = g.AddEdge(0, 1)
+					_ = g.AddEdge(0, 2)
+					_ = g.AddEdge(0, 3)
+					_ = g.AddEdge(2, 3)
+					_ = g.AddEdge(2, 6)
+					_ = g.AddEdge(3, 4)
+					_ = g.AddEdge(4, 8)
+					_ = g.AddEdge(5, 6)
+					_ = g.AddEdge(5, 8)
+					_ = g.AddEdge(5, 9)
+					_ = g.AddEdge(6, 7)
+					_ = g.AddEdge(7, 9)
+					_ = g.AddEdge(8, 9)
+					return g
+				}(),
+				start: 0,
+				end:   9,
+			},
+			want: func() [][]int {
+				allPath := make([][]int, 0)
+				addPath := func(elements ...int) {
+					allPath = append(allPath, elements)
+				}
+				addPath(0, 2, 3, 4, 8, 5, 6, 7, 9)
+				addPath(0, 2, 3, 4, 8, 5, 9)
+				addPath(0, 2, 3, 4, 8, 9)
+				addPath(0, 2, 6, 5, 8, 9)
+				addPath(0, 2, 6, 5, 9)
+				addPath(0, 2, 6, 7, 9)
+				addPath(0, 3, 2, 6, 5, 8, 9)
+				addPath(0, 3, 2, 6, 5, 9)
+				addPath(0, 3, 2, 6, 7, 9)
+				addPath(0, 3, 4, 8, 5, 6, 7, 9)
+				addPath(0, 3, 4, 8, 5, 9)
+				addPath(0, 3, 4, 8, 9)
+				return allPath
+			}(),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := AllPathsBetweenTwoVertices(tt.args.g, tt.args.start, tt.args.end)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("AllPathsBetweenTwoVertices() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			toStr := func(s []int) string {
+				var num string
+				for _, n := range s {
+					num = num + string(rune(n))
+				}
+				return num
+			}
+
+			sort.Slice(got, func(i, j int) bool {
+				return toStr(got[i]) < toStr(got[j])
+			})
+
+			sort.Slice(tt.want, func(i, j int) bool {
+				return toStr(tt.want[i]) < toStr(tt.want[j])
+			})
+
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("AllPathsBetweenTwoVertices() got = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

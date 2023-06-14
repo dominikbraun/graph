@@ -71,7 +71,7 @@ _ = g.AddEdge(3, 4)
 
 ## Create a graph of a custom type
 
-To understand this example in detail, see the [concept of hashes](https://pkg.go.dev/github.com/dominikbraun/graph@v0.17.0-rc4#hdr-Hashes).
+To understand this example in detail, see the [concept of hashes](https://pkg.go.dev/github.com/dominikbraun/graph#hdr-Hashes).
 
 ```go
 type City struct {

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),  and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.3] -2023-06-14
+
+### Changed
+* Changed `StableTopologicalSort` to invoke the `less` function as few as possible, reducing comparisons.
+* Changed `CreatesCycle` to use an optimized path if the default in-memory store is being used.
+* Changed map allocations to use pre-defined memory sizes.
+
 ## [0.22.2] - 2023-06-06
 
 ### Fixed

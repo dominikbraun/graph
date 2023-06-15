@@ -232,3 +232,104 @@ func findSCC[K comparable](vertexHash K, state *sccState[K]) {
 		state.components = append(state.components, component)
 	}
 }
+
+// AllPathsBetweenTwoVertices list all paths from start to end.
+func AllPathsBetweenTwoVertices[K comparable, T any](g Graph[K, T], start, end K) ([][]K, error) {
+	adjacencyMap, err := g.AdjacencyMap()
+	if err != nil {
+		return nil, err
+	}
+
+	mainStack, viceStack := newStack[K](), newStack[stack[K]]()
+
+	checkEmpty := func() error {
+		if mainStack.isEmpty() || viceStack.isEmpty() {
+			return errors.New("empty stack")
+		}
+		return nil
+	}
+
+	buildLayer := func(element K) {
+		mainStack.push(element)
+
+		newElements := newStack[K]()
+		for e := range adjacencyMap[element] {
+			var contains bool
+			mainStack.forEach(func(k K) {
+				if e == k {
+					contains = true
+				}
+			})
+			if contains {
+				continue
+			}
+			newElements.push(e)
+		}
+		viceStack.push(newElements)
+	}
+
+	buildStack := func() error {
+		if err = checkEmpty(); err != nil {
+			return errors.New("empty stack")
+		}
+
+		elements, _ := viceStack.top()
+		for !elements.isEmpty() {
+			element, _ := elements.pop()
+			buildLayer(element)
+			elements, _ = viceStack.top()
+		}
+
+		return nil
+	}
+
+	removeLayer := func() error {
+		if err = checkEmpty(); err != nil {
+			return errors.New("empty stack")
+		}
+
+		e, _ := viceStack.top()
+		if !e.isEmpty() {
+			return errors.New("the top element of vice-stack is not empty")
+		}
+
+		_, _ = mainStack.pop()
+		_, _ = viceStack.pop()
+
+		return nil
+	}
+
+	// init the first layer
+
+	buildLayer(start)
+
+	// loop
+
+	allPaths := make([][]K, 0)
+
+	for !mainStack.isEmpty() {
+		v, _ := mainStack.top()
+		adjs, _ := viceStack.top()
+
+		if adjs.isEmpty() {
+			if v == end {
+				path := make([]K, 0)
+				mainStack.forEach(func(k K) {
+					path = append(path, k)
+				})
+				allPaths = append(allPaths, path)
+			}
+
+			err = removeLayer()
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			if err = buildStack(); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return allPaths, nil
+}

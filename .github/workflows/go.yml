@@ -2,30 +2,34 @@ name: Go
 
 on:
   push:
-    branches: [ main ]
   pull_request:
 
 jobs:
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: [ '1.18.x', '1.19.x', '1.20.x' ]
     steps:
-      - name: Set up Go 1.18
-        uses: actions/setup-go@v2
+      - name: Set up Go ${{ matrix.go }}
+        uses: actions/setup-go@v4
         with:
-          go-version: ^1.18
+          go-version: ${{ matrix.go }}
         id: go
 
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Get dependencies
         run: |
           go get -v -t -d ./...
+
       - name: Lint
         uses: golangci/golangci-lint-action@v3
         with:
           version: v1.51.2
+
       - name: Test
         run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 

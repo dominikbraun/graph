@@ -1,6 +1,6 @@
 [中文版](README_CN.md) | [English Version](README.md)
 
-# <img src="img/logo.svg" width="300">
+# <img src="img/banner.png">
 
 A library for creating generic graph data structures and modifying, analyzing,
 and visualizing them.

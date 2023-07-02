@@ -499,7 +499,7 @@ func TestUndirectedStronglyConnectedComponents(t *testing.T) {
 	}
 }
 
-func TestAllPathBetweenTwoVertices(t *testing.T) {
+func TestAllPathsBetweenTwoVertices(t *testing.T) {
 	type args[K comparable, T any] struct {
 		g     Graph[K, T]
 		start K

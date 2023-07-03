@@ -233,8 +233,8 @@ func findSCC[K comparable](vertexHash K, state *sccState[K]) {
 	}
 }
 
-// AllPathsBetweenTwoVertices list all paths from start to end.
-func AllPathsBetweenTwoVertices[K comparable, T any](g Graph[K, T], start, end K) ([][]K, error) {
+// AllPathsBetween list all paths from start to end.
+func AllPathsBetween[K comparable, T any](g Graph[K, T], start, end K) ([][]K, error) {
 	adjacencyMap, err := g.AdjacencyMap()
 	if err != nil {
 		return nil, err

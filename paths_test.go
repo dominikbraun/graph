@@ -499,7 +499,7 @@ func TestUndirectedStronglyConnectedComponents(t *testing.T) {
 	}
 }
 
-func TestAllPathsBetweenTwoVertices(t *testing.T) {
+func TestAllPathsBetween(t *testing.T) {
 	type args[K comparable, T any] struct {
 		g     Graph[K, T]
 		start K
@@ -626,9 +626,9 @@ func TestAllPathsBetweenTwoVertices(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := AllPathsBetweenTwoVertices(tt.args.g, tt.args.start, tt.args.end)
+			got, err := AllPathsBetween(tt.args.g, tt.args.start, tt.args.end)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("AllPathsBetweenTwoVertices() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("AllPathsBetween() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
@@ -649,7 +649,7 @@ func TestAllPathsBetweenTwoVertices(t *testing.T) {
 			})
 
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("AllPathsBetweenTwoVertices() got = %v, want %v", got, tt.want)
+				t.Errorf("AllPathsBetween() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

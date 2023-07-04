@@ -1,6 +1,7 @@
 package graph
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -220,5 +221,169 @@ func TestPriorityQueue_Len(t *testing.T) {
 		if n != test.expectedLen {
 			t.Errorf("%s: length expectancy doesn't match: expected %v, got %v", name, test.expectedLen, n)
 		}
+	}
+}
+
+func Test_stackImpl_push(t *testing.T) {
+	type args[T any] struct {
+		t T
+	}
+	type testCase[T any] struct {
+		name string
+		s    stackImpl[T]
+		args args[T]
+	}
+	tests := []testCase[int]{
+		{
+			"push 1",
+			stackImpl[int]{
+				elements: make([]int, 0),
+			},
+			args[int]{
+				t: 1,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.s.push(tt.args.t)
+		})
+	}
+}
+
+func Test_stackImpl_pop(t *testing.T) {
+	type testCase[T any] struct {
+		name    string
+		s       stackImpl[T]
+		want    T
+		wantErr bool
+	}
+	tests := []testCase[int]{
+		{
+			"pop element",
+			stackImpl[int]{
+				elements: []int{1},
+			},
+			1,
+			false,
+		},
+		{
+			"pop element from empty stack",
+			stackImpl[int]{
+				elements: []int{},
+			},
+			0,
+			true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.s.pop()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("pop() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("pop() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_stackImpl_top(t *testing.T) {
+	type testCase[T any] struct {
+		name    string
+		s       stackImpl[T]
+		want    T
+		wantErr bool
+	}
+	tests := []testCase[int]{
+		{
+			"top element",
+			stackImpl[int]{
+				elements: []int{1},
+			},
+			1,
+			false,
+		},
+		{
+			"top element of empty stack",
+			stackImpl[int]{
+				elements: []int{},
+			},
+			0,
+			true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.s.top()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("top() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("top() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_stackImpl_isEmpty(t *testing.T) {
+	type testCase[T any] struct {
+		name string
+		s    stackImpl[T]
+		want bool
+	}
+	tests := []testCase[int]{
+		{
+			"empty",
+			stackImpl[int]{
+				elements: []int{},
+			},
+			true,
+		},
+		{
+			"not empty",
+			stackImpl[int]{
+				elements: []int{1},
+			},
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.s.isEmpty(); got != tt.want {
+				t.Errorf("isEmpty() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_stackImpl_forEach(t *testing.T) {
+	type args[T any] struct {
+		f func(T)
+	}
+	type testCase[T any] struct {
+		name string
+		s    stackImpl[T]
+		args args[T]
+	}
+	tests := []testCase[int]{
+		{
+			name: "forEach",
+			s: stackImpl[int]{
+				elements: []int{1, 2, 3, 4, 5, 6},
+			},
+			args: args[int]{
+				f: func(i int) {
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.s.forEach(tt.args.f)
+		})
 	}
 }

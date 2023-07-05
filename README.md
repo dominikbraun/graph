@@ -5,6 +5,8 @@
 A library for creating generic graph data structures and modifying, analyzing,
 and visualizing them.
 
+**Are you using graph? [Check out the graph user survey.](https://forms.gle/MLKUZKMeCRxTfj4v9)**
+
 # Features
 
 * Generic vertices of any type, such as `int` or `City`.
@@ -398,3 +400,5 @@ To implement the `Store` interface appropriately, take a look at the [documentat
 # Documentation
 
 The full documentation is available at [pkg.go.dev](https://pkg.go.dev/github.com/dominikbraun/graph).
+
+**Are you using graph? [Check out the graph user survey.](https://forms.gle/MLKUZKMeCRxTfj4v9)**

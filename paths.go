@@ -233,14 +233,22 @@ func findSCC[K comparable](vertexHash K, state *sccState[K]) {
 	}
 }
 
-// AllPathsBetween list all paths from start to end.
+// AllPathsBetween computes and returns all paths between two given vertices. A
+// path is represented as a slice of vertex hashes. The returned slice contains
+// these paths.
+//
+// AllPathsBetween utilizes a non-recursive, stack-based implementation. It has
+// an estimated runtime complexity of O(n^2) where n is the number of vertices.
 func AllPathsBetween[K comparable, T any](g Graph[K, T], start, end K) ([][]K, error) {
 	adjacencyMap, err := g.AdjacencyMap()
 	if err != nil {
 		return nil, err
 	}
 
-	mainStack, viceStack := newStack[K](), newStack[stack[K]]()
+	// The algorithm used relies on stacks instead of recursion. It is described
+	// here: https://boycgit.github.io/all-paths-between-two-vertex/
+	mainStack := newStack[K]()
+	viceStack := newStack[stack[K]]()
 
 	checkEmpty := func() error {
 		if mainStack.isEmpty() || viceStack.isEmpty() {
@@ -270,10 +278,11 @@ func AllPathsBetween[K comparable, T any](g Graph[K, T], start, end K) ([][]K, e
 
 	buildStack := func() error {
 		if err = checkEmpty(); err != nil {
-			return errors.New("empty stack")
+			return fmt.Errorf("unable to build stack: %w", err)
 		}
 
 		elements, _ := viceStack.top()
+
 		for !elements.isEmpty() {
 			element, _ := elements.pop()
 			buildLayer(element)
@@ -285,11 +294,10 @@ func AllPathsBetween[K comparable, T any](g Graph[K, T], start, end K) ([][]K, e
 
 	removeLayer := func() error {
 		if err = checkEmpty(); err != nil {
-			return errors.New("empty stack")
+			return fmt.Errorf("unable to remove layer: %w", err)
 		}
 
-		e, _ := viceStack.top()
-		if !e.isEmpty() {
+		if e, _ := viceStack.top(); !e.isEmpty() {
 			return errors.New("the top element of vice-stack is not empty")
 		}
 
@@ -299,11 +307,7 @@ func AllPathsBetween[K comparable, T any](g Graph[K, T], start, end K) ([][]K, e
 		return nil
 	}
 
-	// init the first layer
-
 	buildLayer(start)
-
-	// loop
 
 	allPaths := make([][]K, 0)
 

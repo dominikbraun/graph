@@ -230,13 +230,13 @@ func Test_stackImpl_push(t *testing.T) {
 	}
 	type testCase[T any] struct {
 		name string
-		s    stackImpl[T]
+		s    stack[T]
 		args args[T]
 	}
 	tests := []testCase[int]{
 		{
 			"push 1",
-			stackImpl[int]{
+			stack[int]{
 				elements: make([]int, 0),
 			},
 			args[int]{
@@ -254,14 +254,14 @@ func Test_stackImpl_push(t *testing.T) {
 func Test_stackImpl_pop(t *testing.T) {
 	type testCase[T any] struct {
 		name    string
-		s       stackImpl[T]
+		s       stack[T]
 		want    T
 		wantErr bool
 	}
 	tests := []testCase[int]{
 		{
 			"pop element",
-			stackImpl[int]{
+			stack[int]{
 				elements: []int{1},
 			},
 			1,
@@ -269,7 +269,7 @@ func Test_stackImpl_pop(t *testing.T) {
 		},
 		{
 			"pop element from empty stack",
-			stackImpl[int]{
+			stack[int]{
 				elements: []int{},
 			},
 			0,
@@ -293,14 +293,14 @@ func Test_stackImpl_pop(t *testing.T) {
 func Test_stackImpl_top(t *testing.T) {
 	type testCase[T any] struct {
 		name    string
-		s       stackImpl[T]
+		s       stack[T]
 		want    T
 		wantErr bool
 	}
 	tests := []testCase[int]{
 		{
 			"top element",
-			stackImpl[int]{
+			stack[int]{
 				elements: []int{1},
 			},
 			1,
@@ -308,7 +308,7 @@ func Test_stackImpl_top(t *testing.T) {
 		},
 		{
 			"top element of empty stack",
-			stackImpl[int]{
+			stack[int]{
 				elements: []int{},
 			},
 			0,
@@ -332,20 +332,20 @@ func Test_stackImpl_top(t *testing.T) {
 func Test_stackImpl_isEmpty(t *testing.T) {
 	type testCase[T any] struct {
 		name string
-		s    stackImpl[T]
+		s    stack[T]
 		want bool
 	}
 	tests := []testCase[int]{
 		{
 			"empty",
-			stackImpl[int]{
+			stack[int]{
 				elements: []int{},
 			},
 			true,
 		},
 		{
 			"not empty",
-			stackImpl[int]{
+			stack[int]{
 				elements: []int{1},
 			},
 			false,
@@ -366,13 +366,13 @@ func Test_stackImpl_forEach(t *testing.T) {
 	}
 	type testCase[T any] struct {
 		name string
-		s    stackImpl[T]
+		s    stack[T]
 		args args[T]
 	}
 	tests := []testCase[int]{
 		{
 			name: "forEach",
-			s: stackImpl[int]{
+			s: stack[int]{
 				elements: []int{1, 2, 3, 4, 5, 6},
 			},
 			args: args[int]{

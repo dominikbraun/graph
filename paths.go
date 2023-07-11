@@ -248,7 +248,7 @@ func AllPathsBetween[K comparable, T any](g Graph[K, T], start, end K) ([][]K, e
 	// The algorithm used relies on stacks instead of recursion. It is described
 	// here: https://boycgit.github.io/all-paths-between-two-vertex/
 	mainStack := newStack[K]()
-	viceStack := newStack[stack[K]]()
+	viceStack := newStack[*stack[K]]()
 
 	checkEmpty := func() error {
 		if mainStack.isEmpty() || viceStack.isEmpty() {

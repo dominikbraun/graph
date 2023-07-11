@@ -225,18 +225,18 @@ func TestPriorityQueue_Len(t *testing.T) {
 }
 
 func Test_stackImpl_push(t *testing.T) {
-	type args[T comparable] struct {
+	type args[T any] struct {
 		t T
 	}
-	type testCase[T comparable] struct {
+	type testCase[T any] struct {
 		name string
-		s    stack[T]
+		s    stackImpl[T]
 		args args[T]
 	}
 	tests := []testCase[int]{
 		{
 			"push 1",
-			stack[int]{
+			stackImpl[int]{
 				elements: make([]int, 0),
 			},
 			args[int]{
@@ -252,16 +252,16 @@ func Test_stackImpl_push(t *testing.T) {
 }
 
 func Test_stackImpl_pop(t *testing.T) {
-	type testCase[T comparable] struct {
+	type testCase[T any] struct {
 		name    string
-		s       stack[T]
+		s       stackImpl[T]
 		want    T
 		wantErr bool
 	}
 	tests := []testCase[int]{
 		{
 			"pop element",
-			stack[int]{
+			stackImpl[int]{
 				elements: []int{1},
 			},
 			1,
@@ -269,7 +269,7 @@ func Test_stackImpl_pop(t *testing.T) {
 		},
 		{
 			"pop element from empty stack",
-			stack[int]{
+			stackImpl[int]{
 				elements: []int{},
 			},
 			0,
@@ -291,16 +291,16 @@ func Test_stackImpl_pop(t *testing.T) {
 }
 
 func Test_stackImpl_top(t *testing.T) {
-	type testCase[T comparable] struct {
+	type testCase[T any] struct {
 		name    string
-		s       stack[T]
+		s       stackImpl[T]
 		want    T
 		wantErr bool
 	}
 	tests := []testCase[int]{
 		{
 			"top element",
-			stack[int]{
+			stackImpl[int]{
 				elements: []int{1},
 			},
 			1,
@@ -308,7 +308,7 @@ func Test_stackImpl_top(t *testing.T) {
 		},
 		{
 			"top element of empty stack",
-			stack[int]{
+			stackImpl[int]{
 				elements: []int{},
 			},
 			0,
@@ -330,22 +330,22 @@ func Test_stackImpl_top(t *testing.T) {
 }
 
 func Test_stackImpl_isEmpty(t *testing.T) {
-	type testCase[T comparable] struct {
+	type testCase[T any] struct {
 		name string
-		s    stack[T]
+		s    stackImpl[T]
 		want bool
 	}
 	tests := []testCase[int]{
 		{
 			"empty",
-			stack[int]{
+			stackImpl[int]{
 				elements: []int{},
 			},
 			true,
 		},
 		{
 			"not empty",
-			stack[int]{
+			stackImpl[int]{
 				elements: []int{1},
 			},
 			false,
@@ -361,18 +361,18 @@ func Test_stackImpl_isEmpty(t *testing.T) {
 }
 
 func Test_stackImpl_forEach(t *testing.T) {
-	type args[T comparable] struct {
+	type args[T any] struct {
 		f func(T)
 	}
-	type testCase[T comparable] struct {
+	type testCase[T any] struct {
 		name string
-		s    stack[T]
+		s    stackImpl[T]
 		args args[T]
 	}
 	tests := []testCase[int]{
 		{
 			name: "forEach",
-			s: stack[int]{
+			s: stackImpl[int]{
 				elements: []int{1, 2, 3, 4, 5, 6},
 			},
 			args: args[int]{

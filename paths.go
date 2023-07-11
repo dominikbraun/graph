@@ -31,14 +31,13 @@ func CreatesCycle[K comparable, T any](g Graph[K, T], source, target K) (bool, e
 		return false, fmt.Errorf("failed to get predecessor map: %w", err)
 	}
 
-	stack := make([]K, 0)
+	stack := newStack[K]()
 	visited := make(map[K]bool)
 
-	stack = append(stack, source)
+	stack.push(source)
 
-	for len(stack) > 0 {
-		currentHash := stack[len(stack)-1]
-		stack = stack[:len(stack)-1]
+	for !stack.isEmpty() {
+		currentHash, _ := stack.pop()
 
 		if _, ok := visited[currentHash]; !ok {
 			// If the adjacent vertex also is the target vertex, the target is a
@@ -50,7 +49,7 @@ func CreatesCycle[K comparable, T any](g Graph[K, T], source, target K) (bool, e
 			visited[currentHash] = true
 
 			for adjacency := range predecessorMap[currentHash] {
-				stack = append(stack, adjacency)
+				stack.push(adjacency)
 			}
 		}
 	}
@@ -139,8 +138,7 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 type sccState[K comparable] struct {
 	adjacencyMap map[K]map[K]Edge[K]
 	components   [][]K
-	stack        []K
-	onStack      map[K]bool
+	stack        *stack[K]
 	visited      map[K]struct{}
 	lowlink      map[K]int
 	index        map[K]int
@@ -165,8 +163,7 @@ func StronglyConnectedComponents[K comparable, T any](g Graph[K, T]) ([][]K, err
 	state := &sccState[K]{
 		adjacencyMap: adjacencyMap,
 		components:   make([][]K, 0),
-		stack:        make([]K, 0),
-		onStack:      make(map[K]bool),
+		stack:        newStack[K](),
 		visited:      make(map[K]struct{}),
 		lowlink:      make(map[K]int),
 		index:        make(map[K]int),
@@ -182,8 +179,7 @@ func StronglyConnectedComponents[K comparable, T any](g Graph[K, T]) ([][]K, err
 }
 
 func findSCC[K comparable](vertexHash K, state *sccState[K]) {
-	state.stack = append(state.stack, vertexHash)
-	state.onStack[vertexHash] = true
+	state.stack.push(vertexHash)
 	state.visited[vertexHash] = struct{}{}
 	state.index[vertexHash] = state.time
 	state.lowlink[vertexHash] = state.time
@@ -204,7 +200,7 @@ func findSCC[K comparable](vertexHash K, state *sccState[K]) {
 			// the current and the adjacent vertex is a back ege. Therefore, the
 			// lowlink value of the vertex has to be updated to the index of the
 			// adjacent vertex if it is smaller than the current lowlink value.
-			if state.onStack[adjacency] {
+			if state.stack.contains(adjacency) {
 				smallestLowlink := math.Min(
 					float64(state.lowlink[vertexHash]),
 					float64(state.index[adjacency]),
@@ -222,9 +218,7 @@ func findSCC[K comparable](vertexHash K, state *sccState[K]) {
 		var component []K
 
 		for hash != vertexHash {
-			hash = state.stack[len(state.stack)-1]
-			state.stack = state.stack[:len(state.stack)-1]
-			state.onStack[hash] = false
+			hash, _ = state.stack.pop()
 
 			component = append(component, hash)
 		}
@@ -259,8 +253,8 @@ func AllPathsBetween[K comparable, T any](g Graph[K, T], start, end K) ([][]K, e
 
 	buildLayer := func(element K) {
 		mainStack.push(element)
-
 		newElements := newStack[K]()
+
 		for e := range adjacencyMap[element] {
 			var contains bool
 			mainStack.forEach(func(k K) {

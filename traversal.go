@@ -42,15 +42,13 @@ func DFS[K comparable, T any](g Graph[K, T], start K, visit func(K) bool) error 
 		return fmt.Errorf("could not find start vertex with hash %v", start)
 	}
 
-	stack := make([]K, 0)
+	stack := newStack[K]()
 	visited := make(map[K]bool)
 
-	stack = append(stack, start)
+	stack.push(start)
 
-	for len(stack) > 0 {
-		currentHash := stack[len(stack)-1]
-
-		stack = stack[:len(stack)-1]
+	for !stack.isEmpty() {
+		currentHash, _ := stack.pop()
 
 		if _, ok := visited[currentHash]; !ok {
 			// Stop traversing the graph if the visit function returns true.
@@ -60,7 +58,7 @@ func DFS[K comparable, T any](g Graph[K, T], start K, visit func(K) bool) error 
 			visited[currentHash] = true
 
 			for adjacency := range adjacencyMap[currentHash] {
-				stack = append(stack, adjacency)
+				stack.push(adjacency)
 			}
 		}
 	}

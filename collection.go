@@ -107,14 +107,14 @@ func (m *minHeap[T]) Pop() interface{} {
 	return item
 }
 
+type stack[T comparable] struct {
+	elements []T
+}
+
 func newStack[T comparable]() *stack[T] {
 	return &stack[T]{
 		elements: make([]T, 0),
 	}
-}
-
-type stack[T comparable] struct {
-	elements []T
 }
 
 func (s *stack[T]) push(t T) {
@@ -149,4 +149,40 @@ func (s *stack[T]) forEach(f func(T)) {
 	for _, e := range s.elements {
 		f(e)
 	}
+}
+
+type stackOfStacks[T comparable] struct {
+	stacks []*stack[T]
+}
+
+func newStackOfStacks[T comparable]() *stackOfStacks[T] {
+	return &stackOfStacks[T]{
+		stacks: make([]*stack[T], 0),
+	}
+}
+
+func (s *stackOfStacks[T]) push(stack *stack[T]) {
+	s.stacks = append(s.stacks, stack)
+}
+
+func (s *stackOfStacks[T]) pop() (*stack[T], error) {
+	e, err := s.top()
+	if err != nil {
+		return &stack[T]{}, err
+	}
+
+	s.stacks = s.stacks[:len(s.stacks)-1]
+	return e, nil
+}
+
+func (s *stackOfStacks[T]) top() (*stack[T], error) {
+	if s.isEmpty() {
+		return &stack[T]{}, errors.New("no element in stack")
+	}
+
+	return s.stacks[len(s.stacks)-1], nil
+}
+
+func (s *stackOfStacks[T]) isEmpty() bool {
+	return len(s.stacks) == 0
 }

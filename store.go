@@ -249,13 +249,13 @@ func (s *memoryStore[K, T]) CreatesCycle(source, target K) (bool, error) {
 		return true, nil
 	}
 
-	stack := make([]K, 0)
+	stack := newStack[K]()
 	visited := make(map[K]struct{})
 
-	stack = append(stack, source)
-	for len(stack) > 0 {
-		currentHash := stack[len(stack)-1]
-		stack = stack[:len(stack)-1]
+	stack.push(source)
+
+	for !stack.isEmpty() {
+		currentHash, _ := stack.pop()
 
 		if _, ok := visited[currentHash]; !ok {
 			// If the adjacent vertex also is the target vertex, the target is a
@@ -267,7 +267,7 @@ func (s *memoryStore[K, T]) CreatesCycle(source, target K) (bool, error) {
 			visited[currentHash] = struct{}{}
 
 			for adjacency := range s.inEdges[currentHash] {
-				stack = append(stack, adjacency)
+				stack.push(adjacency)
 			}
 		}
 	}

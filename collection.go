@@ -107,55 +107,91 @@ func (m *minHeap[T]) Pop() interface{} {
 	return item
 }
 
-type stack[T any] interface {
-	push(T)
-	pop() (T, error)
-	top() (T, error)
-	isEmpty() bool
-	// forEach iterate the stack from bottom to top
-	forEach(func(T))
+type stack[T comparable] struct {
+	elements []T
+	registry map[T]struct{}
 }
 
-func newStack[T any]() stack[T] {
-	return &stackImpl[T]{
+func newStack[T comparable]() *stack[T] {
+	return &stack[T]{
 		elements: make([]T, 0),
+		registry: make(map[T]struct{}),
 	}
 }
 
-type stackImpl[T any] struct {
-	elements []T
-}
-
-func (s *stackImpl[T]) push(t T) {
+func (s *stack[T]) push(t T) {
 	s.elements = append(s.elements, t)
+	s.registry[t] = struct{}{}
 }
 
-func (s *stackImpl[T]) pop() (T, error) {
-	e, err := s.top()
-	if err != nil {
-		var defaultValue T
-		return defaultValue, err
+func (s *stack[T]) pop() (T, bool) {
+	element, ok := s.top()
+	if !ok {
+		return element, false
 	}
 
 	s.elements = s.elements[:len(s.elements)-1]
-	return e, nil
+	delete(s.registry, element)
+
+	return element, true
 }
 
-func (s *stackImpl[T]) top() (T, error) {
+func (s *stack[T]) top() (T, bool) {
 	if s.isEmpty() {
 		var defaultValue T
-		return defaultValue, errors.New("no element in stack")
+		return defaultValue, false
 	}
 
-	return s.elements[len(s.elements)-1], nil
+	return s.elements[len(s.elements)-1], true
 }
 
-func (s *stackImpl[T]) isEmpty() bool {
+func (s *stack[T]) isEmpty() bool {
 	return len(s.elements) == 0
 }
 
-func (s *stackImpl[T]) forEach(f func(T)) {
+func (s *stack[T]) forEach(f func(T)) {
 	for _, e := range s.elements {
 		f(e)
 	}
+}
+
+func (s *stack[T]) contains(element T) bool {
+	_, ok := s.registry[element]
+	return ok
+}
+
+type stackOfStacks[T comparable] struct {
+	stacks []*stack[T]
+}
+
+func newStackOfStacks[T comparable]() *stackOfStacks[T] {
+	return &stackOfStacks[T]{
+		stacks: make([]*stack[T], 0),
+	}
+}
+
+func (s *stackOfStacks[T]) push(stack *stack[T]) {
+	s.stacks = append(s.stacks, stack)
+}
+
+func (s *stackOfStacks[T]) pop() (*stack[T], error) {
+	e, err := s.top()
+	if err != nil {
+		return &stack[T]{}, err
+	}
+
+	s.stacks = s.stacks[:len(s.stacks)-1]
+	return e, nil
+}
+
+func (s *stackOfStacks[T]) top() (*stack[T], error) {
+	if s.isEmpty() {
+		return &stack[T]{}, errors.New("no element in stack")
+	}
+
+	return s.stacks[len(s.stacks)-1], nil
+}
+
+func (s *stackOfStacks[T]) isEmpty() bool {
+	return len(s.stacks) == 0
 }

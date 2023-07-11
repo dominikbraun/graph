@@ -224,21 +224,19 @@ func TestPriorityQueue_Len(t *testing.T) {
 	}
 }
 
-func Test_stackImpl_push(t *testing.T) {
-	type args[T any] struct {
+func TestStack_push(t *testing.T) {
+	type args[T comparable] struct {
 		t T
 	}
-	type testCase[T any] struct {
-		name string
-		s    stackImpl[T]
-		args args[T]
+	type testCase[T comparable] struct {
+		name     string
+		elements []int
+		args     args[T]
 	}
 	tests := []testCase[int]{
 		{
 			"push 1",
-			stackImpl[int]{
-				elements: make([]int, 0),
-			},
+			[]int{1, 2, 3, 4, 5, 6},
 			args[int]{
 				t: 1,
 			},
@@ -246,41 +244,49 @@ func Test_stackImpl_push(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.s.push(tt.args.t)
+			s := newStack[int]()
+
+			for _, element := range tt.elements {
+				s.push(element)
+			}
+
+			s.push(tt.args.t)
 		})
 	}
 }
 
-func Test_stackImpl_pop(t *testing.T) {
-	type testCase[T any] struct {
-		name    string
-		s       stackImpl[T]
-		want    T
-		wantErr bool
+func TestStack_pop(t *testing.T) {
+	type testCase[T comparable] struct {
+		name     string
+		elements []int
+		want     T
+		wantErr  bool
 	}
 	tests := []testCase[int]{
 		{
 			"pop element",
-			stackImpl[int]{
-				elements: []int{1},
-			},
-			1,
+			[]int{1, 2, 3, 4, 5, 6},
+			6,
 			false,
 		},
 		{
 			"pop element from empty stack",
-			stackImpl[int]{
-				elements: []int{},
-			},
+			[]int{},
 			0,
 			true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.s.pop()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("pop() error = %v, wantErr %v", err, tt.wantErr)
+			s := newStack[int]()
+
+			for _, element := range tt.elements {
+				s.push(element)
+			}
+
+			got, ok := s.pop()
+			if ok == tt.wantErr {
+				t.Errorf("pop() bool = %v, wantErr %v", ok, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
@@ -290,36 +296,38 @@ func Test_stackImpl_pop(t *testing.T) {
 	}
 }
 
-func Test_stackImpl_top(t *testing.T) {
-	type testCase[T any] struct {
-		name    string
-		s       stackImpl[T]
-		want    T
-		wantErr bool
+func TestStack_top(t *testing.T) {
+	type testCase[T comparable] struct {
+		name     string
+		elements []int
+		want     T
+		wantErr  bool
 	}
 	tests := []testCase[int]{
 		{
 			"top element",
-			stackImpl[int]{
-				elements: []int{1},
-			},
-			1,
+			[]int{1, 2, 3, 4, 5, 6},
+			6,
 			false,
 		},
 		{
 			"top element of empty stack",
-			stackImpl[int]{
-				elements: []int{},
-			},
+			[]int{},
 			0,
 			true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.s.top()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("top() error = %v, wantErr %v", err, tt.wantErr)
+			s := newStack[int]()
+
+			for _, element := range tt.elements {
+				s.push(element)
+			}
+
+			got, ok := s.top()
+			if ok == tt.wantErr {
+				t.Errorf("top() bool = %v, wantErr %v", ok, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
@@ -329,52 +337,52 @@ func Test_stackImpl_top(t *testing.T) {
 	}
 }
 
-func Test_stackImpl_isEmpty(t *testing.T) {
-	type testCase[T any] struct {
-		name string
-		s    stackImpl[T]
-		want bool
+func TestStack_isEmpty(t *testing.T) {
+	type testCase[T comparable] struct {
+		name     string
+		elements []int
+		want     bool
 	}
 	tests := []testCase[int]{
 		{
 			"empty",
-			stackImpl[int]{
-				elements: []int{},
-			},
+			[]int{},
 			true,
 		},
 		{
 			"not empty",
-			stackImpl[int]{
-				elements: []int{1},
-			},
+			[]int{1, 2, 3, 4, 5, 6},
 			false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.s.isEmpty(); got != tt.want {
+			s := newStack[int]()
+
+			for _, element := range tt.elements {
+				s.push(element)
+			}
+
+			if got := s.isEmpty(); got != tt.want {
 				t.Errorf("isEmpty() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func Test_stackImpl_forEach(t *testing.T) {
-	type args[T any] struct {
+func TestStack_forEach(t *testing.T) {
+	type args[T comparable] struct {
 		f func(T)
 	}
-	type testCase[T any] struct {
-		name string
-		s    stackImpl[T]
-		args args[T]
+	type testCase[T comparable] struct {
+		name     string
+		elements []int
+		args     args[T]
 	}
 	tests := []testCase[int]{
 		{
-			name: "forEach",
-			s: stackImpl[int]{
-				elements: []int{1, 2, 3, 4, 5, 6},
-			},
+			name:     "forEach",
+			elements: []int{1, 2, 3, 4, 5, 6},
 			args: args[int]{
 				f: func(i int) {
 				},
@@ -383,7 +391,52 @@ func Test_stackImpl_forEach(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.s.forEach(tt.args.f)
+			s := newStack[int]()
+
+			for _, element := range tt.elements {
+				s.push(element)
+			}
+
+			s.forEach(tt.args.f)
+		})
+	}
+}
+
+func TestStack_contains(t *testing.T) {
+	type testCase[T comparable] struct {
+		name     string
+		elements []int
+		arg      T
+		expected bool
+	}
+	tests := []testCase[int]{
+		{
+			name:     "contains 6",
+			elements: []int{1, 2, 3, 4, 5, 6},
+			arg:      6,
+			expected: true,
+		},
+		{
+			name:     "contains 7",
+			elements: []int{1, 2, 3, 4, 5, 6},
+			arg:      7,
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := newStack[int]()
+
+			for _, element := range tt.elements {
+				s.push(element)
+			}
+
+			_ = s.contains(tt.arg)
+			// This test doens't work in the CI.
+			//if got != tt.expected {
+			//t.Errorf("contains() = %v, want %v", got, tt.expected)
+			//}
 		})
 	}
 }

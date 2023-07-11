@@ -178,33 +178,26 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error
 		if err != nil {
 			return nil, fmt.Errorf("failed to get graph order: %w", err)
 		}
+
 		for successor := range successors {
-			stack := make([]K, 0, tOrder)
+			stack := newStack[K]()
 			visited := make(map[K]struct{}, tOrder)
-			onStack := make(map[K]bool, tOrder)
 
-			stack = append(stack, successor)
+			stack.push(successor)
 
-			for len(stack) > 0 {
-				current := stack[len(stack)-1]
-				stack = stack[:len(stack)-1]
+			for !stack.isEmpty() {
+				current, _ := stack.pop()
 
 				if _, ok := visited[current]; ok {
-					onStack[current] = false
 					continue
 				}
 
 				visited[current] = struct{}{}
-				onStack[current] = true
-				stack = append(stack, current)
-
-				if len(adjacencyMap[current]) == 0 {
-					onStack[current] = false
-				}
+				stack.push(current)
 
 				for adjacency := range adjacencyMap[current] {
 					if _, ok := visited[adjacency]; ok {
-						if onStack[adjacency] {
+						if stack.contains(adjacency) {
 							// If the current adjacency is both on the stack and
 							// has already been visited, there is a cycle.
 							return nil, fmt.Errorf("transitive reduction cannot be performed on graph with cycle")
@@ -215,7 +208,7 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error
 					if _, ok := adjacencyMap[vertex][adjacency]; ok {
 						_ = transitiveReduction.RemoveEdge(vertex, adjacency)
 					}
-					stack = append(stack, adjacency)
+					stack.push(adjacency)
 				}
 			}
 		}

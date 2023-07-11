@@ -107,30 +107,21 @@ func (m *minHeap[T]) Pop() interface{} {
 	return item
 }
 
-type stack[T any] interface {
-	push(T)
-	pop() (T, error)
-	top() (T, error)
-	isEmpty() bool
-	// forEach iterate the stack from bottom to top
-	forEach(func(T))
-}
-
-func newStack[T any]() stack[T] {
-	return &stackImpl[T]{
+func newStack[T any]() *stack[T] {
+	return &stack[T]{
 		elements: make([]T, 0),
 	}
 }
 
-type stackImpl[T any] struct {
+type stack[T any] struct {
 	elements []T
 }
 
-func (s *stackImpl[T]) push(t T) {
+func (s *stack[T]) push(t T) {
 	s.elements = append(s.elements, t)
 }
 
-func (s *stackImpl[T]) pop() (T, error) {
+func (s *stack[T]) pop() (T, error) {
 	e, err := s.top()
 	if err != nil {
 		var defaultValue T
@@ -141,7 +132,7 @@ func (s *stackImpl[T]) pop() (T, error) {
 	return e, nil
 }
 
-func (s *stackImpl[T]) top() (T, error) {
+func (s *stack[T]) top() (T, error) {
 	if s.isEmpty() {
 		var defaultValue T
 		return defaultValue, errors.New("no element in stack")
@@ -150,11 +141,11 @@ func (s *stackImpl[T]) top() (T, error) {
 	return s.elements[len(s.elements)-1], nil
 }
 
-func (s *stackImpl[T]) isEmpty() bool {
+func (s *stack[T]) isEmpty() bool {
 	return len(s.elements) == 0
 }
 
-func (s *stackImpl[T]) forEach(f func(T)) {
+func (s *stack[T]) forEach(f func(T)) {
 	for _, e := range s.elements {
 		f(e)
 	}

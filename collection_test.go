@@ -433,7 +433,6 @@ func TestStack_contains(t *testing.T) {
 			}
 
 			got := s.contains(tt.arg)
-
 			if got != tt.expected {
 				t.Errorf("contains() = %v, want %v", got, tt.expected)
 			}

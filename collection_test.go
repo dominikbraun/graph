@@ -278,9 +278,9 @@ func TestStack__pop(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.s.pop()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("pop() error = %v, wantErr %v", err, tt.wantErr)
+			got, ok := tt.s.pop()
+			if ok == tt.wantErr {
+				t.Errorf("pop() bool = %v, wantErr %v", ok, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
@@ -317,9 +317,9 @@ func TestStack__top(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.s.top()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("top() error = %v, wantErr %v", err, tt.wantErr)
+			got, ok := tt.s.top()
+			if ok == tt.wantErr {
+				t.Errorf("top() bool = %v, wantErr %v", ok, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {

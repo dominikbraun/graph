@@ -124,26 +124,25 @@ func (s *stack[T]) push(t T) {
 	s.registry[t] = struct{}{}
 }
 
-func (s *stack[T]) pop() (T, error) {
-	element, err := s.top()
-	if err != nil {
-		var defaultValue T
-		return defaultValue, err
+func (s *stack[T]) pop() (T, bool) {
+	element, ok := s.top()
+	if !ok {
+		return element, false
 	}
 
 	s.elements = s.elements[:len(s.elements)-1]
 	delete(s.registry, element)
 
-	return element, nil
+	return element, true
 }
 
-func (s *stack[T]) top() (T, error) {
+func (s *stack[T]) top() (T, bool) {
 	if s.isEmpty() {
 		var defaultValue T
-		return defaultValue, errors.New("no element in stack")
+		return defaultValue, false
 	}
 
-	return s.elements[len(s.elements)-1], nil
+	return s.elements[len(s.elements)-1], true
 }
 
 func (s *stack[T]) isEmpty() bool {

@@ -411,13 +411,13 @@ func TestStack_contains(t *testing.T) {
 	}
 	tests := []testCase[int]{
 		{
-			name:     "contains",
+			name:     "contains 6",
 			elements: []int{1, 2, 3, 4, 5, 6},
 			arg:      6,
 			expected: true,
 		},
 		{
-			name:     "contains",
+			name:     "contains 7",
 			elements: []int{1, 2, 3, 4, 5, 6},
 			arg:      7,
 			expected: false,

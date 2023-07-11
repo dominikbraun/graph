@@ -387,3 +387,42 @@ func TestStack__forEach(t *testing.T) {
 		})
 	}
 }
+
+func TestStack_forEach(t *testing.T) {
+	type testCase[T comparable] struct {
+		name     string
+		elements []int
+		arg      T
+		expected bool
+	}
+	tests := []testCase[int]{
+		{
+			name:     "forEach",
+			elements: []int{1, 2, 3, 4, 5, 6},
+			arg:      6,
+			expected: true,
+		},
+		{
+			name:     "forEach",
+			elements: []int{1, 2, 3, 4, 5, 6},
+			arg:      7,
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := newStack[int]()
+
+			for _, element := range tt.elements {
+				s.push(element)
+			}
+
+			got := s.contains(tt.arg)
+
+			if got != tt.expected {
+				t.Errorf("contains() = %v, want %v", got, tt.expected)
+			}
+		})
+	}
+}

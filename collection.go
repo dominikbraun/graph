@@ -109,27 +109,32 @@ func (m *minHeap[T]) Pop() interface{} {
 
 type stack[T comparable] struct {
 	elements []T
+	registry map[T]struct{}
 }
 
 func newStack[T comparable]() *stack[T] {
 	return &stack[T]{
 		elements: make([]T, 0),
+		registry: make(map[T]struct{}),
 	}
 }
 
 func (s *stack[T]) push(t T) {
 	s.elements = append(s.elements, t)
+	s.registry[t] = struct{}{}
 }
 
 func (s *stack[T]) pop() (T, error) {
-	e, err := s.top()
+	element, err := s.top()
 	if err != nil {
 		var defaultValue T
 		return defaultValue, err
 	}
 
 	s.elements = s.elements[:len(s.elements)-1]
-	return e, nil
+	delete(s.registry, element)
+
+	return element, nil
 }
 
 func (s *stack[T]) top() (T, error) {
@@ -149,6 +154,11 @@ func (s *stack[T]) forEach(f func(T)) {
 	for _, e := range s.elements {
 		f(e)
 	}
+}
+
+func (s *stack[T]) contains(element T) bool {
+	_, ok := s.registry[element]
+	return ok
 }
 
 type stackOfStacks[T comparable] struct {

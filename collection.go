@@ -107,13 +107,13 @@ func (m *minHeap[T]) Pop() interface{} {
 	return item
 }
 
-func newStack[T any]() *stack[T] {
+func newStack[T comparable]() *stack[T] {
 	return &stack[T]{
 		elements: make([]T, 0),
 	}
 }
 
-type stack[T any] struct {
+type stack[T comparable] struct {
 	elements []T
 }
 

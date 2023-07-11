@@ -225,10 +225,10 @@ func TestPriorityQueue_Len(t *testing.T) {
 }
 
 func Test_stackImpl_push(t *testing.T) {
-	type args[T any] struct {
+	type args[T comparable] struct {
 		t T
 	}
-	type testCase[T any] struct {
+	type testCase[T comparable] struct {
 		name string
 		s    stack[T]
 		args args[T]
@@ -252,7 +252,7 @@ func Test_stackImpl_push(t *testing.T) {
 }
 
 func Test_stackImpl_pop(t *testing.T) {
-	type testCase[T any] struct {
+	type testCase[T comparable] struct {
 		name    string
 		s       stack[T]
 		want    T
@@ -291,7 +291,7 @@ func Test_stackImpl_pop(t *testing.T) {
 }
 
 func Test_stackImpl_top(t *testing.T) {
-	type testCase[T any] struct {
+	type testCase[T comparable] struct {
 		name    string
 		s       stack[T]
 		want    T
@@ -330,7 +330,7 @@ func Test_stackImpl_top(t *testing.T) {
 }
 
 func Test_stackImpl_isEmpty(t *testing.T) {
-	type testCase[T any] struct {
+	type testCase[T comparable] struct {
 		name string
 		s    stack[T]
 		want bool
@@ -361,10 +361,10 @@ func Test_stackImpl_isEmpty(t *testing.T) {
 }
 
 func Test_stackImpl_forEach(t *testing.T) {
-	type args[T any] struct {
+	type args[T comparable] struct {
 		f func(T)
 	}
-	type testCase[T any] struct {
+	type testCase[T comparable] struct {
 		name string
 		s    stack[T]
 		args args[T]

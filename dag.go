@@ -27,6 +27,11 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 		return nil, fmt.Errorf("failed to get graph order: %w", err)
 	}
 
+	adjacencyMap, err := g.AdjacencyMap()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get adjacency map: %w", err)
+	}
+
 	predecessorMap, err := g.PredecessorMap()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get predecessor map: %w", err)
@@ -34,9 +39,11 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 
 	queue := make([]K, 0)
 
+	// seed the queue
 	for vertex, predecessors := range predecessorMap {
 		if len(predecessors) == 0 {
 			queue = append(queue, vertex)
+			delete(predecessorMap, vertex)
 		}
 	}
 
@@ -54,11 +61,16 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 		order = append(order, currentVertex)
 		visited[currentVertex] = struct{}{}
 
-		for vertex, predecessors := range predecessorMap {
+		edgeMap := adjacencyMap[currentVertex]
+
+		for predecessor, _ := range edgeMap {
+
+			predecessors := predecessorMap[predecessor]
 			delete(predecessors, currentVertex)
 
 			if len(predecessors) == 0 {
-				queue = append(queue, vertex)
+				queue = append(queue, predecessor)
+				delete(predecessorMap, predecessor)
 			}
 		}
 	}

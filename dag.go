@@ -39,7 +39,6 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 
 	queue := make([]K, 0)
 
-	// seed the queue
 	for vertex, predecessors := range predecessorMap {
 		if len(predecessors) == 0 {
 			queue = append(queue, vertex)
@@ -48,18 +47,12 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 	}
 
 	order := make([]K, 0, gOrder)
-	visited := make(map[K]struct{}, gOrder)
 
 	for len(queue) > 0 {
 		currentVertex := queue[0]
 		queue = queue[1:]
 
-		if _, ok := visited[currentVertex]; ok {
-			continue
-		}
-
 		order = append(order, currentVertex)
-		visited[currentVertex] = struct{}{}
 
 		edgeMap := adjacencyMap[currentVertex]
 

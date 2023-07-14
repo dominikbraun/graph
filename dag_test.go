@@ -2,7 +2,9 @@ package graph
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
+	"time"
 )
 
 func TestDirectedTopologicalSort(t *testing.T) {
@@ -25,6 +27,17 @@ func TestDirectedTopologicalSort(t *testing.T) {
 			},
 			expectedOrder: []int{1, 2, 3, 4, 5},
 		},
+		"graph with many possible topological orders": {
+			vertices: []int{1, 2, 3, 4, 5, 6, 10, 20, 30, 40, 50, 60},
+			edges: []Edge[int]{
+				{Source: 1, Target: 10},
+				{Source: 2, Target: 20},
+				{Source: 3, Target: 30},
+				{Source: 4, Target: 40},
+				{Source: 5, Target: 50},
+				{Source: 6, Target: 60},
+			},
+		},
 		"graph with cycle": {
 			vertices: []int{1, 2, 3},
 			edges: []Edge[int]{
@@ -39,9 +52,15 @@ func TestDirectedTopologicalSort(t *testing.T) {
 	for name, test := range tests {
 		graph := New(IntHash, Directed())
 
+		rand.Seed(time.Now().UnixNano())
+		rand.Shuffle(len(test.vertices), func(i, j int) { test.vertices[i], test.vertices[j] = test.vertices[j], test.vertices[i] })
+
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
 		}
+
+		rand.Seed(time.Now().UnixNano())
+		rand.Shuffle(len(test.edges), func(i, j int) { test.edges[i], test.edges[j] = test.edges[j], test.edges[i] })
 
 		for _, edge := range test.edges {
 			if err := graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
@@ -59,8 +78,20 @@ func TestDirectedTopologicalSort(t *testing.T) {
 			continue
 		}
 
-		if len(order) != len(test.expectedOrder) {
-			t.Errorf("%s: order length expectancy doesn't match: expected %v, got %v", name, len(test.expectedOrder), len(order))
+		if len(order) != len(test.vertices) {
+			t.Errorf("%s: order length expectancy doesn't match: expected %v, got %v", name, len(test.vertices), len(order))
+		}
+
+		if len(test.expectedOrder) <= 0 {
+			for i, _ := range order {
+				if i < 6 && order[i] >= 10 {
+					t.Errorf("%s: order doesn't match: expected < 10 at %d, got %v", name, i, order[i])
+				}
+
+				if i >= 6 && order[i] < 10 {
+					t.Errorf("%s: order doesn't match: expected >= 10 at %d, got %v", name, i, order[i])
+				}
+			}
 		}
 
 		for i, expectedVertex := range test.expectedOrder {
@@ -143,9 +174,15 @@ func TestDirectedStableTopologicalSort(t *testing.T) {
 	for name, test := range tests {
 		graph := New(IntHash, Directed())
 
+		rand.Seed(time.Now().UnixNano())
+		rand.Shuffle(len(test.vertices), func(i, j int) { test.vertices[i], test.vertices[j] = test.vertices[j], test.vertices[i] })
+
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
 		}
+
+		rand.Seed(time.Now().UnixNano())
+		rand.Shuffle(len(test.edges), func(i, j int) { test.edges[i], test.edges[j] = test.edges[j], test.edges[i] })
 
 		for _, edge := range test.edges {
 			if err := graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {

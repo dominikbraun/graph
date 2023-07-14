@@ -83,7 +83,7 @@ func TestDirectedTopologicalSort(t *testing.T) {
 		}
 
 		if len(test.expectedOrder) <= 0 {
-			for i, _ := range order {
+			for i := range order {
 				if i < 6 && order[i] >= 10 {
 					t.Errorf("%s: order doesn't match: expected < 10 at %d, got %v", name, i, order[i])
 				}

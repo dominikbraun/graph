@@ -56,7 +56,7 @@ func TopologicalSort[K comparable, T any](g Graph[K, T]) ([]K, error) {
 
 		edgeMap := adjacencyMap[currentVertex]
 
-		for predecessor, _ := range edgeMap {
+		for predecessor := range edgeMap {
 
 			predecessors := predecessorMap[predecessor]
 			delete(predecessors, currentVertex)
@@ -123,7 +123,7 @@ func StableTopologicalSort[K comparable, T any](g Graph[K, T], less func(K, K) b
 
 		edgeMap := adjacencyMap[currentVertex]
 
-		for predecessor, _ := range edgeMap {
+		for predecessor := range edgeMap {
 
 			predecessors := predecessorMap[predecessor]
 			delete(predecessors, currentVertex)

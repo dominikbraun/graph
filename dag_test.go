@@ -83,13 +83,29 @@ func TestDirectedTopologicalSort(t *testing.T) {
 		}
 
 		if len(test.expectedOrder) <= 0 {
+
+			fmt.Println("topological sort", order)
+
+			adjacencyMap, err := graph.AdjacencyMap()
+			if err != nil {
+				t.Errorf("%s: invalid topological sort - failed to get adjacency map: %v", name, err)
+				return
+			}
+
 			for i := range order {
-				if i < 6 && order[i] >= 10 {
-					t.Errorf("%s: order doesn't match: expected < 10 at %d, got %v", name, i, order[i])
+
+				for _, edge := range adjacencyMap[order[i]] {
+					err = graph.RemoveEdge(edge.Source, edge.Target)
+					if err != nil {
+						t.Errorf("%s: invalid topological sort - failed to remove edge: %d -> %d", name, edge.Source, edge.Target)
+						return
+					}
 				}
 
-				if i >= 6 && order[i] < 10 {
-					t.Errorf("%s: order doesn't match: expected >= 10 at %d, got %v", name, i, order[i])
+				err = graph.RemoveVertex(order[i])
+				if err == ErrVertexHasEdges {
+					t.Errorf("%s: invalid topological sort - failed to remove vertex: %d at index %d", name, order[i], i)
+					return
 				}
 			}
 		}

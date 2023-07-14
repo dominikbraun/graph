@@ -413,3 +413,72 @@ func TestUndirectedBFS(t *testing.T) {
 		}
 	}
 }
+
+func TestFullTraverse(t *testing.T) {
+	tests := map[string]struct {
+		vertices       []int
+		edges          []Edge[int]
+		startHash      int
+		expectedVisits []int
+		stopAtVertex   int
+	}{
+		"traverse entire graph with 3 vertices": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+			},
+			startHash:      1,
+			expectedVisits: []int{1, 2, 3},
+			stopAtVertex:   -1,
+		},
+		"traverse graph with 6 vertices until vertex 4": {
+			vertices: []int{1, 2, 3, 4, 5, 6},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 2, Target: 5},
+				{Source: 3, Target: 6},
+			},
+			startHash:      1,
+			expectedVisits: []int{1, 2, 3, 4},
+			stopAtVertex:   4,
+		},
+		"traverse a disconnected graph": {
+			vertices: []int{1, 2, 3, 4},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 3, Target: 4},
+			},
+			startHash:      1,
+			expectedVisits: []int{1, 2},
+			stopAtVertex:   -1,
+		},
+	}
+	for name, test := range tests {
+		graph := New(IntHash, Directed())
+
+		for _, vertex := range test.vertices {
+			_ = graph.AddVertex(vertex)
+		}
+
+		for _, edge := range test.edges {
+			if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
+		}
+
+		visited := map[int]struct{}{}
+		err := FullTraverse(graph, func(i int) bool {
+			visited[i] = struct{}{}
+			return false
+		})
+		if err != nil {
+			t.Fatalf("traverse failed")
+		}
+		if len(visited) != len(test.vertices) {
+			t.Fatalf("traversal did not walk all the nodes")
+		}
+	}
+}

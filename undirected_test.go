@@ -384,11 +384,8 @@ func TestUndirected_AddEdge(t *testing.T) {
 		}
 
 		for _, expectedEdge := range test.expectedEdges {
-			sourceHash := graph.hash(expectedEdge.Source)
-			targetHash := graph.hash(expectedEdge.Target)
-
-			edge, ok := graph.store.(*memoryStore[int, int]).outEdges[sourceHash][targetHash]
-			if !ok {
+			edge, err := graph.Edge(expectedEdge.Source, expectedEdge.Target)
+			if err != nil {
 				t.Fatalf("%s: edge with source %v and target %v not found", name, expectedEdge.Source, expectedEdge.Target)
 			}
 

@@ -131,25 +131,15 @@ func (d *directed[K, T]) AddEdgesFrom(g Graph[K, T]) error {
 	return nil
 }
 
-func (d *directed[K, T]) Edge(sourceHash, targetHash K) (Edge[T], error) {
+func (d *directed[K, T]) Edge(sourceHash, targetHash K) (Edge[K], error) {
 	edge, err := d.store.Edge(sourceHash, targetHash)
 	if err != nil {
-		return Edge[T]{}, err
+		return Edge[K]{}, err
 	}
 
-	sourceVertex, _, err := d.store.Vertex(sourceHash)
-	if err != nil {
-		return Edge[T]{}, err
-	}
-
-	targetVertex, _, err := d.store.Vertex(targetHash)
-	if err != nil {
-		return Edge[T]{}, err
-	}
-
-	return Edge[T]{
-		Source: sourceVertex,
-		Target: targetVertex,
+	return Edge[K]{
+		Source: sourceHash,
+		Target: targetHash,
 		Properties: EdgeProperties{
 			Weight:     edge.Properties.Weight,
 			Attributes: edge.Properties.Attributes,
@@ -286,13 +276,10 @@ func (d *directed[K, T]) Size() (int, error) {
 	return size, nil
 }
 
-func (d *directed[K, T]) edgesAreEqual(a, b Edge[T]) bool {
-	aSourceHash := d.hash(a.Source)
-	aTargetHash := d.hash(a.Target)
-	bSourceHash := d.hash(b.Source)
-	bTargetHash := d.hash(b.Target)
-
-	return aSourceHash == bSourceHash && aTargetHash == bTargetHash
+// This only tells you the source and target are the same, it does not
+// tell you that the edge properties are the same as well.
+func (d *directed[K, T]) edgesAreEqual(a, b Edge[K]) bool {
+	return a.Source == b.Source && a.Target == b.Target
 }
 
 func (d *directed[K, T]) createsCycle(source, target K) (bool, error) {

@@ -135,32 +135,19 @@ func (u *undirected[K, T]) AddVerticesFrom(g Graph[K, T]) error {
 	return nil
 }
 
-func (u *undirected[K, T]) Edge(sourceHash, targetHash K) (Edge[T], error) {
-	// In an undirected graph, since multigraphs aren't supported, the edge AB
-	// is the same as BA. Therefore, if source[target] cannot be found, this
-	// function also looks for target[source].
+func (u *undirected[K, T]) Edge(sourceHash, targetHash K) (Edge[K], error) {
+
+	// no need to do a reverse lookup because addEdge() is already writing it
+	// in both directions to the store.
 	edge, err := u.store.Edge(sourceHash, targetHash)
-	if errors.Is(err, ErrEdgeNotFound) {
-		edge, err = u.store.Edge(targetHash, sourceHash)
-	}
 
 	if err != nil {
-		return Edge[T]{}, err
+		return Edge[K]{}, err
 	}
 
-	sourceVertex, _, err := u.store.Vertex(sourceHash)
-	if err != nil {
-		return Edge[T]{}, err
-	}
-
-	targetVertex, _, err := u.store.Vertex(targetHash)
-	if err != nil {
-		return Edge[T]{}, err
-	}
-
-	return Edge[T]{
-		Source: sourceVertex,
-		Target: targetVertex,
+	return Edge[K]{
+		Source: sourceHash,
+		Target: targetHash,
 		Properties: EdgeProperties{
 			Weight:     edge.Properties.Weight,
 			Attributes: edge.Properties.Attributes,
@@ -327,18 +314,14 @@ func (u *undirected[K, T]) Size() (int, error) {
 	return size / 2, nil
 }
 
-func (u *undirected[K, T]) edgesAreEqual(a, b Edge[T]) bool {
-	aSourceHash := u.hash(a.Source)
-	aTargetHash := u.hash(a.Target)
-	bSourceHash := u.hash(b.Source)
-	bTargetHash := u.hash(b.Target)
+func (u *undirected[K, T]) edgesAreEqual(a, b Edge[K]) bool {
 
-	if aSourceHash == bSourceHash && aTargetHash == bTargetHash {
+	if a.Source == b.Source && a.Target == b.Target {
 		return true
 	}
 
 	if !u.traits.IsDirected {
-		return aSourceHash == bTargetHash && aTargetHash == bSourceHash
+		return a.Source == b.Target && a.Target == b.Source
 	}
 
 	return false

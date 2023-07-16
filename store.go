@@ -71,16 +71,16 @@ type memoryStore[K comparable, T any] struct {
 
 	// outEdges and inEdges store all outgoing and ingoing edges for all vertices. For O(1) access,
 	// these edges themselves are stored in maps whose keys are the hashes of the target vertices.
-	outEdges map[K]map[K]Edge[K] // source -> target
-	inEdges  map[K]map[K]Edge[K] // target -> source
+	outEdges map[K]map[K]*EdgeProperties // source -> target
+	inEdges  map[K]map[K]*EdgeProperties // target -> source
 }
 
 func newMemoryStore[K comparable, T any]() Store[K, T] {
 	return &memoryStore[K, T]{
 		vertices:         make(map[K]T),
 		vertexProperties: make(map[K]VertexProperties),
-		outEdges:         make(map[K]map[K]Edge[K]),
-		inEdges:          make(map[K]map[K]Edge[K]),
+		outEdges:         make(map[K]map[K]*EdgeProperties),
+		inEdges:          make(map[K]map[K]*EdgeProperties),
 	}
 }
 
@@ -143,16 +143,16 @@ func (s *memoryStore[K, T]) RemoveVertex(k K) error {
 		if len(edges) > 0 {
 			return ErrVertexHasEdges
 		}
-		delete(s.inEdges, k)
 	}
 
 	if edges, ok := s.outEdges[k]; ok {
 		if len(edges) > 0 {
 			return ErrVertexHasEdges
 		}
-		delete(s.outEdges, k)
 	}
 
+	delete(s.inEdges, k)
+	delete(s.outEdges, k)
 	delete(s.vertices, k)
 	delete(s.vertexProperties, k)
 
@@ -163,31 +163,42 @@ func (s *memoryStore[K, T]) AddEdge(sourceHash, targetHash K, edge Edge[K]) erro
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
+	edgeProperties := edge.Properties.Clone()
+
 	if _, ok := s.outEdges[sourceHash]; !ok {
-		s.outEdges[sourceHash] = make(map[K]Edge[K])
+		s.outEdges[sourceHash] = make(map[K]*EdgeProperties)
 	}
 
-	s.outEdges[sourceHash][targetHash] = edge
+	s.outEdges[sourceHash][targetHash] = &edgeProperties
 
 	if _, ok := s.inEdges[targetHash]; !ok {
-		s.inEdges[targetHash] = make(map[K]Edge[K])
+		s.inEdges[targetHash] = make(map[K]*EdgeProperties)
 	}
 
-	s.inEdges[targetHash][sourceHash] = edge
+	s.inEdges[targetHash][sourceHash] = &edgeProperties
 
 	return nil
 }
 
 func (s *memoryStore[K, T]) UpdateEdge(sourceHash, targetHash K, edge Edge[K]) error {
-	if _, err := s.Edge(sourceHash, targetHash); err != nil {
-		return err
-	}
+
+	edgeProperties := edge.Properties.Clone()
 
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	s.outEdges[sourceHash][targetHash] = edge
-	s.inEdges[targetHash][sourceHash] = edge
+	sourceEdges, ok := s.outEdges[sourceHash]
+	if !ok {
+		return ErrEdgeNotFound
+	}
+
+	_, ok = sourceEdges[targetHash]
+	if !ok {
+		return ErrEdgeNotFound
+	}
+
+	s.outEdges[sourceHash][targetHash] = &edgeProperties
+	s.inEdges[targetHash][sourceHash] = &edgeProperties
 
 	return nil
 }
@@ -198,6 +209,7 @@ func (s *memoryStore[K, T]) RemoveEdge(sourceHash, targetHash K) error {
 
 	delete(s.inEdges[targetHash], sourceHash)
 	delete(s.outEdges[sourceHash], targetHash)
+
 	return nil
 }
 
@@ -210,9 +222,15 @@ func (s *memoryStore[K, T]) Edge(sourceHash, targetHash K) (Edge[K], error) {
 		return Edge[K]{}, ErrEdgeNotFound
 	}
 
-	edge, ok := sourceEdges[targetHash]
+	edgeProperties, ok := sourceEdges[targetHash]
 	if !ok {
 		return Edge[K]{}, ErrEdgeNotFound
+	}
+
+	edge := Edge[K]{
+		Source:     sourceHash,
+		Target:     targetHash,
+		Properties: edgeProperties.Clone(),
 	}
 
 	return edge, nil
@@ -223,8 +241,15 @@ func (s *memoryStore[K, T]) ListEdges() ([]Edge[K], error) {
 	defer s.lock.RUnlock()
 
 	res := make([]Edge[K], 0)
-	for _, edges := range s.outEdges {
-		for _, edge := range edges {
+	for sourceKey, edges := range s.outEdges {
+		for targetKey, edgeProperties := range edges {
+
+			edge := Edge[K]{
+				Source:     sourceKey,
+				Target:     targetKey,
+				Properties: edgeProperties.Clone(),
+			}
+
 			res = append(res, edge)
 		}
 	}

@@ -124,7 +124,7 @@ type Graph[K comparable, T any] interface {
 	// Edge returns the edge joining two given vertices or ErrEdgeNotFound if
 	// the edge doesn't exist. In an undirected graph, an edge with swapped
 	// source and target vertices does match.
-	Edge(sourceHash, targetHash K) (Edge[T], error)
+	Edge(sourceHash, targetHash K) (Edge[K], error)
 
 	// Edges returns a slice of all edges in the graph. These edges are of type
 	// Edge[K] and hence will contain the vertex hashes, not the vertex values.
@@ -213,9 +213,9 @@ type Graph[K comparable, T any] interface {
 // Edge represents an edge that joins two vertices. Even though these edges are
 // always referred to as source and target, whether the graph is directed or not
 // is determined by its traits.
-type Edge[T any] struct {
-	Source     T
-	Target     T
+type Edge[K comparable] struct {
+	Source     K
+	Target     K
 	Properties EdgeProperties
 }
 
@@ -230,6 +230,21 @@ type EdgeProperties struct {
 	Attributes map[string]string
 	Weight     int
 	Data       any
+}
+
+func (p *EdgeProperties) Clone() EdgeProperties {
+
+	ep := EdgeProperties{
+		Attributes: make(map[string]string),
+		Weight:     p.Weight,
+		Data:       p.Data,
+	}
+
+	for k, v := range p.Attributes {
+		ep.Attributes[k] = v
+	}
+
+	return ep
 }
 
 // Hash is a hashing function that takes a vertex of type T and returns a hash

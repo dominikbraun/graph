@@ -273,17 +273,7 @@ func (d *directed[K, T]) Order() (int, error) {
 }
 
 func (d *directed[K, T]) Size() (int, error) {
-	size := 0
-	outEdges, err := d.AdjacencyMap()
-	if err != nil {
-		return 0, fmt.Errorf("failed to get adjacency map: %w", err)
-	}
-
-	for _, outEdges := range outEdges {
-		size += len(outEdges)
-	}
-
-	return size, nil
+	return d.store.EdgeCount()
 }
 
 func (d *directed[K, T]) edgesAreEqual(a, b Edge[T]) bool {

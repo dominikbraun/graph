@@ -311,20 +311,11 @@ func (u *undirected[K, T]) Order() (int, error) {
 }
 
 func (u *undirected[K, T]) Size() (int, error) {
-	size := 0
-
-	outEdges, err := u.AdjacencyMap()
-	if err != nil {
-		return 0, fmt.Errorf("failed to get adjacency map: %w", err)
-	}
-
-	for _, outEdges := range outEdges {
-		size += len(outEdges)
-	}
+	edgeCount, err := u.store.EdgeCount()
 
 	// Divide by 2 since every add edge operation on undirected graph is counted
 	// twice.
-	return size / 2, nil
+	return edgeCount / 2, err
 }
 
 func (u *undirected[K, T]) edgesAreEqual(a, b Edge[T]) bool {

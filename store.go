@@ -62,6 +62,10 @@ type Store[K comparable, T any] interface {
 
 	// ListEdges should return all edges in the graph in a slice.
 	ListEdges() ([]Edge[K], error)
+
+	// EdgeCount should return the number of edges in the graph. This should be equal to the
+	// length of the slice returned by ListEdges.
+	EdgeCount() (int, error)
 }
 
 type memoryStore[K comparable, T any] struct {
@@ -73,6 +77,7 @@ type memoryStore[K comparable, T any] struct {
 	// these edges themselves are stored in maps whose keys are the hashes of the target vertices.
 	outEdges map[K]map[K]Edge[K] // source -> target
 	inEdges  map[K]map[K]Edge[K] // target -> source
+	edgeCount int
 }
 
 func newMemoryStore[K comparable, T any]() Store[K, T] {
@@ -175,6 +180,8 @@ func (s *memoryStore[K, T]) AddEdge(sourceHash, targetHash K, edge Edge[K]) erro
 
 	s.inEdges[targetHash][sourceHash] = edge
 
+	s.edgeCount++
+
 	return nil
 }
 
@@ -198,6 +205,9 @@ func (s *memoryStore[K, T]) RemoveEdge(sourceHash, targetHash K) error {
 
 	delete(s.inEdges[targetHash], sourceHash)
 	delete(s.outEdges[sourceHash], targetHash)
+
+	s.edgeCount--
+
 	return nil
 }
 
@@ -218,11 +228,18 @@ func (s *memoryStore[K, T]) Edge(sourceHash, targetHash K) (Edge[K], error) {
 	return edge, nil
 }
 
+func (s *memoryStore[K, T]) EdgeCount() (int, error) {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+
+	return s.edgeCount, nil
+}
+
 func (s *memoryStore[K, T]) ListEdges() ([]Edge[K], error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
-	res := make([]Edge[K], 0)
+	res := make([]Edge[K], 0, s.edgeCount)
 	for _, edges := range s.outEdges {
 		for _, edge := range edges {
 			res = append(res, edge)

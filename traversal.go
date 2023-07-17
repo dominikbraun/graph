@@ -58,6 +58,9 @@ func DFS[K comparable, T any](g Graph[K, T], start K, visit func(K) bool) error 
 			visited[currentHash] = true
 
 			for adjacency := range adjacencyMap[currentHash] {
+				if visited[adjacency] {
+					continue
+				}
 				stack.push(adjacency)
 			}
 		}

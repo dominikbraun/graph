@@ -1,7 +1,6 @@
 package graph
 
 import (
-	"log"
 	"testing"
 )
 
@@ -319,19 +318,100 @@ func TestDirectedBFS(t *testing.T) {
 				t.Errorf("%s: expected vertex %v to be visited, but it isn't", name, expectedVisit)
 			}
 		}
+	}
+}
 
-		visitWithDepth := func(value int, depth int) bool {
-			visited[value] = struct{}{}
-			log.Printf("cur depth: %d", depth)
+func TestDirectedBFSWithDepth(t *testing.T) {
+	tests := map[string]struct {
+		vertices       []int
+		edges          []Edge[int]
+		startHash      int
+		expectedVisits map[int]int
+		stopAtDepth   int
+	}{
+		"traverse entire graph with 3 vertices": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+			},
+			startHash: 1,
+			expectedVisits: map[int]int{
+				1: 1,
+				2: 2,
+				3: 2,
+			},
+			stopAtDepth: -1,
+		},
+		"traverse graph with 6 vertices until vertex 4": {
+			vertices: []int{1, 2, 3, 4, 5, 6},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 1, Target: 3},
+				{Source: 2, Target: 4},
+				{Source: 2, Target: 5},
+				{Source: 3, Target: 6},
+			},
+			startHash: 1,
+			expectedVisits: map[int]int{
+				1: 1,
+				2: 2,
+				3: 2,
+			},
+			stopAtDepth: 2,
+		},
+		"traverse a disconnected graph": {
+			vertices: []int{1, 2, 3, 4},
+			edges: []Edge[int]{
+				{Source: 1, Target: 2},
+				{Source: 3, Target: 4},
+			},
+			startHash: 1,
+			expectedVisits: map[int]int{
+				1: 1,
+				2: 2,
+			},
+			stopAtDepth: -1,
+		},
+	}
 
-			if test.stopAtVertex != -1 {
-				if value == test.stopAtVertex {
+	for name, test := range tests {
+		graph := New(IntHash, Directed())
+
+		for _, vertex := range test.vertices {
+			_ = graph.AddVertex(vertex)
+		}
+
+		for _, edge := range test.edges {
+			if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
+				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			}
+		}
+
+		visited := make(map[int]int)
+
+		visit := func(value, depth int) bool {
+			visited[value] = depth
+
+			if test.stopAtDepth != -1 {
+				if value == test.stopAtDepth {
 					return true
 				}
 			}
 			return false
 		}
-		_ = BFSWithDepth(graph, test.startHash, visitWithDepth)
+
+		_ = BFSWithDepth(graph, test.startHash, visit)
+
+		for expectedVisit, expectedDepth := range test.expectedVisits {
+			actualDepth, ok := visited[expectedVisit]
+			if !ok {
+				t.Errorf("%s: expected vertex %v to be visited, but it isn't", name, expectedVisit)
+			}
+			if expectedDepth != actualDepth {
+				t.Errorf("%s: vertex depth don't match: expected %v, got %v", name, expectedDepth, actualDepth)
+			}
+		}
 	}
 }
 

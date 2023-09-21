@@ -1,7 +1,6 @@
 package graph
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -168,9 +167,6 @@ func TestDirectedStableTopologicalSort(t *testing.T) {
 		if len(order) != len(test.expectedOrder) {
 			t.Errorf("%s: order length expectancy doesn't match: expected %v, got %v", name, len(test.expectedOrder), len(order))
 		}
-
-		fmt.Println("expected", test.expectedOrder)
-		fmt.Println("actual", order)
 
 		for i, expectedVertex := range test.expectedOrder {
 			if expectedVertex != order[i] {

@@ -131,24 +131,27 @@ func BFSWithDepth[K comparable, T any](g Graph[K, T], start K, visit func(K, int
 	queue = append(queue, start)
 	depth := 0
 
-	for len(queue) > 0 {
-		currentHash := queue[0]
-
-		queue = queue[1:]
+	var stop bool
+	for len(queue) > 0 && !stop {
 		depth++
 
-		// Stop traversing the graph if the visit function returns true.
-		if stop := visit(currentHash, depth); stop {
-			break
-		}
+		for verticesAtDepth := len(queue); verticesAtDepth > 0; verticesAtDepth-- {
+			currentHash := queue[0]
 
-		for adjacency := range adjacencyMap[currentHash] {
-			if _, ok := visited[adjacency]; !ok {
-				visited[adjacency] = true
-				queue = append(queue, adjacency)
+			queue = queue[1:]
+
+			// Stop traversing the graph if the visit function returns true.
+			if stop = visit(currentHash, depth) || stop; stop {
+				continue
+			}
+
+			for adjacency := range adjacencyMap[currentHash] {
+				if _, ok := visited[adjacency]; !ok {
+					visited[adjacency] = true
+					queue = append(queue, adjacency)
+				}
 			}
 		}
-
 	}
 
 	return nil

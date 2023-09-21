@@ -327,7 +327,7 @@ func TestDirectedBFSWithDepth(t *testing.T) {
 		edges          []Edge[int]
 		startHash      int
 		expectedVisits map[int]int
-		stopAtVertex   int
+		stopAtDepth   int
 	}{
 		"traverse entire graph with 3 vertices": {
 			vertices: []int{1, 2, 3},
@@ -341,7 +341,7 @@ func TestDirectedBFSWithDepth(t *testing.T) {
 				2: 2,
 				3: 2,
 			},
-			stopAtVertex: -1,
+			stopAtDepth: -1,
 		},
 		"traverse graph with 6 vertices until vertex 4": {
 			vertices: []int{1, 2, 3, 4, 5, 6},
@@ -357,9 +357,8 @@ func TestDirectedBFSWithDepth(t *testing.T) {
 				1: 1,
 				2: 2,
 				3: 2,
-				4: 3,
 			},
-			stopAtVertex: 4,
+			stopAtDepth: 2,
 		},
 		"traverse a disconnected graph": {
 			vertices: []int{1, 2, 3, 4},
@@ -372,7 +371,7 @@ func TestDirectedBFSWithDepth(t *testing.T) {
 				1: 1,
 				2: 2,
 			},
-			stopAtVertex: -1,
+			stopAtDepth: -1,
 		},
 	}
 
@@ -394,8 +393,8 @@ func TestDirectedBFSWithDepth(t *testing.T) {
 		visit := func(value, depth int) bool {
 			visited[value] = depth
 
-			if test.stopAtVertex != -1 {
-				if value == test.stopAtVertex {
+			if test.stopAtDepth != -1 {
+				if value == test.stopAtDepth {
 					return true
 				}
 			}

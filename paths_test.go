@@ -576,7 +576,6 @@ func Test_BellmanFord(t *testing.T) {
 	for name, test := range tests {
 		graph := New(StringHash, Directed())
 		graph.(*directed[string, string]).traits.IsWeighted = test.isWeighted
-		graph.(*directed[string, string]).traits.IsDirected = true
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)

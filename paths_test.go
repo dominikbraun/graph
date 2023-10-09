@@ -401,11 +401,9 @@ func TestUndirectedShortestPath(t *testing.T) {
 	for name, test := range tests {
 		var graph Graph[string, string]
 		if test.isDirected {
-			graph = New(StringHash, Directed())
-			graph.(*directed[string, string]).traits.IsWeighted = test.isWeighted
+			graph = New(StringHash, Directed(), Weighted())
 		} else {
-			graph = New(StringHash)
-			graph.(*undirected[string, string]).traits.IsWeighted = test.isWeighted
+			graph = New(StringHash, Weighted())
 		}
 
 		for _, vertex := range test.vertices {
@@ -574,8 +572,7 @@ func Test_BellmanFord(t *testing.T) {
 		},
 	}
 	for name, test := range tests {
-		graph := New(StringHash, Directed())
-		graph.(*directed[string, string]).traits.IsWeighted = test.isWeighted
+		graph := New(StringHash, Directed(), Weighted())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)

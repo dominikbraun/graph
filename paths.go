@@ -185,7 +185,6 @@ func bellmanFord[K comparable, T any](g Graph[K, T], source, target K) ([]K, err
 	for _, edges := range adjacencyMap {
 		for _, edge := range edges {
 			if newDist := dist[edge.Source] + edge.Properties.Weight; newDist < dist[edge.Target] {
-				fmt.Println(edge.Source, edge.Target, newDist, dist[edge.Target])
 				return nil, errors.New("graph contains a negative-weight cycle")
 			}
 		}

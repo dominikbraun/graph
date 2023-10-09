@@ -76,7 +76,7 @@ func CreatesCycle[K comparable, T any](g Graph[K, T], source, target K) (bool, e
 // paths, an arbitrary one will be returned.
 func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, error) {
 
-	if directedGraph, ok := g.(*directed[K, T]); ok && directedGraph.Traits().IsDirected {
+	if g.Traits().IsDirected {
 		return bellmanFord(g, source, target)
 	}
 

@@ -57,22 +57,9 @@ func (u *undirected[K, T]) RemoveVertex(hash K) error {
 }
 
 func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
-	if _, _, err := u.store.Vertex(sourceHash); err != nil {
-		return fmt.Errorf("could not find source vertex with hash %v: %w", sourceHash, err)
-	}
-
-	if _, _, err := u.store.Vertex(targetHash); err != nil {
-		return fmt.Errorf("could not find target vertex with hash %v: %w", targetHash, err)
-	}
-
-	//nolint:govet // False positive.
-	if _, err := u.Edge(sourceHash, targetHash); !errors.Is(err, ErrEdgeNotFound) {
-		return ErrEdgeAlreadyExists
-	}
-
 	// If the user opted in to preventing cycles, run a cycle check.
 	if u.traits.PreventCycles {
-		createsCycle, err := CreatesCycle[K, T](u, sourceHash, targetHash)
+		createsCycle, err := u.createsCycle(sourceHash, targetHash)
 		if err != nil {
 			return fmt.Errorf("check for cycles: %w", err)
 		}
@@ -93,11 +80,7 @@ func (u *undirected[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Ed
 		option(&edge.Properties)
 	}
 
-	if err := u.addEdge(sourceHash, targetHash, edge); err != nil {
-		return fmt.Errorf("failed to add edge: %w", err)
-	}
-
-	return nil
+	return u.addEdge(sourceHash, targetHash, edge)
 }
 
 func (u *undirected[K, T]) AddEdgesFrom(g Graph[K, T]) error {
@@ -238,10 +221,6 @@ func (u *undirected[K, T]) UpdateEdge(source, target K, options ...func(properti
 }
 
 func (u *undirected[K, T]) RemoveEdge(source, target K) error {
-	if _, err := u.Edge(source, target); err != nil {
-		return err
-	}
-
 	if err := u.store.RemoveEdge(source, target); err != nil {
 		return fmt.Errorf("failed to remove edge from %v to %v: %w", source, target, err)
 	}
@@ -311,20 +290,13 @@ func (u *undirected[K, T]) Order() (int, error) {
 }
 
 func (u *undirected[K, T]) Size() (int, error) {
-	size := 0
-
-	outEdges, err := u.AdjacencyMap()
+	edges, err := u.store.ListEdges()
 	if err != nil {
-		return 0, fmt.Errorf("failed to get adjacency map: %w", err)
+		return 0, fmt.Errorf("failed to list edges: %w", err)
 	}
-
-	for _, outEdges := range outEdges {
-		size += len(outEdges)
-	}
-
 	// Divide by 2 since every add edge operation on undirected graph is counted
 	// twice.
-	return size / 2, nil
+	return len(edges) / 2, nil
 }
 
 func (u *undirected[K, T]) edgesAreEqual(a, b Edge[T]) bool {
@@ -342,6 +314,17 @@ func (u *undirected[K, T]) edgesAreEqual(a, b Edge[T]) bool {
 	}
 
 	return false
+}
+func (u *undirected[K, T]) createsCycle(source, target K) (bool, error) {
+	// If the underlying store implements CreatesCycle, use that fast path.
+	if cc, ok := u.store.(interface {
+		CreatesCycle(source, target K) (bool, error)
+	}); ok {
+		return cc.CreatesCycle(source, target)
+	}
+
+	// Slow path.
+	return CreatesCycle(Graph[K, T](u), source, target)
 }
 
 func (u *undirected[K, T]) addEdge(sourceHash, targetHash K, edge Edge[K]) error {

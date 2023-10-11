@@ -1,7 +1,6 @@
 package graph
 
 import (
-	"errors"
 	"fmt"
 )
 
@@ -76,20 +75,6 @@ func (d *directed[K, T]) RemoveVertex(hash K) error {
 }
 
 func (d *directed[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
-	_, _, err := d.store.Vertex(sourceHash)
-	if err != nil {
-		return fmt.Errorf("source vertex %v: %w", sourceHash, err)
-	}
-
-	_, _, err = d.store.Vertex(targetHash)
-	if err != nil {
-		return fmt.Errorf("target vertex %v: %w", targetHash, err)
-	}
-
-	if _, err := d.Edge(sourceHash, targetHash); !errors.Is(err, ErrEdgeNotFound) {
-		return ErrEdgeAlreadyExists
-	}
-
 	// If the user opted in to preventing cycles, run a cycle check.
 	if d.traits.PreventCycles {
 		createsCycle, err := d.createsCycle(sourceHash, targetHash)
@@ -176,10 +161,6 @@ func (d *directed[K, T]) UpdateEdge(source, target K, options ...func(properties
 }
 
 func (d *directed[K, T]) RemoveEdge(source, target K) error {
-	if _, err := d.Edge(source, target); err != nil {
-		return err
-	}
-
 	if err := d.store.RemoveEdge(source, target); err != nil {
 		return fmt.Errorf("failed to remove edge from %v to %v: %w", source, target, err)
 	}
@@ -273,17 +254,11 @@ func (d *directed[K, T]) Order() (int, error) {
 }
 
 func (d *directed[K, T]) Size() (int, error) {
-	size := 0
-	outEdges, err := d.AdjacencyMap()
+	edges, err := d.store.ListEdges()
 	if err != nil {
-		return 0, fmt.Errorf("failed to get adjacency map: %w", err)
+		return 0, fmt.Errorf("failed to list edges: %w", err)
 	}
-
-	for _, outEdges := range outEdges {
-		size += len(outEdges)
-	}
-
-	return size, nil
+	return len(edges), nil
 }
 
 func (d *directed[K, T]) edgesAreEqual(a, b Edge[T]) bool {

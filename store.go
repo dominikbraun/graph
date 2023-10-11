@@ -1,7 +1,6 @@
 package graph
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -88,8 +87,11 @@ func (s *memoryStore[K, T]) AddVertex(k K, t T, p VertexProperties) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	if _, ok := s.vertices[k]; ok {
-		return ErrVertexAlreadyExists
+	if existing, ok := s.vertices[k]; ok {
+		return &VertexAlreadyExistsError[K, T]{
+			Key:           k,
+			ExistingValue: existing,
+		}
 	}
 
 	s.vertices[k] = t
@@ -120,10 +122,15 @@ func (s *memoryStore[K, T]) VertexCount() (int, error) {
 func (s *memoryStore[K, T]) Vertex(k K) (T, VertexProperties, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
+	return s.vertexWithLock(k)
+}
 
+// vertexWithLock returns the vertex and vertex properties - the caller must be holding at least a
+// read-level lock.
+func (s *memoryStore[K, T]) vertexWithLock(k K) (T, VertexProperties, error) {
 	v, ok := s.vertices[k]
 	if !ok {
-		return v, VertexProperties{}, ErrVertexNotFound
+		return v, VertexProperties{}, &VertexNotFoundError[K]{Key: k}
 	}
 
 	p := s.vertexProperties[k]
@@ -136,19 +143,19 @@ func (s *memoryStore[K, T]) RemoveVertex(k K) error {
 	defer s.lock.RUnlock()
 
 	if _, ok := s.vertices[k]; !ok {
-		return ErrVertexNotFound
+		return &VertexNotFoundError[K]{Key: k}
 	}
 
 	if edges, ok := s.inEdges[k]; ok {
-		if len(edges) > 0 {
-			return ErrVertexHasEdges
+		if count := len(edges); count > 0 {
+			return &VertexHasEdges[K]{Key: k, Count: count}
 		}
 		delete(s.inEdges, k)
 	}
 
 	if edges, ok := s.outEdges[k]; ok {
-		if len(edges) > 0 {
-			return ErrVertexHasEdges
+		if count := len(edges); count > 0 {
+			return &VertexHasEdges[K]{Key: k, Count: count}
 		}
 		delete(s.outEdges, k)
 	}
@@ -167,10 +174,18 @@ func (s *memoryStore[K, T]) AddEdge(sourceHash, targetHash K, edge Edge[K]) erro
 		s.outEdges[sourceHash] = make(map[K]Edge[K])
 	}
 
+	if _, ok := s.outEdges[sourceHash][targetHash]; ok {
+		return &EdgeAlreadyExistsError[K]{Source: sourceHash, Target: targetHash}
+	}
+
 	s.outEdges[sourceHash][targetHash] = edge
 
 	if _, ok := s.inEdges[targetHash]; !ok {
 		s.inEdges[targetHash] = make(map[K]Edge[K])
+	}
+
+	if _, ok := s.inEdges[targetHash][sourceHash]; ok {
+		return &EdgeAlreadyExistsError[K]{Source: sourceHash, Target: targetHash}
 	}
 
 	s.inEdges[targetHash][sourceHash] = edge
@@ -179,12 +194,12 @@ func (s *memoryStore[K, T]) AddEdge(sourceHash, targetHash K, edge Edge[K]) erro
 }
 
 func (s *memoryStore[K, T]) UpdateEdge(sourceHash, targetHash K, edge Edge[K]) error {
-	if _, err := s.Edge(sourceHash, targetHash); err != nil {
-		return err
-	}
-
 	s.lock.Lock()
 	defer s.lock.Unlock()
+
+	if _, err := s.edgeWithLock(sourceHash, targetHash); err != nil {
+		return err
+	}
 
 	s.outEdges[sourceHash][targetHash] = edge
 	s.inEdges[targetHash][sourceHash] = edge
@@ -204,15 +219,19 @@ func (s *memoryStore[K, T]) RemoveEdge(sourceHash, targetHash K) error {
 func (s *memoryStore[K, T]) Edge(sourceHash, targetHash K) (Edge[K], error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
+	return s.edgeWithLock(sourceHash, targetHash)
+}
 
+// edgeWithLock returns the edge - the caller must be holding at least a read-level lock.
+func (s *memoryStore[K, T]) edgeWithLock(sourceHash, targetHash K) (Edge[K], error) {
 	sourceEdges, ok := s.outEdges[sourceHash]
 	if !ok {
-		return Edge[K]{}, ErrEdgeNotFound
+		return Edge[K]{}, &EdgeNotFoundError[K]{Source: sourceHash, Target: targetHash}
 	}
 
 	edge, ok := sourceEdges[targetHash]
 	if !ok {
-		return Edge[K]{}, ErrEdgeNotFound
+		return Edge[K]{}, &EdgeNotFoundError[K]{Source: sourceHash, Target: targetHash}
 	}
 
 	return edge, nil
@@ -237,12 +256,15 @@ func (s *memoryStore[K, T]) ListEdges() ([]Edge[K], error) {
 // Because CreatesCycle doesn't need to modify the PredecessorMap, we can use
 // inEdges instead to compute the same thing without creating any copies.
 func (s *memoryStore[K, T]) CreatesCycle(source, target K) (bool, error) {
-	if _, _, err := s.Vertex(source); err != nil {
-		return false, fmt.Errorf("could not get vertex with hash %v: %w", source, err)
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+
+	if _, _, err := s.vertexWithLock(source); err != nil {
+		return false, &VertexNotFoundError[K]{Key: source}
 	}
 
-	if _, _, err := s.Vertex(target); err != nil {
-		return false, fmt.Errorf("could not get vertex with hash %v: %w", target, err)
+	if _, _, err := s.vertexWithLock(target); err != nil {
+		return false, &VertexNotFoundError[K]{Key: target}
 	}
 
 	if source == target {

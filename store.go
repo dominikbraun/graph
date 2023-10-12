@@ -269,11 +269,11 @@ func (s *memoryStore[K, T]) CreatesCycle(source, target K) (bool, error) {
 	defer s.lock.RUnlock()
 
 	if _, _, err := s.vertexWithLock(source); err != nil {
-		return false, fmt.Errorf("could not get source vertex: %w", &VertexNotFoundError[K]{Key: source})
+		return false, fmt.Errorf("could not get source vertex: %w", err)
 	}
 
 	if _, _, err := s.vertexWithLock(target); err != nil {
-		return false, fmt.Errorf("could not get target vertex: %w", &VertexNotFoundError[K]{Key: target})
+		return false, fmt.Errorf("could not get target vertex: %w", err)
 	}
 
 	if source == target {

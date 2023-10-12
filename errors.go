@@ -23,9 +23,13 @@ type (
 		Source, Target K
 	}
 
-	VertexHasEdges[K comparable] struct {
+	VertexHasEdgesError[K comparable] struct {
 		Key   K
 		Count int
+	}
+
+	EdgeCausesCycleError[K comparable] struct {
+		Source, Target K
 	}
 )
 
@@ -45,8 +49,12 @@ func (e *EdgeNotFoundError[K]) Error() string {
 	return fmt.Sprintf("edge %v - %v not found", e.Source, e.Target)
 }
 
-func (e *VertexHasEdges[K]) Error() string {
+func (e *VertexHasEdgesError[K]) Error() string {
 	return fmt.Sprintf("vertex %v has %d edges", e.Key, e.Count)
+}
+
+func (e *EdgeCausesCycleError[K]) Error() string {
+	return fmt.Sprintf("edge %v - %v would cause a cycle", e.Source, e.Target)
 }
 
 var (
@@ -62,4 +70,5 @@ func (e *VertexAlreadyExistsError[K, T]) Unwrap() error { return ErrVertexAlread
 func (e *VertexNotFoundError[K]) Unwrap() error         { return ErrVertexNotFound }
 func (e *EdgeAlreadyExistsError[K]) Unwrap() error      { return ErrEdgeAlreadyExists }
 func (e *EdgeNotFoundError[K]) Unwrap() error           { return ErrEdgeNotFound }
-func (e *VertexHasEdges[K]) Unwrap() error              { return ErrVertexHasEdges }
+func (e *VertexHasEdgesError[K]) Unwrap() error         { return ErrVertexHasEdges }
+func (e *EdgeCausesCycleError[K]) Unwrap() error        { return ErrEdgeCreatesCycle }

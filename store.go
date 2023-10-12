@@ -149,14 +149,14 @@ func (s *memoryStore[K, T]) RemoveVertex(k K) error {
 
 	if edges, ok := s.inEdges[k]; ok {
 		if count := len(edges); count > 0 {
-			return &VertexHasEdges[K]{Key: k, Count: count}
+			return &VertexHasEdgesError[K]{Key: k, Count: count}
 		}
 		delete(s.inEdges, k)
 	}
 
 	if edges, ok := s.outEdges[k]; ok {
 		if count := len(edges); count > 0 {
-			return &VertexHasEdges[K]{Key: k, Count: count}
+			return &VertexHasEdgesError[K]{Key: k, Count: count}
 		}
 		delete(s.outEdges, k)
 	}
@@ -171,6 +171,10 @@ func (s *memoryStore[K, T]) AddEdge(sourceHash, targetHash K, edge Edge[K]) erro
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
+	if _, _, err := s.vertexWithLock(sourceHash); err != nil {
+		return fmt.Errorf("could not get source vertex: %w", &VertexNotFoundError[K]{Key: sourceHash})
+	}
+
 	if _, ok := s.outEdges[sourceHash]; !ok {
 		s.outEdges[sourceHash] = make(map[K]Edge[K])
 	}
@@ -180,6 +184,10 @@ func (s *memoryStore[K, T]) AddEdge(sourceHash, targetHash K, edge Edge[K]) erro
 	}
 
 	s.outEdges[sourceHash][targetHash] = edge
+
+	if _, _, err := s.vertexWithLock(targetHash); err != nil {
+		return fmt.Errorf("could not get target vertex: %w", &VertexNotFoundError[K]{Key: targetHash})
+	}
 
 	if _, ok := s.inEdges[targetHash]; !ok {
 		s.inEdges[targetHash] = make(map[K]Edge[K])

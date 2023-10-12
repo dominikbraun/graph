@@ -82,7 +82,7 @@ func (d *directed[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*Edge
 			return fmt.Errorf("check for cycles: %w", err)
 		}
 		if createsCycle {
-			return ErrEdgeCreatesCycle
+			return &EdgeCausesCycleError[K]{Source: sourceHash, Target: targetHash}
 		}
 	}
 

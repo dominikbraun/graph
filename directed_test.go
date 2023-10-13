@@ -918,9 +918,10 @@ func TestDirected_RemoveEdge(t *testing.T) {
 
 func TestDirected_AdjacencyList(t *testing.T) {
 	tests := map[string]struct {
-		vertices []int
-		edges    []Edge[int]
-		expected map[int]map[int]Edge[int]
+		vertices  []int
+		edges     []Edge[int]
+		expected  map[int]map[int]Edge[int]
+		wantError bool
 	}{
 		"Y-shaped graph": {
 			vertices: []int{1, 2, 3, 4},
@@ -964,22 +965,42 @@ func TestDirected_AdjacencyList(t *testing.T) {
 				4: {},
 			},
 		},
+		"missing-vertice-in-edge": {
+			vertices: []int{1, 2},
+			edges: []Edge[int]{
+				{Source: 3, Target: 2},
+				{Source: 1, Target: 3},
+			},
+			expected:  map[int]map[int]Edge[int]{},
+			wantError: true,
+		},
 	}
 
 	for name, test := range tests {
 		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 
+		// we populate the graph with direct store access to simulate
+		// pathological cases where the store could be populated out of band
+		// of the normal graph construction API
 		for _, vertex := range test.vertices {
-			_ = graph.AddVertex(vertex)
+			_ = graph.store.AddVertex(graph.hash(vertex), vertex, VertexProperties{})
 		}
 
 		for _, edge := range test.edges {
-			if err := graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
-				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			err := graph.store.AddEdge(edge.Source, edge.Target,
+				Edge[int]{
+					Source: edge.Source, Target: edge.Target,
+					Properties: EdgeProperties{Weight: edge.Properties.Weight},
+				})
+			if err != nil {
+				t.Fatalf("%s: failed to add edge to store: %s", name, err.Error())
 			}
 		}
 
-		adjacencyMap, _ := graph.AdjacencyMap()
+		adjacencyMap, err := graph.AdjacencyMap()
+		if test.wantError && err == nil {
+			t.Fatalf("%s: should have failed test", name)
+		}
 
 		for expectedVertex, expectedAdjacencies := range test.expected {
 			adjacencies, ok := adjacencyMap[expectedVertex]

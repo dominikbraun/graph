@@ -1267,6 +1267,8 @@ func TestDirected_addEdge(t *testing.T) {
 		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
 
 		for _, edge := range test.edges {
+			_ = graph.AddVertex(edge.Source)
+			_ = graph.AddVertex(edge.Target)
 			sourceHash := graph.hash(edge.Source)
 			TargetHash := graph.hash(edge.Target)
 			err := graph.addEdge(sourceHash, TargetHash, edge)

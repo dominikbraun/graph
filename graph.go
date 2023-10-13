@@ -49,17 +49,6 @@
 // For detailed usage examples, take a look at the README.
 package graph
 
-import "errors"
-
-var (
-	ErrVertexNotFound      = errors.New("vertex not found")
-	ErrVertexAlreadyExists = errors.New("vertex already exists")
-	ErrEdgeNotFound        = errors.New("edge not found")
-	ErrEdgeAlreadyExists   = errors.New("edge already exists")
-	ErrEdgeCreatesCycle    = errors.New("edge would create a cycle")
-	ErrVertexHasEdges      = errors.New("vertex has edges")
-)
-
 // Graph represents a generic graph data structure consisting of vertices of
 // type T identified by a hash of type K.
 type Graph[K comparable, T any] interface {

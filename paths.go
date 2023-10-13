@@ -15,11 +15,11 @@ var ErrTargetNotReachable = errors.New("target vertex not reachable from source"
 // of the source vertex. In order to determine this, CreatesCycle runs a DFS.
 func CreatesCycle[K comparable, T any](g Graph[K, T], source, target K) (bool, error) {
 	if _, err := g.Vertex(source); err != nil {
-		return false, fmt.Errorf("could not get vertex with hash %v: %w", source, err)
+		return false, fmt.Errorf("could not get source vertex: %w", err)
 	}
 
 	if _, err := g.Vertex(target); err != nil {
-		return false, fmt.Errorf("could not get vertex with hash %v: %w", target, err)
+		return false, fmt.Errorf("could not get target vertex: %w", err)
 	}
 
 	if source == target {

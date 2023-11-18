@@ -186,12 +186,18 @@ func (s *memoryStore[K, T]) AddEdge(sourceHash, targetHash K, edge Edge[K]) erro
 }
 
 func (s *memoryStore[K, T]) UpdateEdge(sourceHash, targetHash K, edge Edge[K]) error {
-	if _, err := s.Edge(sourceHash, targetHash); err != nil {
-		return err
-	}
-
 	s.lock.Lock()
 	defer s.lock.Unlock()
+
+	targetEdges, ok := s.outEdges[sourceHash]
+	if !ok {
+		return ErrEdgeNotFound
+	}
+
+	_, ok = targetEdges[targetHash]
+	if !ok {
+		return ErrEdgeNotFound
+	}
 
 	s.outEdges[sourceHash][targetHash] = edge
 	s.inEdges[targetHash][sourceHash] = edge
@@ -254,12 +260,15 @@ func (s *memoryStore[K, T]) ListEdges() ([]Edge[K], error) {
 // Because CreatesCycle doesn't need to modify the PredecessorMap, we can use
 // inEdges instead to compute the same thing without creating any copies.
 func (s *memoryStore[K, T]) CreatesCycle(source, target K) (bool, error) {
-	if _, _, err := s.Vertex(source); err != nil {
-		return false, fmt.Errorf("could not get vertex with hash %v: %w", source, err)
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+
+	if _, ok := s.vertices[source]; !ok {
+		return false, fmt.Errorf("could not get vertex with hash %v", source)
 	}
 
-	if _, _, err := s.Vertex(target); err != nil {
-		return false, fmt.Errorf("could not get vertex with hash %v: %w", target, err)
+	if _, ok := s.vertices[target]; !ok {
+		return false, fmt.Errorf("could not get vertex with hash %v", target)
 	}
 
 	if source == target {

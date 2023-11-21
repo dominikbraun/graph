@@ -14,13 +14,15 @@ func TestDirected(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		p := &Traits{}
+		t.Run(name, func(t *testing.T) {
+			p := &Traits{}
 
-		Directed()(p)
+			Directed()(p)
 
-		if !traitsAreEqual(test.expected, p) {
-			t.Errorf("%s: trait expectation doesn't match: expected %v, got %v", name, test.expected, p)
-		}
+			if !traitsAreEqual(test.expected, p) {
+				t.Errorf("trait expectation doesn't match: expected %v, got %v", test.expected, p)
+			}
+		})
 	}
 }
 
@@ -36,13 +38,15 @@ func TestAcyclic(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		p := &Traits{}
+		t.Run(name, func(t *testing.T) {
+			p := &Traits{}
 
-		Acyclic()(p)
+			Acyclic()(p)
 
-		if !traitsAreEqual(test.expected, p) {
-			t.Errorf("%s: trait expectation doesn't match: expected %v, got %v", name, test.expected, p)
-		}
+			if !traitsAreEqual(test.expected, p) {
+				t.Errorf("trait expectation doesn't match: expected %v, got %v", test.expected, p)
+			}
+		})
 	}
 }
 
@@ -58,13 +62,15 @@ func TestWeighted(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		p := &Traits{}
+		t.Run(name, func(t *testing.T) {
+			p := &Traits{}
 
-		Weighted()(p)
+			Weighted()(p)
 
-		if !traitsAreEqual(test.expected, p) {
-			t.Errorf("%s: trait expectation doesn't match: expected %v, got %v", name, test.expected, p)
-		}
+			if !traitsAreEqual(test.expected, p) {
+				t.Errorf("trait expectation doesn't match: expected %v, got %v", test.expected, p)
+			}
+		})
 	}
 }
 
@@ -80,13 +86,15 @@ func TestRooted(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		p := &Traits{}
+		t.Run(name, func(t *testing.T) {
+			p := &Traits{}
 
-		Rooted()(p)
+			Rooted()(p)
 
-		if !traitsAreEqual(test.expected, p) {
-			t.Errorf("%s: trait expectation doesn't match: expected %v, got %v", name, test.expected, p)
-		}
+			if !traitsAreEqual(test.expected, p) {
+				t.Errorf("trait expectation doesn't match: expected %v, got %v", test.expected, p)
+			}
+		})
 	}
 }
 
@@ -103,13 +111,15 @@ func TestTree(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		p := &Traits{}
+		t.Run(name, func(t *testing.T) {
+			p := &Traits{}
 
-		Tree()(p)
+			Tree()(p)
 
-		if !traitsAreEqual(test.expected, p) {
-			t.Errorf("%s: trait expectation doesn't match: expected %v, got %v", name, test.expected, p)
-		}
+			if !traitsAreEqual(test.expected, p) {
+				t.Errorf("trait expectation doesn't match: expected %v, got %v", test.expected, p)
+			}
+		})
 	}
 }
 
@@ -126,13 +136,15 @@ func TestPreventCycles(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		p := &Traits{}
+		t.Run(name, func(t *testing.T) {
+			p := &Traits{}
 
-		PreventCycles()(p)
+			PreventCycles()(p)
 
-		if !traitsAreEqual(test.expected, p) {
-			t.Errorf("%s: trait expectation doesn't match: expected %v, got %v", name, test.expected, p)
-		}
+			if !traitsAreEqual(test.expected, p) {
+				t.Errorf("trait expectation doesn't match: expected %v, got %v", test.expected, p)
+			}
+		})
 	}
 }
 

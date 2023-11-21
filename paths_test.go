@@ -60,26 +60,28 @@ func TestDirectedCreatesCycle(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(IntHash, Directed())
+		t.Run(name, func(t *testing.T) {
+			graph := New(IntHash, Directed())
 
-		for _, vertex := range test.vertices {
-			_ = graph.AddVertex(vertex)
-		}
-
-		for _, edge := range test.edges {
-			if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
-				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			for _, vertex := range test.vertices {
+				_ = graph.AddVertex(vertex)
 			}
-		}
 
-		createsCycle, err := CreatesCycle(graph, test.sourceHash, test.targetHash)
-		if err != nil {
-			t.Fatalf("%s: failed to add edge: %s", name, err.Error())
-		}
+			for _, edge := range test.edges {
+				if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
+					t.Fatalf("failed to add edge: %s", err.Error())
+				}
+			}
 
-		if createsCycle != test.createsCycle {
-			t.Errorf("%s: cycle expectancy doesn't match: expected %v, got %v", name, test.createsCycle, createsCycle)
-		}
+			createsCycle, err := CreatesCycle(graph, test.sourceHash, test.targetHash)
+			if err != nil {
+				t.Fatalf("failed to determine if edge would create cycle: %s", err.Error())
+			}
+
+			if createsCycle != test.createsCycle {
+				t.Errorf("cycle expectancy doesn't match: expected %v, got %v", test.createsCycle, createsCycle)
+			}
+		})
 	}
 }
 
@@ -135,26 +137,28 @@ func TestUndirectedCreatesCycle(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(IntHash)
+		t.Run(name, func(t *testing.T) {
+			graph := New(IntHash)
 
-		for _, vertex := range test.vertices {
-			_ = graph.AddVertex(vertex)
-		}
-
-		for _, edge := range test.edges {
-			if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
-				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			for _, vertex := range test.vertices {
+				_ = graph.AddVertex(vertex)
 			}
-		}
 
-		createsCycle, err := CreatesCycle(graph, test.sourceHash, test.targetHash)
-		if err != nil {
-			t.Fatalf("%s: failed to add edge: %s", name, err.Error())
-		}
+			for _, edge := range test.edges {
+				if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
+					t.Fatalf("failed to add edge: %s", err.Error())
+				}
+			}
 
-		if createsCycle != test.createsCycle {
-			t.Errorf("%s: cycle expectancy doesn't match: expected %v, got %v", name, test.createsCycle, createsCycle)
-		}
+			createsCycle, err := CreatesCycle(graph, test.sourceHash, test.targetHash)
+			if err != nil {
+				t.Fatalf("failed to determine if edge would create cycle: %s", err.Error())
+			}
+
+			if createsCycle != test.createsCycle {
+				t.Errorf("cycle expectancy doesn't match: expected %v, got %v", test.createsCycle, createsCycle)
+			}
+		})
 	}
 }
 
@@ -268,34 +272,36 @@ func TestDirectedShortestPath(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(StringHash, Directed())
-		graph.(*directed[string, string]).traits.IsWeighted = test.isWeighted
+		t.Run(name, func(t *testing.T) {
+			graph := New(StringHash, Directed())
+			graph.(*directed[string, string]).traits.IsWeighted = test.isWeighted
 
-		for _, vertex := range test.vertices {
-			_ = graph.AddVertex(vertex)
-		}
-
-		for _, edge := range test.edges {
-			if err := graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
-				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			for _, vertex := range test.vertices {
+				_ = graph.AddVertex(vertex)
 			}
-		}
 
-		shortestPath, err := ShortestPath(graph, test.sourceHash, test.targetHash)
-
-		if test.shouldFail != (err != nil) {
-			t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, (err != nil), err)
-		}
-
-		if len(shortestPath) != len(test.expectedShortestPath) {
-			t.Fatalf("%s: path length expectancy doesn't match: expected %v, got %v", name, len(test.expectedShortestPath), len(shortestPath))
-		}
-
-		for i, expectedVertex := range test.expectedShortestPath {
-			if shortestPath[i] != expectedVertex {
-				t.Errorf("%s: path vertex expectancy doesn't match: expected %v at index %d, got %v", name, expectedVertex, i, shortestPath[i])
+			for _, edge := range test.edges {
+				if err := graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
+					t.Fatalf("failed to add edge: %s", err.Error())
+				}
 			}
-		}
+
+			shortestPath, err := ShortestPath(graph, test.sourceHash, test.targetHash)
+
+			if test.shouldFail != (err != nil) {
+				t.Fatalf("error expectancy doesn't match: expected %v, got %v (error: %v)", test.shouldFail, (err != nil), err)
+			}
+
+			if len(shortestPath) != len(test.expectedShortestPath) {
+				t.Fatalf("path length expectancy doesn't match: expected %v, got %v", len(test.expectedShortestPath), len(shortestPath))
+			}
+
+			for i, expectedVertex := range test.expectedShortestPath {
+				if shortestPath[i] != expectedVertex {
+					t.Errorf("path vertex expectancy doesn't match: expected %v at index %d, got %v", expectedVertex, i, shortestPath[i])
+				}
+			}
+		})
 	}
 }
 
@@ -384,34 +390,36 @@ func TestUndirectedShortestPath(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(StringHash)
-		graph.(*undirected[string, string]).traits.IsWeighted = test.isWeighted
+		t.Run(name, func(t *testing.T) {
+			graph := New(StringHash)
+			graph.(*undirected[string, string]).traits.IsWeighted = test.isWeighted
 
-		for _, vertex := range test.vertices {
-			_ = graph.AddVertex(vertex)
-		}
-
-		for _, edge := range test.edges {
-			if err := graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
-				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			for _, vertex := range test.vertices {
+				_ = graph.AddVertex(vertex)
 			}
-		}
 
-		shortestPath, err := ShortestPath(graph, test.sourceHash, test.targetHash)
-
-		if test.shouldFail != (err != nil) {
-			t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, (err != nil), err)
-		}
-
-		if len(shortestPath) != len(test.expectedShortestPath) {
-			t.Fatalf("%s: path length expectancy doesn't match: expected %v, got %v", name, len(test.expectedShortestPath), len(shortestPath))
-		}
-
-		for i, expectedVertex := range test.expectedShortestPath {
-			if shortestPath[i] != expectedVertex {
-				t.Errorf("%s: path vertex expectancy doesn't match: expected %v at index %d, got %v", name, expectedVertex, i, shortestPath[i])
+			for _, edge := range test.edges {
+				if err := graph.AddEdge(edge.Source, edge.Target, EdgeWeight(edge.Properties.Weight)); err != nil {
+					t.Fatalf("failed to add edge: %s", err.Error())
+				}
 			}
-		}
+
+			shortestPath, err := ShortestPath(graph, test.sourceHash, test.targetHash)
+
+			if test.shouldFail != (err != nil) {
+				t.Fatalf("error expectancy doesn't match: expected %v, got %v (error: %v)", test.shouldFail, (err != nil), err)
+			}
+
+			if len(shortestPath) != len(test.expectedShortestPath) {
+				t.Fatalf("path length expectancy doesn't match: expected %v, got %v", len(test.expectedShortestPath), len(shortestPath))
+			}
+
+			for i, expectedVertex := range test.expectedShortestPath {
+				if shortestPath[i] != expectedVertex {
+					t.Errorf("path vertex expectancy doesn't match: expected %v at index %d, got %v", expectedVertex, i, shortestPath[i])
+				}
+			}
+		})
 	}
 }
 
@@ -444,32 +452,34 @@ func TestDirectedStronglyConnectedComponents(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(IntHash, Directed())
+		t.Run(name, func(t *testing.T) {
+			graph := New(IntHash, Directed())
 
-		for _, vertex := range test.vertices {
-			_ = graph.AddVertex(vertex)
-		}
-
-		for _, edge := range test.edges {
-			if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
-				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			for _, vertex := range test.vertices {
+				_ = graph.AddVertex(vertex)
 			}
-		}
 
-		sccs, _ := StronglyConnectedComponents(graph)
-		matchedSCCs := 0
-
-		for _, scc := range sccs {
-			for _, expectedSCC := range test.expectedSCCs {
-				if slicesAreEqual(scc, expectedSCC) {
-					matchedSCCs++
+			for _, edge := range test.edges {
+				if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
+					t.Fatalf("failed to add edge: %s", err.Error())
 				}
 			}
-		}
 
-		if matchedSCCs != len(test.expectedSCCs) {
-			t.Errorf("%s: expected SCCs don't match: expected %v, got %v", name, test.expectedSCCs, sccs)
-		}
+			sccs, _ := StronglyConnectedComponents(graph)
+			matchedSCCs := 0
+
+			for _, scc := range sccs {
+				for _, expectedSCC := range test.expectedSCCs {
+					if slicesAreEqual(scc, expectedSCC) {
+						matchedSCCs++
+					}
+				}
+			}
+
+			if matchedSCCs != len(test.expectedSCCs) {
+				t.Errorf("expected SCCs don't match: expected %v, got %v", test.expectedSCCs, sccs)
+			}
+		})
 	}
 }
 
@@ -485,17 +495,19 @@ func TestUndirectedStronglyConnectedComponents(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(IntHash)
+		t.Run(name, func(t *testing.T) {
+			graph := New(IntHash)
 
-		sccs, err := StronglyConnectedComponents(graph)
+			sccs, err := StronglyConnectedComponents(graph)
 
-		if test.shouldFail != (err != nil) {
-			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, (err != nil), err)
-		}
+			if test.shouldFail != (err != nil) {
+				t.Errorf("error expectancy doesn't match: expected %v, got %v (error: %v)", test.shouldFail, (err != nil), err)
+			}
 
-		if test.expectedSCCs == nil && sccs != nil {
-			t.Errorf("%s: SCC expectancy doesn't match: expcted %v, got %v", name, test.expectedSCCs, sccs)
-		}
+			if test.expectedSCCs == nil && sccs != nil {
+				t.Errorf("SCC expectancy doesn't match: expcted %v, got %v", test.expectedSCCs, sccs)
+			}
+		})
 	}
 }
 
@@ -506,14 +518,12 @@ func TestAllPathsBetween(t *testing.T) {
 		end   K
 	}
 	type testCase[K comparable, T any] struct {
-		name    string
 		args    args[K, T]
 		want    [][]K
 		wantErr bool
 	}
-	tests := []testCase[int, int]{
-		{
-			name: "directed",
+	tests := map[string]testCase[int, int]{
+		"directed": {
 			args: args[int, int]{
 				g: func() Graph[int, int] {
 					g := New(IntHash, Directed())
@@ -545,8 +555,7 @@ func TestAllPathsBetween(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		{
-			name: "undirected",
+		"undirected": {
 			args: args[int, int]{
 				g: func() Graph[int, int] {
 					g := New(IntHash)
@@ -581,8 +590,7 @@ func TestAllPathsBetween(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		{
-			name: "undirected (complex)",
+		"undirected (complex)": {
 			args: args[int, int]{
 				g: func() Graph[int, int] {
 					g := New(IntHash)
@@ -624,8 +632,8 @@ func TestAllPathsBetween(t *testing.T) {
 			wantErr: false,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
 			got, err := AllPathsBetween(tt.args.g, tt.args.start, tt.args.end)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("AllPathsBetween() error = %v, wantErr %v", err, tt.wantErr)

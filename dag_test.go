@@ -50,41 +50,43 @@ func TestDirectedTopologicalSort(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(IntHash, Directed())
+		t.Run(name, func(t *testing.T) {
+			graph := New(IntHash, Directed())
 
-		err := buildGraph(&graph, test.vertices, test.edges)
-		if err != nil {
-			t.Fatalf("%s: failed to construct graph: %s", name, err.Error())
-		}
-
-		order, err := TopologicalSort(graph)
-
-		if test.shouldFail != (err != nil) {
-			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, err != nil, err)
-		}
-
-		if test.shouldFail {
-			continue
-		}
-
-		if len(order) != len(test.vertices) {
-			t.Errorf("%s: order length expectancy doesn't match: expected %v, got %v", name, len(test.vertices), len(order))
-		}
-
-		if len(test.expectedOrder) <= 0 {
-
-			fmt.Println("topological sort", order)
-
-			if err := verifyTopologicalSort(graph, order); err != nil {
-				t.Errorf("%s: invalid topological sort - %v", name, err)
+			err := buildGraph(&graph, test.vertices, test.edges)
+			if err != nil {
+				t.Fatalf("failed to construct graph: %s", err.Error())
 			}
-		}
 
-		for i, expectedVertex := range test.expectedOrder {
-			if expectedVertex != order[i] {
-				t.Errorf("%s: order expectancy doesn't match: expected %v at %d, got %v", name, expectedVertex, i, order[i])
+			order, err := TopologicalSort(graph)
+
+			if test.shouldFail != (err != nil) {
+				t.Errorf("error expectancy doesn't match: expected %v, got %v (error: %v)", test.shouldFail, err != nil, err)
 			}
-		}
+
+			if test.shouldFail {
+				t.SkipNow()
+			}
+
+			if len(order) != len(test.vertices) {
+				t.Errorf("order length expectancy doesn't match: expected %v, got %v", len(test.vertices), len(order))
+			}
+
+			if len(test.expectedOrder) <= 0 {
+
+				fmt.Println("topological sort", order)
+
+				if err := verifyTopologicalSort(graph, order); err != nil {
+					t.Errorf("invalid topological sort - %v", err)
+				}
+			}
+
+			for i, expectedVertex := range test.expectedOrder {
+				if expectedVertex != order[i] {
+					t.Errorf("order expectancy doesn't match: expected %v at %d, got %v", expectedVertex, i, order[i])
+				}
+			}
+		})
 	}
 }
 
@@ -100,17 +102,19 @@ func TestUndirectedTopologicalSort(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(IntHash)
+		t.Run(name, func(t *testing.T) {
+			graph := New(IntHash)
 
-		order, err := TopologicalSort(graph)
+			order, err := TopologicalSort(graph)
 
-		if test.shouldFail != (err != nil) {
-			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, err != nil, err)
-		}
+			if test.shouldFail != (err != nil) {
+				t.Errorf("error expectancy doesn't match: expected %v, got %v (error: %v)", test.shouldFail, err != nil, err)
+			}
 
-		if test.expectedOrder == nil && order != nil {
-			t.Errorf("%s: order expectancy doesn't match: expcted %v, got %v", name, test.expectedOrder, order)
-		}
+			if test.expectedOrder == nil && order != nil {
+				t.Errorf("order expectancy doesn't match: expcted %v, got %v", test.expectedOrder, order)
+			}
+		})
 	}
 }
 
@@ -158,37 +162,39 @@ func TestDirectedStableTopologicalSort(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(IntHash, Directed())
+		t.Run(name, func(t *testing.T) {
+			graph := New(IntHash, Directed())
 
-		err := buildGraph(&graph, test.vertices, test.edges)
-		if err != nil {
-			t.Fatalf("%s: failed to construct graph: %s", name, err.Error())
-		}
-
-		order, err := StableTopologicalSort(graph, func(a, b int) bool {
-			return a < b
-		})
-
-		if test.shouldFail != (err != nil) {
-			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, err != nil, err)
-		}
-
-		if test.shouldFail {
-			continue
-		}
-
-		if len(order) != len(test.expectedOrder) {
-			t.Errorf("%s: order length expectancy doesn't match: expected %v, got %v", name, len(test.expectedOrder), len(order))
-		}
-
-		fmt.Println("expected", test.expectedOrder)
-		fmt.Println("actual", order)
-
-		for i, expectedVertex := range test.expectedOrder {
-			if expectedVertex != order[i] {
-				t.Errorf("%s: order expectancy doesn't match: expected %v at %d, got %v", name, expectedVertex, i, order[i])
+			err := buildGraph(&graph, test.vertices, test.edges)
+			if err != nil {
+				t.Fatalf("%s: failed to construct graph: %s", name, err.Error())
 			}
-		}
+
+			order, err := StableTopologicalSort(graph, func(a, b int) bool {
+				return a < b
+			})
+
+			if test.shouldFail != (err != nil) {
+				t.Errorf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, err != nil, err)
+			}
+
+			if test.shouldFail {
+				t.SkipNow()
+			}
+
+			if len(order) != len(test.expectedOrder) {
+				t.Errorf("%s: order length expectancy doesn't match: expected %v, got %v", name, len(test.expectedOrder), len(order))
+			}
+
+			fmt.Println("expected", test.expectedOrder)
+			fmt.Println("actual", order)
+
+			for i, expectedVertex := range test.expectedOrder {
+				if expectedVertex != order[i] {
+					t.Errorf("%s: order expectancy doesn't match: expected %v at %d, got %v", name, expectedVertex, i, order[i])
+				}
+			}
+		})
 	}
 }
 
@@ -256,37 +262,39 @@ func TestDirectedTransitiveReduction(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(StringHash, Directed())
+		t.Run(name, func(t *testing.T) {
+			graph := New(StringHash, Directed())
 
-		err := buildGraph(&graph, test.vertices, test.edges)
-		if err != nil {
-			t.Fatalf("%s: failed to construct graph: %s", name, err.Error())
-		}
-
-		reduction, err := TransitiveReduction(graph)
-
-		if test.shouldFail != (err != nil) {
-			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, err != nil, err)
-		}
-
-		if test.shouldFail {
-			continue
-		}
-
-		actualEdges := make([]Edge[string], 0)
-		adjacencyMap, _ := reduction.AdjacencyMap()
-
-		for _, adjacencies := range adjacencyMap {
-			for _, edge := range adjacencies {
-				actualEdges = append(actualEdges, edge)
+			err := buildGraph(&graph, test.vertices, test.edges)
+			if err != nil {
+				t.Fatalf("failed to construct graph: %s", err.Error())
 			}
-		}
 
-		equalsFunc := reduction.(*directed[string, string]).edgesAreEqual
+			reduction, err := TransitiveReduction(graph)
 
-		if !slicesAreEqualWithFunc(actualEdges, test.expectedEdges, equalsFunc) {
-			t.Errorf("%s: edge expectancy doesn't match: expected %v, got %v", name, test.expectedEdges, actualEdges)
-		}
+			if test.shouldFail != (err != nil) {
+				t.Errorf("error expectancy doesn't match: expected %v, got %v (error: %v)", test.shouldFail, err != nil, err)
+			}
+
+			if test.shouldFail {
+				t.SkipNow()
+			}
+
+			actualEdges := make([]Edge[string], 0)
+			adjacencyMap, _ := reduction.AdjacencyMap()
+
+			for _, adjacencies := range adjacencyMap {
+				for _, edge := range adjacencies {
+					actualEdges = append(actualEdges, edge)
+				}
+			}
+
+			equalsFunc := reduction.(*directed[string, string]).edgesAreEqual
+
+			if !slicesAreEqualWithFunc(actualEdges, test.expectedEdges, equalsFunc) {
+				t.Errorf("edge expectancy doesn't match: expected %v, got %v", test.expectedEdges, actualEdges)
+			}
+		})
 	}
 }
 
@@ -300,20 +308,22 @@ func TestUndirectedTransitiveReduction(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(StringHash)
+		t.Run(name, func(t *testing.T) {
+			graph := New(StringHash)
 
-		_, err := TransitiveReduction(graph)
+			_, err := TransitiveReduction(graph)
 
-		if test.shouldFail != (err != nil) {
-			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, err != nil, err)
-		}
+			if test.shouldFail != (err != nil) {
+				t.Errorf("error expectancy doesn't match: expected %v, got %v (error: %v)", test.shouldFail, err != nil, err)
+			}
+		})
 	}
 }
 
 func TestVerifyTopologicalSort(t *testing.T) {
 	tests := map[string]struct {
-		vertices      []int
-		edges         []Edge[int]
+		vertices     []int
+		edges        []Edge[int]
 		invalidOrder []int
 	}{
 		"graph with 2 vertices": {
@@ -379,31 +389,33 @@ func TestVerifyTopologicalSort(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New[int, int](IntHash, Directed())
+		t.Run(name, func(t *testing.T) {
+			graph := New[int, int](IntHash, Directed())
 
-		err := buildGraph(&graph, test.vertices, test.edges)
-		if err != nil {
-			t.Fatalf("%s: failed to construct graph: %s", name, err.Error())
-		}
-
-		var order[] int
-
-		if len(test.invalidOrder) > 0 {
-			order = test.invalidOrder
-		} else {
-			order, err = TopologicalSort(graph)
+			err := buildGraph(&graph, test.vertices, test.edges)
 			if err != nil {
-				t.Fatalf("%s: error failed to produce topological sort: %v)", name, err)
+				t.Fatalf("failed to construct graph: %s", err.Error())
 			}
-		}
 
-		err = verifyTopologicalSort(graph, order)
+			var order []int
 
-		shouldFail := len(test.invalidOrder) > 0
+			if len(test.invalidOrder) > 0 {
+				order = test.invalidOrder
+			} else {
+				order, err = TopologicalSort(graph)
+				if err != nil {
+					t.Fatalf("error failed to produce topological sort: %v)", err)
+				}
+			}
 
-		if shouldFail != (err != nil) {
-			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, shouldFail, err != nil, err)
-		}
+			err = verifyTopologicalSort(graph, order)
+
+			shouldFail := len(test.invalidOrder) > 0
+
+			if shouldFail != (err != nil) {
+				t.Errorf("error expectancy doesn't match: expected %v, got %v (error: %v)", shouldFail, err != nil, err)
+			}
+		})
 	}
 }
 

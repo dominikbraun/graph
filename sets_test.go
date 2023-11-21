@@ -127,41 +127,43 @@ func TestDirectedUnion(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		g := New(IntHash, Directed())
+		t.Run(name, func(t *testing.T) {
+			g := New(IntHash, Directed())
 
-		for _, vertex := range test.gVertices {
-			_ = g.AddVertex(vertex, copyVertexProperties(test.gVertexProperties[vertex]))
-		}
+			for _, vertex := range test.gVertices {
+				_ = g.AddVertex(vertex, copyVertexProperties(test.gVertexProperties[vertex]))
+			}
 
-		for _, edge := range test.gEdges {
-			_ = g.AddEdge(copyEdge(edge))
-		}
+			for _, edge := range test.gEdges {
+				_ = g.AddEdge(copyEdge(edge))
+			}
 
-		h := New(IntHash, Directed())
+			h := New(IntHash, Directed())
 
-		for _, vertex := range test.hVertices {
-			_ = h.AddVertex(vertex, copyVertexProperties(test.gVertexProperties[vertex]))
-		}
+			for _, vertex := range test.hVertices {
+				_ = h.AddVertex(vertex, copyVertexProperties(test.gVertexProperties[vertex]))
+			}
 
-		for _, edge := range test.hEdges {
-			_ = h.AddEdge(copyEdge(edge))
-		}
+			for _, edge := range test.hEdges {
+				_ = h.AddEdge(copyEdge(edge))
+			}
 
-		union, err := Union(g, h)
-		if err != nil {
-			t.Fatalf("%s: unexpected union error: %s", name, err.Error())
-		}
+			union, err := Union(g, h)
+			if err != nil {
+				t.Fatalf("unexpected union error: %s", err.Error())
+			}
 
-		unionAdjacencyMap, err := union.AdjacencyMap()
-		if err != nil {
-			t.Fatalf("%s: unexpected adjaceny map error: %s", name, err.Error())
-		}
+			unionAdjacencyMap, err := union.AdjacencyMap()
+			if err != nil {
+				t.Fatalf("unexpected adjaceny map error: %s", err.Error())
+			}
 
-		edgesAreEqual := g.(*directed[int, int]).edgesAreEqual
+			edgesAreEqual := g.(*directed[int, int]).edgesAreEqual
 
-		if !adjacencyMapsAreEqual(test.expectedAdjacencyMap, unionAdjacencyMap, edgesAreEqual) {
-			t.Fatalf("expected adjacency map %v, got %v", test.expectedAdjacencyMap, unionAdjacencyMap)
-		}
+			if !adjacencyMapsAreEqual(test.expectedAdjacencyMap, unionAdjacencyMap, edgesAreEqual) {
+				t.Fatalf("expected adjacency map %v, got %v", test.expectedAdjacencyMap, unionAdjacencyMap)
+			}
+		})
 	}
 }
 

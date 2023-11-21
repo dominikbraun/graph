@@ -24,12 +24,14 @@ func TestNew(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(IntHash, test.options...)
-		actualType := reflect.TypeOf(graph)
+		t.Run(name, func(t *testing.T) {
+			graph := New(IntHash, test.options...)
+			actualType := reflect.TypeOf(graph)
 
-		if actualType != test.expectedType {
-			t.Errorf("%s: graph type expectancy doesn't match: expected %v, got %v", name, test.expectedType, actualType)
-		}
+			if actualType != test.expectedType {
+				t.Errorf("graph type expectancy doesn't match: expected %v, got %v", test.expectedType, actualType)
+			}
+		})
 	}
 }
 
@@ -76,7 +78,7 @@ func TestNewLike(t *testing.T) {
 			} else {
 				actual, ok := h.(*undirected[int, int])
 				if !ok {
-					t.Fatalf("type assertion to *directed failed")
+					t.Fatalf("type assertion to *undirected failed")
 				}
 
 				expected := test.g.(*undirected[int, int])
@@ -105,11 +107,13 @@ func TestStringHash(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		hash := StringHash(test.value)
+		t.Run(name, func(t *testing.T) {
+			hash := StringHash(test.value)
 
-		if hash != test.expectedHash {
-			t.Errorf("%s: hash expectancy doesn't match: expected %v, got %v", name, test.expectedHash, hash)
-		}
+			if hash != test.expectedHash {
+				t.Errorf("hash expectancy doesn't match: expected %v, got %v", test.expectedHash, hash)
+			}
+		})
 	}
 }
 
@@ -125,11 +129,13 @@ func TestIntHash(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		hash := IntHash(test.value)
+		t.Run(name, func(t *testing.T) {
+			hash := IntHash(test.value)
 
-		if hash != test.expectedHash {
-			t.Errorf("%s: hash expectancy doesn't match: expected %v, got %v", name, test.expectedHash, hash)
-		}
+			if hash != test.expectedHash {
+				t.Errorf("hash expectancy doesn't match: expected %v, got %v", test.expectedHash, hash)
+			}
+		})
 	}
 }
 
@@ -147,13 +153,15 @@ func TestEdgeWeight(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		properties := EdgeProperties{}
+		t.Run(name, func(t *testing.T) {
+			properties := EdgeProperties{}
 
-		EdgeWeight(test.weight)(&properties)
+			EdgeWeight(test.weight)(&properties)
 
-		if properties.Weight != test.expected.Weight {
-			t.Errorf("%s: weight expectation doesn't match: expected %v, got %v", name, test.expected.Weight, properties.Weight)
-		}
+			if properties.Weight != test.expected.Weight {
+				t.Errorf("weight expectation doesn't match: expected %v, got %v", test.expected.Weight, properties.Weight)
+			}
+		})
 	}
 }
 

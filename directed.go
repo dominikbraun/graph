@@ -205,6 +205,9 @@ func (d *directed[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {
 	}
 
 	for _, edge := range edges {
+		if _, ok := m[edge.Source]; !ok {
+			return nil, fmt.Errorf("unknown source vertex in edge: %v", edge.Source)
+		}
 		m[edge.Source][edge.Target] = edge
 	}
 

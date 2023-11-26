@@ -62,6 +62,10 @@ func (d *directed[K, T]) Vertex(hash K) (T, error) {
 	return vertex, err
 }
 
+func (d *directed[K, T]) Vertices() ([]K, error) {
+	return d.store.ListVertices()
+}
+
 func (d *directed[K, T]) VertexWithProperties(hash K) (T, VertexProperties, error) {
 	vertex, properties, err := d.store.Vertex(hash)
 	if err != nil {

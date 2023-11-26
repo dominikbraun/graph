@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: [ '1.18.x', '1.19.x', '1.20.x' ]
+        go: [ '1.18.x', '1.19.x', '1.20.x', '1.21.x' ]
     steps:
       - name: Set up Go ${{ matrix.go }}
         uses: actions/setup-go@v4
@@ -34,4 +34,4 @@ jobs:
         run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
 
       - name: Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3

@@ -58,42 +58,44 @@ func TestDirectedDFS(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(IntHash, Directed())
+		t.Run(name, func(t *testing.T) {
+			graph := New(IntHash, Directed())
 
-		for _, vertex := range test.vertices {
-			_ = graph.AddVertex(vertex)
-		}
-
-		for _, edge := range test.edges {
-			if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
-				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			for _, vertex := range test.vertices {
+				_ = graph.AddVertex(vertex)
 			}
-		}
 
-		visited := make(map[int]struct{})
-
-		visit := func(value int) bool {
-			visited[value] = struct{}{}
-
-			if test.stopAtVertex != -1 {
-				if value == test.stopAtVertex {
-					return true
+			for _, edge := range test.edges {
+				if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
+					t.Fatalf("failed to add edge: %s", err.Error())
 				}
 			}
-			return false
-		}
 
-		_ = DFS(graph, test.startHash, visit)
+			visited := make(map[int]struct{})
 
-		if len(visited) != len(test.expectedVisits) {
-			t.Fatalf("%s: numbers of visited vertices don't match: expected %v, got %v", name, len(test.expectedVisits), len(visited))
-		}
+			visit := func(value int) bool {
+				visited[value] = struct{}{}
 
-		for _, expectedVisit := range test.expectedVisits {
-			if _, ok := visited[expectedVisit]; !ok {
-				t.Errorf("%s: expected vertex %v to be visited, but it isn't", name, expectedVisit)
+				if test.stopAtVertex != -1 {
+					if value == test.stopAtVertex {
+						return true
+					}
+				}
+				return false
 			}
-		}
+
+			_ = DFS(graph, test.startHash, visit)
+
+			if len(visited) != len(test.expectedVisits) {
+				t.Fatalf("numbers of visited vertices don't match: expected %v, got %v", len(test.expectedVisits), len(visited))
+			}
+
+			for _, expectedVisit := range test.expectedVisits {
+				if _, ok := visited[expectedVisit]; !ok {
+					t.Errorf("expected vertex %v to be visited, but it isn't", expectedVisit)
+				}
+			}
+		})
 	}
 }
 
@@ -196,50 +198,52 @@ func TestUndirectedDFS(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(IntHash)
+		t.Run(name, func(t *testing.T) {
+			graph := New(IntHash)
 
-		for _, vertex := range test.vertices {
-			_ = graph.AddVertex(vertex)
-		}
-
-		for _, edge := range test.edges {
-			if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
-				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			for _, vertex := range test.vertices {
+				_ = graph.AddVertex(vertex)
 			}
-		}
 
-		visited := make(map[int]struct{})
-
-		visit := func(value int) bool {
-			visited[value] = struct{}{}
-
-			if test.stopAtVertex != -1 {
-				if value == test.stopAtVertex {
-					return true
+			for _, edge := range test.edges {
+				if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
+					t.Fatalf("failed to add edge: %s", err.Error())
 				}
 			}
-			return false
-		}
 
-		_ = DFS(graph, test.startHash, visit)
+			visited := make(map[int]struct{})
 
-		if len(visited) < len(test.expectedMinimumVisits) {
-			t.Fatalf("%s: expected number of minimum visits doesn't match: expected %v, got %v", name, len(test.expectedMinimumVisits), len(visited))
-		}
+			visit := func(value int) bool {
+				visited[value] = struct{}{}
 
-		if test.forbiddenVisits != nil {
-			for _, forbiddenVisit := range test.forbiddenVisits {
-				if _, ok := visited[forbiddenVisit]; ok {
-					t.Errorf("%s: expected vertex %v to not be visited, but it is", name, forbiddenVisit)
+				if test.stopAtVertex != -1 {
+					if value == test.stopAtVertex {
+						return true
+					}
+				}
+				return false
+			}
+
+			_ = DFS(graph, test.startHash, visit)
+
+			if len(visited) < len(test.expectedMinimumVisits) {
+				t.Fatalf("expected number of minimum visits doesn't match: expected %v, got %v", len(test.expectedMinimumVisits), len(visited))
+			}
+
+			if test.forbiddenVisits != nil {
+				for _, forbiddenVisit := range test.forbiddenVisits {
+					if _, ok := visited[forbiddenVisit]; ok {
+						t.Errorf("expected vertex %v to not be visited, but it is", forbiddenVisit)
+					}
 				}
 			}
-		}
 
-		for _, expectedVisit := range test.expectedMinimumVisits {
-			if _, ok := visited[expectedVisit]; !ok {
-				t.Errorf("%s: expected vertex %v to be visited, but it isn't", name, expectedVisit)
+			for _, expectedVisit := range test.expectedMinimumVisits {
+				if _, ok := visited[expectedVisit]; !ok {
+					t.Errorf("expected vertex %v to be visited, but it isn't", expectedVisit)
+				}
 			}
-		}
+		})
 	}
 }
 
@@ -287,51 +291,53 @@ func TestDirectedBFS(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(IntHash, Directed())
+		t.Run(name, func(t *testing.T) {
+			graph := New(IntHash, Directed())
 
-		for _, vertex := range test.vertices {
-			_ = graph.AddVertex(vertex)
-		}
-
-		for _, edge := range test.edges {
-			if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
-				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			for _, vertex := range test.vertices {
+				_ = graph.AddVertex(vertex)
 			}
-		}
 
-		visited := make(map[int]struct{})
-
-		visit := func(value int) bool {
-			visited[value] = struct{}{}
-
-			if test.stopAtVertex != -1 {
-				if value == test.stopAtVertex {
-					return true
+			for _, edge := range test.edges {
+				if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
+					t.Fatalf("failed to add edge: %s", err.Error())
 				}
 			}
-			return false
-		}
 
-		_ = BFS(graph, test.startHash, visit)
+			visited := make(map[int]struct{})
 
-		for _, expectedVisit := range test.expectedVisits {
-			if _, ok := visited[expectedVisit]; !ok {
-				t.Errorf("%s: expected vertex %v to be visited, but it isn't", name, expectedVisit)
+			visit := func(value int) bool {
+				visited[value] = struct{}{}
+
+				if test.stopAtVertex != -1 {
+					if value == test.stopAtVertex {
+						return true
+					}
+				}
+				return false
 			}
-		}
 
-		visitWithDepth := func(value int, depth int) bool {
-			visited[value] = struct{}{}
-			log.Printf("cur depth: %d", depth)
+			_ = BFS(graph, test.startHash, visit)
 
-			if test.stopAtVertex != -1 {
-				if value == test.stopAtVertex {
-					return true
+			for _, expectedVisit := range test.expectedVisits {
+				if _, ok := visited[expectedVisit]; !ok {
+					t.Errorf("expected vertex %v to be visited, but it isn't", expectedVisit)
 				}
 			}
-			return false
-		}
-		_ = BFSWithDepth(graph, test.startHash, visitWithDepth)
+
+			visitWithDepth := func(value int, depth int) bool {
+				visited[value] = struct{}{}
+				log.Printf("cur depth: %d", depth)
+
+				if test.stopAtVertex != -1 {
+					if value == test.stopAtVertex {
+						return true
+					}
+				}
+				return false
+			}
+			_ = BFSWithDepth(graph, test.startHash, visitWithDepth)
+		})
 	}
 }
 
@@ -379,37 +385,39 @@ func TestUndirectedBFS(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := New(IntHash)
+		t.Run(name, func(t *testing.T) {
+			graph := New(IntHash)
 
-		for _, vertex := range test.vertices {
-			_ = graph.AddVertex(vertex)
-		}
-
-		for _, edge := range test.edges {
-			if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
-				t.Fatalf("%s: failed to add edge: %s", name, err.Error())
+			for _, vertex := range test.vertices {
+				_ = graph.AddVertex(vertex)
 			}
-		}
 
-		visited := make(map[int]struct{})
-
-		visit := func(value int) bool {
-			visited[value] = struct{}{}
-
-			if test.stopAtVertex != -1 {
-				if value == test.stopAtVertex {
-					return true
+			for _, edge := range test.edges {
+				if err := graph.AddEdge(edge.Source, edge.Target); err != nil {
+					t.Fatalf("failed to add edge: %s", err.Error())
 				}
 			}
-			return false
-		}
 
-		_ = BFS(graph, test.startHash, visit)
+			visited := make(map[int]struct{})
 
-		for _, expectedVisit := range test.expectedVisits {
-			if _, ok := visited[expectedVisit]; !ok {
-				t.Errorf("%s: expected vertex %v to be visited, but it isn't", name, expectedVisit)
+			visit := func(value int) bool {
+				visited[value] = struct{}{}
+
+				if test.stopAtVertex != -1 {
+					if value == test.stopAtVertex {
+						return true
+					}
+				}
+				return false
 			}
-		}
+
+			_ = BFS(graph, test.startHash, visit)
+
+			for _, expectedVisit := range test.expectedVisits {
+				if _, ok := visited[expectedVisit]; !ok {
+					t.Errorf("expected vertex %v to be visited, but it isn't", expectedVisit)
+				}
+			}
+		})
 	}
 }

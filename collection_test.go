@@ -25,31 +25,33 @@ func TestPriorityQueue_Push(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		queue := newPriorityQueue[int]()
+		t.Run(name, func(t *testing.T) {
+			queue := newPriorityQueue[int]()
 
-		for i, item := range test.items {
-			queue.Push(item, test.priorities[i])
-		}
-
-		if queue.Len() != len(test.expectedPriorityItems) {
-			t.Fatalf("%s: item length expectancy doesn't match: expected %v, got %v", name, len(test.expectedPriorityItems), queue.Len())
-		}
-
-		popped := make([]int, queue.Len())
-
-		for queue.Len() > 0 {
-			item, _ := queue.Pop()
-			popped = append(popped, item)
-		}
-
-		n := len(popped)
-
-		for i, item := range test.expectedPriorityItems {
-			poppedItem := popped[n-1-i]
-			if item.value != poppedItem {
-				t.Errorf("%s: item doesn't match: expected %v at index %d, got %v", name, item.value, i, poppedItem)
+			for i, item := range test.items {
+				queue.Push(item, test.priorities[i])
 			}
-		}
+
+			if queue.Len() != len(test.expectedPriorityItems) {
+				t.Fatalf("item length expectancy doesn't match: expected %v, got %v", len(test.expectedPriorityItems), queue.Len())
+			}
+
+			popped := make([]int, queue.Len())
+
+			for queue.Len() > 0 {
+				item, _ := queue.Pop()
+				popped = append(popped, item)
+			}
+
+			n := len(popped)
+
+			for i, item := range test.expectedPriorityItems {
+				poppedItem := popped[n-1-i]
+				if item.value != poppedItem {
+					t.Errorf("item doesn't match: expected %v at index %d, got %v", item.value, i, poppedItem)
+				}
+			}
+		})
 	}
 }
 
@@ -80,21 +82,23 @@ func TestPriorityQueue_Pop(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		queue := newPriorityQueue[int]()
+		t.Run(name, func(t *testing.T) {
+			queue := newPriorityQueue[int]()
 
-		for i, item := range test.items {
-			queue.Push(item, test.priorities[i])
-		}
+			for i, item := range test.items {
+				queue.Push(item, test.priorities[i])
+			}
 
-		item, err := queue.Pop()
+			item, err := queue.Pop()
 
-		if test.shouldFail != (err != nil) {
-			t.Fatalf("%s: error expectancy doesn't match: expected %v, got %v (error: %v)", name, test.shouldFail, (err != nil), err)
-		}
+			if test.shouldFail != (err != nil) {
+				t.Fatalf("error expectancy doesn't match: expected %v, got %v (error: %v)", test.shouldFail, (err != nil), err)
+			}
 
-		if item != test.expectedItem {
-			t.Errorf("%s: item expectancy doesn't match: expected %v, got %v", name, test.expectedItem, item)
-		}
+			if item != test.expectedItem {
+				t.Errorf("item expectancy doesn't match: expected %v, got %v", test.expectedItem, item)
+			}
+		})
 	}
 }
 
@@ -156,33 +160,35 @@ func TestPriorityQueue_UpdatePriority(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		queue := newPriorityQueue[int]()
+		t.Run(name, func(t *testing.T) {
+			queue := newPriorityQueue[int]()
 
-		for _, item := range test.items {
-			queue.Push(item.value, item.priority)
-		}
-
-		queue.UpdatePriority(test.decreaseItem, test.decreasePriority)
-
-		if queue.Len() != len(test.expectedPriorityItems) {
-			t.Fatalf("%s: item length expectancy doesn't match: expected %v, got %v", name, len(test.expectedPriorityItems), queue.Len())
-		}
-
-		popped := make([]int, queue.Len())
-
-		for queue.Len() > 0 {
-			item, _ := queue.Pop()
-			popped = append(popped, item)
-		}
-
-		n := len(popped)
-
-		for i, item := range test.expectedPriorityItems {
-			poppedItem := popped[n-1-i]
-			if item.value != poppedItem {
-				t.Errorf("%s: item doesn't match: expected %v at index %d, got %v", name, item.value, i, poppedItem)
+			for _, item := range test.items {
+				queue.Push(item.value, item.priority)
 			}
-		}
+
+			queue.UpdatePriority(test.decreaseItem, test.decreasePriority)
+
+			if queue.Len() != len(test.expectedPriorityItems) {
+				t.Fatalf("item length expectancy doesn't match: expected %v, got %v", len(test.expectedPriorityItems), queue.Len())
+			}
+
+			popped := make([]int, queue.Len())
+
+			for queue.Len() > 0 {
+				item, _ := queue.Pop()
+				popped = append(popped, item)
+			}
+
+			n := len(popped)
+
+			for i, item := range test.expectedPriorityItems {
+				poppedItem := popped[n-1-i]
+				if item.value != poppedItem {
+					t.Errorf("item doesn't match: expected %v at index %d, got %v", item.value, i, poppedItem)
+				}
+			}
+		})
 	}
 }
 
@@ -210,17 +216,19 @@ func TestPriorityQueue_Len(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		queue := newPriorityQueue[int]()
+		t.Run(name, func(t *testing.T) {
+			queue := newPriorityQueue[int]()
 
-		for i, item := range test.items {
-			queue.Push(item, test.priorities[i])
-		}
+			for i, item := range test.items {
+				queue.Push(item, test.priorities[i])
+			}
 
-		n := queue.Len()
+			n := queue.Len()
 
-		if n != test.expectedLen {
-			t.Errorf("%s: length expectancy doesn't match: expected %v, got %v", name, test.expectedLen, n)
-		}
+			if n != test.expectedLen {
+				t.Errorf("length expectancy doesn't match: expected %v, got %v", test.expectedLen, n)
+			}
+		})
 	}
 }
 
@@ -229,21 +237,19 @@ func TestStack_push(t *testing.T) {
 		t T
 	}
 	type testCase[T comparable] struct {
-		name     string
 		elements []int
 		args     args[T]
 	}
-	tests := []testCase[int]{
-		{
-			"push 1",
+	tests := map[string]testCase[int]{
+		"push 1": {
 			[]int{1, 2, 3, 4, 5, 6},
 			args[int]{
 				t: 1,
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
 			s := newStack[int]()
 
 			for _, element := range tt.elements {
@@ -257,27 +263,24 @@ func TestStack_push(t *testing.T) {
 
 func TestStack_pop(t *testing.T) {
 	type testCase[T comparable] struct {
-		name     string
 		elements []int
 		want     T
 		wantErr  bool
 	}
-	tests := []testCase[int]{
-		{
-			"pop element",
+	tests := map[string]testCase[int]{
+		"pop element": {
 			[]int{1, 2, 3, 4, 5, 6},
 			6,
 			false,
 		},
-		{
-			"pop element from empty stack",
+		"pop element from empty stack": {
 			[]int{},
 			0,
 			true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
 			s := newStack[int]()
 
 			for _, element := range tt.elements {
@@ -298,27 +301,24 @@ func TestStack_pop(t *testing.T) {
 
 func TestStack_top(t *testing.T) {
 	type testCase[T comparable] struct {
-		name     string
 		elements []int
 		want     T
 		wantErr  bool
 	}
-	tests := []testCase[int]{
-		{
-			"top element",
+	tests := map[string]testCase[int]{
+		"top element": {
 			[]int{1, 2, 3, 4, 5, 6},
 			6,
 			false,
 		},
-		{
-			"top element of empty stack",
+		"top element of empty stack": {
 			[]int{},
 			0,
 			true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
 			s := newStack[int]()
 
 			for _, element := range tt.elements {
@@ -339,24 +339,21 @@ func TestStack_top(t *testing.T) {
 
 func TestStack_isEmpty(t *testing.T) {
 	type testCase[T comparable] struct {
-		name     string
 		elements []int
 		want     bool
 	}
-	tests := []testCase[int]{
-		{
-			"empty",
+	tests := map[string]testCase[int]{
+		"empty": {
 			[]int{},
 			true,
 		},
-		{
-			"not empty",
+		"not empty": {
 			[]int{1, 2, 3, 4, 5, 6},
 			false,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
 			s := newStack[int]()
 
 			for _, element := range tt.elements {
@@ -375,13 +372,11 @@ func TestStack_forEach(t *testing.T) {
 		f func(T)
 	}
 	type testCase[T comparable] struct {
-		name     string
 		elements []int
 		args     args[T]
 	}
-	tests := []testCase[int]{
-		{
-			name:     "forEach",
+	tests := map[string]testCase[int]{
+		"forEach": {
 			elements: []int{1, 2, 3, 4, 5, 6},
 			args: args[int]{
 				f: func(i int) {
@@ -389,8 +384,8 @@ func TestStack_forEach(t *testing.T) {
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
 			s := newStack[int]()
 
 			for _, element := range tt.elements {
@@ -404,28 +399,26 @@ func TestStack_forEach(t *testing.T) {
 
 func TestStack_contains(t *testing.T) {
 	type testCase[T comparable] struct {
-		name     string
 		elements []int
 		arg      T
 		expected bool
 	}
-	tests := []testCase[int]{
-		{
-			name:     "contains 6",
+	tests := map[string]testCase[int]{
+
+		"contains 6": {
 			elements: []int{1, 2, 3, 4, 5, 6},
 			arg:      6,
 			expected: true,
 		},
-		{
-			name:     "contains 7",
+		"contains 7": {
 			elements: []int{1, 2, 3, 4, 5, 6},
 			arg:      7,
 			expected: false,
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
 			s := newStack[int]()
 
 			for _, element := range tt.elements {

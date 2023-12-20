@@ -292,7 +292,7 @@ func (u *undirected[K, T]) Clone() (Graph[K, T], error) {
 	clone := &undirected[K, T]{
 		hash:   u.hash,
 		traits: traits,
-		store:  newMemoryStore[K, T](),
+		store:  NewMemoryStore[K, T](),
 	}
 
 	if err := clone.AddVerticesFrom(u); err != nil {

@@ -68,20 +68,20 @@ type Store[K comparable, T any] interface {
 	EdgeCount() (int, error)
 }
 
-type memoryStore[K comparable, T any] struct {
+type MemoryStore[K comparable, T any] struct {
 	lock             sync.RWMutex
 	vertices         map[K]T
 	vertexProperties map[K]VertexProperties
 
 	// outEdges and inEdges store all outgoing and ingoing edges for all vertices. For O(1) access,
 	// these edges themselves are stored in maps whose keys are the hashes of the target vertices.
-	outEdges map[K]map[K]Edge[K] // source -> target
-	inEdges  map[K]map[K]Edge[K] // target -> source
+	outEdges  map[K]map[K]Edge[K] // source -> target
+	inEdges   map[K]map[K]Edge[K] // target -> source
 	edgeCount int
 }
 
-func newMemoryStore[K comparable, T any]() Store[K, T] {
-	return &memoryStore[K, T]{
+func NewMemoryStore[K comparable, T any]() Store[K, T] {
+	return &MemoryStore[K, T]{
 		vertices:         make(map[K]T),
 		vertexProperties: make(map[K]VertexProperties),
 		outEdges:         make(map[K]map[K]Edge[K]),
@@ -89,7 +89,7 @@ func newMemoryStore[K comparable, T any]() Store[K, T] {
 	}
 }
 
-func (s *memoryStore[K, T]) AddVertex(k K, t T, p VertexProperties) error {
+func (s *MemoryStore[K, T]) AddVertex(k K, t T, p VertexProperties) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -103,7 +103,7 @@ func (s *memoryStore[K, T]) AddVertex(k K, t T, p VertexProperties) error {
 	return nil
 }
 
-func (s *memoryStore[K, T]) ListVertices() ([]K, error) {
+func (s *MemoryStore[K, T]) ListVertices() ([]K, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
@@ -115,14 +115,14 @@ func (s *memoryStore[K, T]) ListVertices() ([]K, error) {
 	return hashes, nil
 }
 
-func (s *memoryStore[K, T]) VertexCount() (int, error) {
+func (s *MemoryStore[K, T]) VertexCount() (int, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
 	return len(s.vertices), nil
 }
 
-func (s *memoryStore[K, T]) Vertex(k K) (T, VertexProperties, error) {
+func (s *MemoryStore[K, T]) Vertex(k K) (T, VertexProperties, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
@@ -136,7 +136,7 @@ func (s *memoryStore[K, T]) Vertex(k K) (T, VertexProperties, error) {
 	return v, p, nil
 }
 
-func (s *memoryStore[K, T]) RemoveVertex(k K) error {
+func (s *MemoryStore[K, T]) RemoveVertex(k K) error {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
@@ -164,7 +164,7 @@ func (s *memoryStore[K, T]) RemoveVertex(k K) error {
 	return nil
 }
 
-func (s *memoryStore[K, T]) AddEdge(sourceHash, targetHash K, edge Edge[K]) error {
+func (s *MemoryStore[K, T]) AddEdge(sourceHash, targetHash K, edge Edge[K]) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -185,7 +185,7 @@ func (s *memoryStore[K, T]) AddEdge(sourceHash, targetHash K, edge Edge[K]) erro
 	return nil
 }
 
-func (s *memoryStore[K, T]) UpdateEdge(sourceHash, targetHash K, edge Edge[K]) error {
+func (s *MemoryStore[K, T]) UpdateEdge(sourceHash, targetHash K, edge Edge[K]) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -205,7 +205,7 @@ func (s *memoryStore[K, T]) UpdateEdge(sourceHash, targetHash K, edge Edge[K]) e
 	return nil
 }
 
-func (s *memoryStore[K, T]) RemoveEdge(sourceHash, targetHash K) error {
+func (s *MemoryStore[K, T]) RemoveEdge(sourceHash, targetHash K) error {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -217,7 +217,7 @@ func (s *memoryStore[K, T]) RemoveEdge(sourceHash, targetHash K) error {
 	return nil
 }
 
-func (s *memoryStore[K, T]) Edge(sourceHash, targetHash K) (Edge[K], error) {
+func (s *MemoryStore[K, T]) Edge(sourceHash, targetHash K) (Edge[K], error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
@@ -234,14 +234,14 @@ func (s *memoryStore[K, T]) Edge(sourceHash, targetHash K) (Edge[K], error) {
 	return edge, nil
 }
 
-func (s *memoryStore[K, T]) EdgeCount() (int, error) {
+func (s *MemoryStore[K, T]) EdgeCount() (int, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
 	return s.edgeCount, nil
 }
 
-func (s *memoryStore[K, T]) ListEdges() ([]Edge[K], error) {
+func (s *MemoryStore[K, T]) ListEdges() ([]Edge[K], error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
@@ -259,7 +259,7 @@ func (s *memoryStore[K, T]) ListEdges() ([]Edge[K], error) {
 //
 // Because CreatesCycle doesn't need to modify the PredecessorMap, we can use
 // inEdges instead to compute the same thing without creating any copies.
-func (s *memoryStore[K, T]) CreatesCycle(source, target K) (bool, error) {
+func (s *MemoryStore[K, T]) CreatesCycle(source, target K) (bool, error) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 

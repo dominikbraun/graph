@@ -21,7 +21,7 @@ func TestUndirected_Traits(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		g := newUndirected(IntHash, test.traits, newMemoryStore[int, int]())
+		g := newUndirected(IntHash, test.traits, NewMemoryStore[int, int]())
 		traits := g.Traits()
 
 		if !traitsAreEqual(traits, test.expected) {
@@ -60,7 +60,7 @@ func TestUndirected_AddVertex(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{}, newMemoryStore[int, int]())
+		graph := newUndirected(IntHash, &Traits{}, NewMemoryStore[int, int]())
 
 		var err error
 
@@ -81,7 +81,7 @@ func TestUndirected_AddVertex(t *testing.T) {
 			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v", name, test.finallyExpectedError, err)
 		}
 
-		graphStore := graph.store.(*memoryStore[int, int])
+		graphStore := graph.store.(*MemoryStore[int, int])
 
 		for _, vertex := range test.vertices {
 			if len(graphStore.vertices) != len(test.expectedVertices) {
@@ -89,7 +89,7 @@ func TestUndirected_AddVertex(t *testing.T) {
 			}
 
 			hash := graph.hash(vertex)
-			vertices := graph.store.(*memoryStore[int, int]).vertices
+			vertices := graph.store.(*MemoryStore[int, int]).vertices
 			if _, ok := vertices[hash]; !ok {
 				t.Errorf("%s: vertex %v not found in graph: %v", name, vertex, vertices)
 			}
@@ -230,7 +230,7 @@ func TestUndirected_Vertex(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{}, newMemoryStore[int, int]())
+		graph := newUndirected(IntHash, &Traits{}, NewMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -356,7 +356,7 @@ func TestUndirected_AddEdge(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, test.traits, newMemoryStore[int, int]())
+		graph := newUndirected(IntHash, test.traits, NewMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -387,7 +387,7 @@ func TestUndirected_AddEdge(t *testing.T) {
 			sourceHash := graph.hash(expectedEdge.Source)
 			targetHash := graph.hash(expectedEdge.Target)
 
-			edge, ok := graph.store.(*memoryStore[int, int]).outEdges[sourceHash][targetHash]
+			edge, ok := graph.store.(*MemoryStore[int, int]).outEdges[sourceHash][targetHash]
 			if !ok {
 				t.Fatalf("%s: edge with source %v and target %v not found", name, expectedEdge.Source, expectedEdge.Target)
 			}
@@ -970,7 +970,7 @@ func TestUndirected_Adjacencies(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{}, newMemoryStore[int, int]())
+		graph := newUndirected(IntHash, &Traits{}, NewMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -1063,7 +1063,7 @@ func TestUndirected_PredecessorMap(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{}, newMemoryStore[int, int]())
+		graph := newUndirected(IntHash, &Traits{}, NewMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -1209,7 +1209,7 @@ func TestUndirected_OrderAndSize(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{}, newMemoryStore[int, int]())
+		graph := newUndirected(IntHash, &Traits{}, NewMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -1258,7 +1258,7 @@ func TestUndirected_edgesAreEqual(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{}, newMemoryStore[int, int]())
+		graph := newUndirected(IntHash, &Traits{}, NewMemoryStore[int, int]())
 		actual := graph.edgesAreEqual(test.a, test.b)
 
 		if actual != test.edgesAreEqual {
@@ -1281,7 +1281,7 @@ func TestUndirected_addEdge(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{}, newMemoryStore[int, int]())
+		graph := newUndirected(IntHash, &Traits{}, NewMemoryStore[int, int]())
 
 		for _, edge := range test.edges {
 			sourceHash := graph.hash(edge.Source)
@@ -1292,11 +1292,11 @@ func TestUndirected_addEdge(t *testing.T) {
 			}
 		}
 
-		outEdges := graph.store.(*memoryStore[int, int]).outEdges
+		outEdges := graph.store.(*MemoryStore[int, int]).outEdges
 		if len(outEdges) != len(test.edges) {
 			t.Errorf("%s: number of outgoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(outEdges))
 		}
-		inEdges := graph.store.(*memoryStore[int, int]).inEdges
+		inEdges := graph.store.(*MemoryStore[int, int]).inEdges
 		if len(inEdges) != len(test.edges) {
 			t.Errorf("%s: number of ingoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(inEdges))
 		}
@@ -1376,7 +1376,7 @@ func TestUndirected_adjacencies(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newUndirected(IntHash, &Traits{}, newMemoryStore[int, int]())
+		graph := newUndirected(IntHash, &Traits{}, NewMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -1401,7 +1401,7 @@ func adjacencyList[K comparable, T any](store Store[K, T], vertexHash K) []K {
 
 	// An undirected graph creates an undirected edge as two directed edges in
 	// the opposite direction, so both the in-edges and the out-edges work here.
-	inEdges, ok := store.(*memoryStore[K, T]).inEdges[vertexHash]
+	inEdges, ok := store.(*MemoryStore[K, T]).inEdges[vertexHash]
 	if !ok {
 		return adjacencyHashes
 	}

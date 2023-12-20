@@ -253,7 +253,7 @@ type Hash[K comparable, T any] func(T) K
 // The graph will use the default in-memory store for persisting vertices and
 // edges. To use a different [Store], use [NewWithStore].
 func New[K comparable, T any](hash Hash[K, T], options ...func(*Traits)) Graph[K, T] {
-	return NewWithStore(hash, newMemoryStore[K, T](), options...)
+	return NewWithStore(hash, NewMemoryStore[K, T](), options...)
 }
 
 // NewWithStore creates a new graph same as [New] but uses the provided store

@@ -13,7 +13,7 @@ func TestRemoveEdge(t *testing.T) {
 	}
 
 	build := func(nodes []string, edges [][]string) Store[string, string] {
-		store := newMemoryStore[string, string]()
+		store := NewMemoryStore[string, string]()
 		for _, n := range nodes {
 			noerr(store.AddVertex(n, n, VertexProperties{}))
 		}

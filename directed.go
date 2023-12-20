@@ -254,7 +254,7 @@ func (d *directed[K, T]) Clone() (Graph[K, T], error) {
 	clone := &directed[K, T]{
 		hash:   d.hash,
 		traits: traits,
-		store:  newMemoryStore[K, T](),
+		store:  NewMemoryStore[K, T](),
 	}
 
 	if err := clone.AddVerticesFrom(d); err != nil {

@@ -21,7 +21,7 @@ func TestDirected_Traits(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		g := newDirected(IntHash, test.traits, newMemoryStore[int, int]())
+		g := newDirected(IntHash, test.traits, NewMemoryStore[int, int]())
 		traits := g.Traits()
 
 		if !traitsAreEqual(traits, test.expected) {
@@ -60,7 +60,7 @@ func TestDirected_AddVertex(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
+		graph := newDirected(IntHash, &Traits{}, NewMemoryStore[int, int]())
 
 		var err error
 
@@ -81,7 +81,7 @@ func TestDirected_AddVertex(t *testing.T) {
 			t.Errorf("%s: error expectancy doesn't match: expected %v, got %v", name, test.finallyExpectedError, err)
 		}
 
-		graphStore := graph.store.(*memoryStore[int, int])
+		graphStore := graph.store.(*MemoryStore[int, int])
 		for _, vertex := range test.vertices {
 			if len(graphStore.vertices) != len(test.expectedVertices) {
 				t.Errorf("%s: vertex count doesn't match: expected %v, got %v", name, len(test.expectedVertices), len(graphStore.vertices))
@@ -229,7 +229,7 @@ func TestDirected_Vertex(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
+		graph := newDirected(IntHash, &Traits{}, NewMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -405,7 +405,7 @@ func TestDirected_AddEdge(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, test.traits, newMemoryStore[int, int]())
+		graph := newDirected(IntHash, test.traits, NewMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -967,7 +967,7 @@ func TestDirected_AdjacencyList(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
+		graph := newDirected(IntHash, &Traits{}, NewMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -1050,7 +1050,7 @@ func TestDirected_PredecessorMap(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
+		graph := newDirected(IntHash, &Traits{}, NewMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -1197,7 +1197,7 @@ func TestDirected_OrderAndSize(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
+		graph := newDirected(IntHash, &Traits{}, NewMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)
@@ -1241,7 +1241,7 @@ func TestDirected_edgesAreEqual(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
+		graph := newDirected(IntHash, &Traits{}, NewMemoryStore[int, int]())
 		actual := graph.edgesAreEqual(test.a, test.b)
 
 		if actual != test.edgesAreEqual {
@@ -1264,7 +1264,7 @@ func TestDirected_addEdge(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
+		graph := newDirected(IntHash, &Traits{}, NewMemoryStore[int, int]())
 
 		for _, edge := range test.edges {
 			sourceHash := graph.hash(edge.Source)
@@ -1275,11 +1275,11 @@ func TestDirected_addEdge(t *testing.T) {
 			}
 		}
 
-		outEdges := graph.store.(*memoryStore[int, int]).outEdges
+		outEdges := graph.store.(*MemoryStore[int, int]).outEdges
 		if len(outEdges) != len(test.edges) {
 			t.Errorf("%s: number of outgoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(outEdges))
 		}
-		inEdges := graph.store.(*memoryStore[int, int]).inEdges
+		inEdges := graph.store.(*MemoryStore[int, int]).inEdges
 		if len(inEdges) != len(test.edges) {
 			t.Errorf("%s: number of ingoing edges doesn't match: expected %v, got %v", name, len(test.edges), len(inEdges))
 		}
@@ -1327,7 +1327,7 @@ func TestDirected_predecessors(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		graph := newDirected(IntHash, &Traits{}, newMemoryStore[int, int]())
+		graph := newDirected(IntHash, &Traits{}, NewMemoryStore[int, int]())
 
 		for _, vertex := range test.vertices {
 			_ = graph.AddVertex(vertex)

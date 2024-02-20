@@ -75,6 +75,10 @@ func (d *directed[K, T]) RemoveVertex(hash K) error {
 	return d.store.RemoveVertex(hash)
 }
 
+func (d *directed[K, T]) Vertices() map[K]T {
+	return d.store.AllVertices()
+}
+
 func (d *directed[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
 	_, _, err := d.store.Vertex(sourceHash)
 	if err != nil {

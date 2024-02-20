@@ -99,6 +99,9 @@ type Graph[K comparable, T any] interface {
 	// be returned. If the vertex doesn't exist, ErrVertexNotFound is returned.
 	RemoveVertex(hash K) error
 
+	// Vertices returns a copy of all vertices as map
+	Vertices() map[K]T
+
 	// AddEdge creates an edge between the source and the target vertex.
 	//
 	// If either vertex cannot be found, ErrVertexNotFound will be returned. If

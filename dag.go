@@ -217,3 +217,26 @@ func TransitiveReduction[K comparable, T any](g Graph[K, T]) (Graph[K, T], error
 
 	return transitiveReduction, nil
 }
+
+// FindSources returns all source vertices in a directed acyclic graph. A source
+// vertex is a vertex with no incoming edges. 
+//
+// FindSources only works for directed acyclic graph.
+func FindSources[K comparable, T any](g Graph[K, T]) ([]K, error) {
+	if !g.Traits().IsDirected {
+		return nil, fmt.Errorf("cannot find source in a non-directed acyclic graph")
+	}
+
+	predecessorMap, err := g.PredecessorMap()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get predecessor map: %w", err)
+	}
+
+	var sources []K
+	for vertex, predecessors := range predecessorMap {
+		if len(predecessors) == 0 {
+			sources = append(sources, vertex)
+		}
+	}
+	return sources, nil
+}

@@ -144,22 +144,23 @@ func Components[K comparable, T any](g Graph[K, T]) ([]Graph[K, T], error) {
 
 		for !stack.isEmpty() {
 			currentHash, _ := stack.pop()
+			if _, ok := visited[currentHash]; ok {
+				continue
+			}
 
-			if _, ok := visited[currentHash]; !ok {
-				visited[currentHash] = struct{}{}
-				v, properties, err := g.VertexWithProperties(currentHash) //nolint:govet
-				if err != nil {
-					return components, fmt.Errorf("failed to get vertex %v: %w", currentHash, err)
-				}
+			visited[currentHash] = struct{}{}
+			v, properties, err := g.VertexWithProperties(currentHash) //nolint:govet
+			if err != nil {
+				return components, fmt.Errorf("failed to get vertex %v: %w", currentHash, err)
+			}
 
-				err = component.AddVertex(v, copyVertexProperties(properties))
-				if err != nil {
-					return components, fmt.Errorf("failed to add vertex %v: %w", currentHash, err)
-				}
+			err = component.AddVertex(v, copyVertexProperties(properties))
+			if err != nil {
+				return components, fmt.Errorf("failed to add vertex %v: %w", currentHash, err)
+			}
 
-				for neighbor := range adjacencyMap[currentHash] {
-					stack.push(neighbor)
-				}
+			for neighbor := range adjacencyMap[currentHash] {
+				stack.push(neighbor)
 			}
 		}
 

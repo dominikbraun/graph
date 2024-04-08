@@ -135,43 +135,43 @@ func Components[K comparable, T any](g Graph[K, T]) ([]Graph[K, T], error) {
 	var components []Graph[K, T]
 
 	for vertex, adjacencies := range adjacencyMap {
-		if _, ok := visited[vertex]; !ok {
-			component := NewLike(g)
-			stack := newStack[K]()
-			stack.push(vertex)
-
-			for !stack.isEmpty() {
-				currentHash, _ := stack.pop()
-
-				if _, ok := visited[currentHash]; !ok {
-					visited[currentHash] = struct{}{}
-					v, properties, err := g.VertexWithProperties(currentHash) //nolint:govet
-					if err != nil {
-						return components, fmt.Errorf("failed to get vertex %v: %w", currentHash, err)
-					}
-
-					err = component.AddVertex(v, copyVertexProperties(properties))
-					if err != nil {
-						return components, fmt.Errorf("failed to add vertex %v: %w", currentHash, err)
-					}
-
-					for neighbor := range adjacencyMap[currentHash] {
-						stack.push(neighbor)
-					}
-				}
-			}
-
-			for _, edge := range adjacencies {
-				err = component.AddEdge(copyEdge(edge))
-				if err != nil {
-					return components, fmt.Errorf("failed to add edge (%v, %v): %w", edge.Source, edge.Target, err)
-				}
-			}
-
-			components = append(components, component)
+		if _, ok := visited[vertex]; ok {
+			continue
 		}
+		component := NewLike(g)
+		stack := newStack[K]()
+		stack.push(vertex)
+
+		for !stack.isEmpty() {
+			currentHash, _ := stack.pop()
+
+			if _, ok := visited[currentHash]; !ok {
+				visited[currentHash] = struct{}{}
+				v, properties, err := g.VertexWithProperties(currentHash) //nolint:govet
+				if err != nil {
+					return components, fmt.Errorf("failed to get vertex %v: %w", currentHash, err)
+				}
+
+				err = component.AddVertex(v, copyVertexProperties(properties))
+				if err != nil {
+					return components, fmt.Errorf("failed to add vertex %v: %w", currentHash, err)
+				}
+
+				for neighbor := range adjacencyMap[currentHash] {
+					stack.push(neighbor)
+				}
+			}
+		}
+
+		for _, edge := range adjacencies {
+			err = component.AddEdge(copyEdge(edge))
+			if err != nil {
+				return components, fmt.Errorf("failed to add edge (%v, %v): %w", edge.Source, edge.Target, err)
+			}
+		}
+
+		components = append(components, component)
 	}
 
 	return components, nil
 }
-

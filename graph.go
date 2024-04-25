@@ -351,7 +351,7 @@ func EdgeData(data any) func(*EdgeProperties) {
 // VertexProperties represents a set of properties that each vertex has. They
 // can be set when adding a vertex using the corresponding functional options:
 //
-//	_ = g.AddVertex("A", "B", graph.VertexWeight(2), graph.VertexAttribute("color", "red"))
+//	_ = g.AddVertex("A", graph.VertexWeight(2), graph.VertexAttribute("color", "red"))
 //
 // The example above will create a vertex with a weight of 2 and an attribute
 // "color" with value "red".

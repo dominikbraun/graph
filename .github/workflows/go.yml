@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: [ '1.18.x', '1.19.x', '1.20.x', '1.21.x' ]
+        go: [ '1.18.x', '1.19.x', '1.20.x', '1.21.x', '1.22.x' ]
     steps:
       - name: Set up Go ${{ matrix.go }}
         uses: actions/setup-go@v4
@@ -26,9 +26,9 @@ jobs:
           go get -v -t -d ./...
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.51.2
+          version: v1.58
 
       - name: Test
         run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...

@@ -777,6 +777,198 @@ func TestUndirected_Edges(t *testing.T) {
 	}
 }
 
+func TestUndirected_OutEdges(t *testing.T) {
+	tests := map[string]struct {
+		vertices      []int
+		edges         []Edge[int]
+		expectedEdges []Edge[int]
+	}{
+		"graph with 3 edges": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{
+					Source: 1,
+					Target: 2,
+					Properties: EdgeProperties{
+						Weight: 10,
+						Attributes: map[string]string{
+							"color": "red",
+						},
+					},
+				},
+				{
+					Source: 2,
+					Target: 3,
+					Properties: EdgeProperties{
+						Weight: 20,
+						Attributes: map[string]string{
+							"color": "green",
+						},
+					},
+				},
+				{
+					Source: 3,
+					Target: 1,
+					Properties: EdgeProperties{
+						Weight: 30,
+						Attributes: map[string]string{
+							"color": "blue",
+						},
+					},
+				},
+			},
+			expectedEdges: []Edge[int]{
+				{
+					Source: 1,
+					Target: 2,
+					Properties: EdgeProperties{
+						Weight: 10,
+						Attributes: map[string]string{
+							"color": "red",
+						},
+					},
+				},
+				{
+					Source: 3,
+					Target: 1,
+					Properties: EdgeProperties{
+						Weight: 30,
+						Attributes: map[string]string{
+							"color": "blue",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			g := New(IntHash)
+
+			for _, vertex := range test.vertices {
+				_ = g.AddVertex(vertex)
+			}
+
+			for _, edge := range test.edges {
+				_ = g.AddEdge(copyEdge(edge))
+			}
+
+			edges, err := g.OutEdges(test.vertices[0])
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err.Error())
+			}
+
+			for _, expectedEdge := range test.expectedEdges {
+				for _, actualEdge := range edges {
+					if actualEdge.Source != expectedEdge.Source || actualEdge.Target != expectedEdge.Target {
+						continue
+					}
+					if !edgesAreEqual(expectedEdge, actualEdge, false) {
+						t.Errorf("%s: expected edge %v, got %v", name, expectedEdge, actualEdge)
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestUndirected_InEdges(t *testing.T) {
+	tests := map[string]struct {
+		vertices      []int
+		edges         []Edge[int]
+		expectedEdges []Edge[int]
+	}{
+		"graph with 3 edges": {
+			vertices: []int{1, 2, 3},
+			edges: []Edge[int]{
+				{
+					Source: 1,
+					Target: 2,
+					Properties: EdgeProperties{
+						Weight: 10,
+						Attributes: map[string]string{
+							"color": "red",
+						},
+					},
+				},
+				{
+					Source: 2,
+					Target: 3,
+					Properties: EdgeProperties{
+						Weight: 20,
+						Attributes: map[string]string{
+							"color": "green",
+						},
+					},
+				},
+				{
+					Source: 3,
+					Target: 1,
+					Properties: EdgeProperties{
+						Weight: 30,
+						Attributes: map[string]string{
+							"color": "blue",
+						},
+					},
+				},
+			},
+			expectedEdges: []Edge[int]{
+				{
+					Source: 1,
+					Target: 2,
+					Properties: EdgeProperties{
+						Weight: 10,
+						Attributes: map[string]string{
+							"color": "red",
+						},
+					},
+				},
+				{
+					Source: 3,
+					Target: 1,
+					Properties: EdgeProperties{
+						Weight: 30,
+						Attributes: map[string]string{
+							"color": "blue",
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			g := New(IntHash)
+
+			for _, vertex := range test.vertices {
+				_ = g.AddVertex(vertex)
+			}
+
+			for _, edge := range test.edges {
+				_ = g.AddEdge(copyEdge(edge))
+			}
+
+			edges, err := g.InEdges(test.vertices[0])
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err.Error())
+			}
+
+			for _, expectedEdge := range test.expectedEdges {
+				for _, actualEdge := range edges {
+					if actualEdge.Source != expectedEdge.Source || actualEdge.Target != expectedEdge.Target {
+						continue
+					}
+					if !edgesAreEqual(expectedEdge, actualEdge, false) {
+						t.Errorf("%s: expected edge %v, got %v", name, expectedEdge, actualEdge)
+					}
+				}
+			}
+		})
+	}
+}
+
 func TestUndirected_UpdateEdge(t *testing.T) {
 	tests := map[string]struct {
 		vertices    []int

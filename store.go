@@ -63,6 +63,12 @@ type Store[K comparable, T any] interface {
 	// ListEdges should return all edges in the graph in a slice.
 	ListEdges() ([]Edge[K], error)
 
+	// ListOutEdges should return all edges of a given source vertex in the graph in a slice.
+	ListOutEdges(sourceHash K) ([]Edge[K], error)
+
+	// ListInEdges should return all edges of a given target vertex in the graph in a slice.
+	ListInEdges(targetHash K) ([]Edge[K], error)
+
 	// EdgeCount should return the number of edges in the graph. This should be equal to the
 	// length of the slice returned by ListEdges.
 	EdgeCount() (int, error)
@@ -75,8 +81,8 @@ type memoryStore[K comparable, T any] struct {
 
 	// outEdges and inEdges store all outgoing and ingoing edges for all vertices. For O(1) access,
 	// these edges themselves are stored in maps whose keys are the hashes of the target vertices.
-	outEdges map[K]map[K]Edge[K] // source -> target
-	inEdges  map[K]map[K]Edge[K] // target -> source
+	outEdges  map[K]map[K]Edge[K] // source -> target
+	inEdges   map[K]map[K]Edge[K] // target -> source
 	edgeCount int
 }
 
@@ -250,6 +256,30 @@ func (s *memoryStore[K, T]) ListEdges() ([]Edge[K], error) {
 		for _, edge := range edges {
 			res = append(res, edge)
 		}
+	}
+	return res, nil
+}
+
+func (s *memoryStore[K, T]) ListOutEdges(sourceHash K) ([]Edge[K], error) {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+
+	outEdges := s.outEdges[sourceHash]
+	res := make([]Edge[K], 0, len(outEdges))
+	for _, edge := range outEdges {
+		res = append(res, edge)
+	}
+	return res, nil
+}
+
+func (s *memoryStore[K, T]) ListInEdges(targetHash K) ([]Edge[K], error) {
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+
+	inEdges := s.inEdges[targetHash]
+	res := make([]Edge[K], 0, len(inEdges))
+	for _, edge := range inEdges {
+		res = append(res, edge)
 	}
 	return res, nil
 }

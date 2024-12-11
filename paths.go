@@ -67,6 +67,11 @@ func CreatesCycle[K comparable, T any](g Graph[K, T], source, target K) (bool, e
 //
 // ShortestPath has a time complexity of O(|V|+|E|log(|V|)).
 func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, error) {
+
+	if g.Traits().IsDirected {
+		return bellmanFord(g, source, target)
+	}
+
 	weights := make(map[K]float64)
 	visited := make(map[K]bool)
 
@@ -132,6 +137,62 @@ func ShortestPath[K comparable, T any](g Graph[K, T], source, target K) ([]K, er
 		path = append([]K{current}, path...)
 	}
 
+	return path, nil
+}
+
+// bellmanFord is a helper function for ShortestPath that uses the Bellman-Ford algorithm to
+// compute the shortest path between a source and a target vertex using the edge weights and returns
+// the hash values of the vertices forming that path. This search runs in O(|V|*|E|) time.
+//
+// The returned path includes the source and target vertices. If the target cannot be reached
+// from the source vertex, ErrTargetNotReachable will be returned. If there are multiple shortest
+func bellmanFord[K comparable, T any](g Graph[K, T], source, target K) ([]K, error) {
+
+	if !g.Traits().IsDirected {
+		return nil, errors.New("Bellman-Ford algorithm can only be used on directed graphs")
+	}
+
+	dist := make(map[K]int)
+	prev := make(map[K]K)
+
+	adjacencyMap, err := g.AdjacencyMap()
+	if err != nil {
+		return nil, fmt.Errorf("could not get adjacency map: %w", err)
+	}
+	for key := range adjacencyMap {
+		dist[key] = math.MaxInt32
+	}
+	dist[source] = 0
+
+	for i := 0; i < len(adjacencyMap)-1; i++ {
+		for key, edges := range adjacencyMap {
+			for _, edge := range edges {
+				if newDist := dist[key] + edge.Properties.Weight; newDist < dist[edge.Target] {
+					dist[edge.Target] = newDist
+					prev[edge.Target] = key
+				}
+			}
+		}
+	}
+
+	for _, edges := range adjacencyMap {
+		for _, edge := range edges {
+			if newDist := dist[edge.Source] + edge.Properties.Weight; newDist < dist[edge.Target] {
+				return nil, errors.New("graph contains a negative-weight cycle")
+			}
+		}
+	}
+
+	path := []K{}
+	u := target
+	for u != source {
+		if _, ok := prev[u]; !ok {
+			return nil, ErrTargetNotReachable
+		}
+		path = append([]K{u}, path...)
+		u = prev[u]
+	}
+	path = append([]K{source}, path...)
 	return path, nil
 }
 

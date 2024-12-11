@@ -335,7 +335,9 @@ func EdgeAttribute(key, value string) func(*EdgeProperties) {
 // [graph.Graph.UpdateEdge] methods.
 func EdgeAttributes(attributes map[string]string) func(*EdgeProperties) {
 	return func(e *EdgeProperties) {
-		e.Attributes = attributes
+		for k, v := range attributes {
+			e.Attributes[k] = v
+		}
 	}
 }
 
@@ -382,6 +384,8 @@ func VertexAttribute(key, value string) func(*VertexProperties) {
 // of a vertex. This is a functional option for the [graph.Graph.AddVertex] methods.
 func VertexAttributes(attributes map[string]string) func(*VertexProperties) {
 	return func(e *VertexProperties) {
-		e.Attributes = attributes
+		for k, v := range attributes {
+			e.Attributes[k] = v
+		}
 	}
 }

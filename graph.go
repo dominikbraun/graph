@@ -130,6 +130,14 @@ type Graph[K comparable, T any] interface {
 	// Edge[K] and hence will contain the vertex hashes, not the vertex values.
 	Edges() ([]Edge[K], error)
 
+	// InEdges returns a slice of all edges in the graph with a specific target vertex.
+	// These edges are of type Edge[K] and hence will contain the vertex hashes, not the vertex values.
+	InEdges(targetHash K) ([]Edge[K], error)
+
+	// OutEdges returns a slice of all edges in the graph with a specific source vertex.
+	// These edges are of type Edge[K] and hence will contain the vertex hashes, not the vertex values.
+	OutEdges(sourceHash K) ([]Edge[K], error)
+
 	// UpdateEdge updates the edge joining the two given vertices with the data
 	// provided in the given functional options. Valid functional options are:
 	// - EdgeWeight: Sets a new weight for the edge properties.

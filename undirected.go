@@ -216,6 +216,14 @@ func (u *undirected[K, T]) Edges() ([]Edge[K], error) {
 	return edges, nil
 }
 
+func (d *undirected[K, T]) InEdges(targetHash K) ([]Edge[K], error) {
+	return d.store.ListInEdges(targetHash)
+}
+
+func (d *undirected[K, T]) OutEdges(sourceHash K) ([]Edge[K], error) {
+	return d.store.ListOutEdges(sourceHash)
+}
+
 func (u *undirected[K, T]) UpdateEdge(source, target K, options ...func(properties *EdgeProperties)) error {
 	existingEdge, err := u.store.Edge(source, target)
 	if err != nil {

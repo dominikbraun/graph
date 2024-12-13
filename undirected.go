@@ -43,6 +43,10 @@ func (u *undirected[K, T]) Vertex(hash K) (T, error) {
 	return vertex, err
 }
 
+func (u *undirected[K, T]) Vertices() ([]K, error) {
+	return u.store.ListVertices()
+}
+
 func (u *undirected[K, T]) VertexWithProperties(hash K) (T, VertexProperties, error) {
 	vertex, prop, err := u.store.Vertex(hash)
 	if err != nil {

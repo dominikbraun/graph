@@ -2,6 +2,7 @@ package graph
 
 import (
 	"fmt"
+	"maps"
 	"sync"
 )
 
@@ -24,6 +25,9 @@ type Store[K comparable, T any] interface {
 	// exist, ErrVertexNotFound should be returned. If the vertex has edges to other vertices,
 	// ErrVertexHasEdges should be returned.
 	RemoveVertex(hash K) error
+
+	// AllVertices returns a map, containing all vertices
+	AllVertices() map[K]T
 
 	// ListVertices should return all vertices in the graph in a slice.
 	ListVertices() ([]K, error)
@@ -75,8 +79,8 @@ type memoryStore[K comparable, T any] struct {
 
 	// outEdges and inEdges store all outgoing and ingoing edges for all vertices. For O(1) access,
 	// these edges themselves are stored in maps whose keys are the hashes of the target vertices.
-	outEdges map[K]map[K]Edge[K] // source -> target
-	inEdges  map[K]map[K]Edge[K] // target -> source
+	outEdges  map[K]map[K]Edge[K] // source -> target
+	inEdges   map[K]map[K]Edge[K] // target -> source
 	edgeCount int
 }
 
@@ -101,6 +105,16 @@ func (s *memoryStore[K, T]) AddVertex(k K, t T, p VertexProperties) error {
 	s.vertexProperties[k] = p
 
 	return nil
+}
+
+func (s *memoryStore[K, T]) AllVertices() map[K]T {
+	out := make(map[K]T, len(s.vertices))
+	s.lock.RLock()
+	defer s.lock.RUnlock()
+
+	maps.Copy(out, s.vertices)
+
+	return out
 }
 
 func (s *memoryStore[K, T]) ListVertices() ([]K, error) {

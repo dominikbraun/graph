@@ -49,7 +49,10 @@
 // For detailed usage examples, take a look at the README.
 package graph
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 var (
 	ErrVertexNotFound      = errors.New("vertex not found")
@@ -289,15 +292,9 @@ func NewLike[K comparable, T any](g Graph[K, T]) Graph[K, T] {
 		t.PreventCycles = g.Traits().PreventCycles
 	}
 
-	var hash Hash[K, T]
+	gr := tograph(g)
 
-	if g.Traits().IsDirected {
-		hash = g.(*directed[K, T]).hash
-	} else {
-		hash = g.(*undirected[K, T]).hash
-	}
-
-	return New(hash, copyTraits)
+	return New(gr.hash, copyTraits)
 }
 
 // StringHash is a hashing function that accepts a string and uses that exact
@@ -388,4 +385,422 @@ func VertexAttributes(attributes map[string]string) func(*VertexProperties) {
 			e.Attributes[k] = v
 		}
 	}
+}
+
+// graph is a partial Graph[K, T] implementation where all the operations are
+// common to both directed and undirected graphs.
+type graph[K comparable, T any] struct {
+	hash   Hash[K, T]
+	traits *Traits
+	store  Store[K, T]
+}
+
+func (g *graph[K, T]) AddEdge(sourceHash, targetHash K, options ...func(*EdgeProperties)) error {
+	edge, err := g.addEdgeWithOptions(sourceHash, targetHash, options...)
+	if err != nil || g.traits.IsDirected { // if we're directed or in error, we're done
+		return err
+	}
+
+	// add reverse edge of undirected
+	rEdge := Edge[K]{
+		Source: edge.Target,
+		Target: edge.Source,
+		Properties: EdgeProperties{
+			Weight:     edge.Properties.Weight,
+			Attributes: edge.Properties.Attributes,
+			Data:       edge.Properties.Data,
+		},
+	}
+
+	return g.store.AddEdge(targetHash, sourceHash, rEdge)
+}
+
+func (g *graph[K, T]) addEdge(sourceHash, targetHash K, edge Edge[K]) error {
+	return g.store.AddEdge(sourceHash, targetHash, edge)
+}
+
+func (g *graph[K, T]) addEdgeWithOptions(sourceHash, targetHash K, options ...func(*EdgeProperties)) (Edge[K], error) {
+	if _, _, err := g.store.Vertex(sourceHash); err != nil {
+		return Edge[K]{}, fmt.Errorf("could not find source vertex with hash %v: %w", sourceHash, err)
+	}
+
+	if _, _, err := g.store.Vertex(targetHash); err != nil {
+		return Edge[K]{}, fmt.Errorf("could not find target vertex with hash %v: %w", targetHash, err)
+	}
+
+	//nolint:govet // False positive.
+	if _, err := g.Edge(sourceHash, targetHash); !errors.Is(err, ErrEdgeNotFound) {
+		return Edge[K]{}, ErrEdgeAlreadyExists
+	}
+
+	// If the user opted in to preventing cycles, run a cycle check.
+	if g.traits.PreventCycles {
+		createsCycle, err := g.createsCycle(sourceHash, targetHash)
+		if err != nil {
+			return Edge[K]{}, fmt.Errorf("check for cycles: %w", err)
+		}
+		if createsCycle {
+			return Edge[K]{}, ErrEdgeCreatesCycle
+		}
+	}
+
+	edge := Edge[K]{
+		Source: sourceHash,
+		Target: targetHash,
+		Properties: EdgeProperties{
+			Attributes: make(map[string]string),
+		},
+	}
+
+	for _, option := range options {
+		option(&edge.Properties)
+	}
+
+	if err := g.store.AddEdge(sourceHash, targetHash, edge); err != nil {
+		return Edge[K]{}, fmt.Errorf("failed to add edge: %w", err)
+	}
+
+	return edge, nil
+}
+
+func (g *graph[K, T]) addEdgesFrom(other *graph[K, T]) error {
+	edges, err := other.Edges()
+	if err != nil {
+		return fmt.Errorf("failed to get edges: %w", err)
+	}
+
+	for _, edge := range edges {
+		if err := g.AddEdge(copyEdge(edge)); err != nil {
+			return fmt.Errorf("failed to add (%v, %v): %w", edge.Source, edge.Target, err)
+		}
+	}
+
+	return nil
+}
+
+func (g *graph[K, T]) clone() (*graph[K, T], error) {
+	traits := &Traits{
+		IsDirected:    g.traits.IsDirected,
+		IsAcyclic:     g.traits.IsAcyclic,
+		IsWeighted:    g.traits.IsWeighted,
+		IsRooted:      g.traits.IsRooted,
+		PreventCycles: g.traits.PreventCycles,
+	}
+
+	graph := &graph[K, T]{
+		hash:   g.hash,
+		traits: traits,
+		store:  newMemoryStore[K, T](),
+	}
+
+	if err := graph.addVerticesFrom(g); err != nil {
+		return nil, fmt.Errorf("failed to add vertices: %w", err)
+	}
+
+	if err := graph.addEdgesFrom(g); err != nil {
+		return nil, fmt.Errorf("failed to add edges: %w", err)
+	}
+
+	return graph, nil
+}
+func (g *graph[K, T]) Edge(sourceHash, targetHash K) (Edge[T], error) {
+	edge, err := g.store.Edge(sourceHash, targetHash)
+	if !g.traits.IsDirected {
+		// In an undirected graph, since multigraphs aren't supported, the edge AB
+		// is the same as BA. Therefore, if source[target] cannot be found, this
+		// function also looks for target[source].
+		if errors.Is(err, ErrEdgeNotFound) {
+			edge, err = g.store.Edge(targetHash, sourceHash)
+		}
+	}
+
+	if err != nil {
+		return Edge[T]{}, err
+	}
+
+	sourceVertex, _, err := g.store.Vertex(sourceHash)
+	if err != nil {
+		return Edge[T]{}, err
+	}
+
+	targetVertex, _, err := g.store.Vertex(targetHash)
+	if err != nil {
+		return Edge[T]{}, err
+	}
+
+	return Edge[T]{
+		Source: sourceVertex,
+		Target: targetVertex,
+		Properties: EdgeProperties{
+			Weight:     edge.Properties.Weight,
+			Attributes: edge.Properties.Attributes,
+			Data:       edge.Properties.Data,
+		},
+	}, nil
+}
+
+type tuple[K comparable] struct {
+	source, target K
+}
+
+func (g *graph[K, T]) Edges() ([]Edge[K], error) {
+	storedEdges, err := g.store.ListEdges()
+	if g.traits.IsDirected {
+		return storedEdges, err
+	}
+	// An undirected graph creates each edge twice internally: The edge (A,B) is
+	// stored both as (A,B) and (B,A). The Edges method is supposed to return
+	// one of these two edges, because from an outside perspective, it only is
+	// a single edge.
+	//
+	// To achieve this, Edges keeps track of already-added edges. For each edge,
+	// it also checks if the reversed edge has already been added - e.g., for
+	// an edge (A,B), Edges checks if the edge has been added as (B,A).
+	//
+	// These reversed edges are built as a custom tuple type, which is then used
+	// as a map key for access in O(1) time. It looks scarier than it is.
+	edges := make([]Edge[K], 0, len(storedEdges)/2)
+
+	added := make(map[tuple[K]]struct{})
+
+	for _, storedEdge := range storedEdges {
+		reversedEdge := tuple[K]{
+			source: storedEdge.Target,
+			target: storedEdge.Source,
+		}
+		if _, ok := added[reversedEdge]; ok {
+			continue
+		}
+
+		edges = append(edges, storedEdge)
+
+		addedEdge := tuple[K]{
+			source: storedEdge.Source,
+			target: storedEdge.Target,
+		}
+
+		added[addedEdge] = struct{}{}
+	}
+
+	return edges, nil
+}
+
+func (g *graph[K, T]) RemoveEdge(source, target K) error {
+	if _, err := g.Edge(source, target); err != nil {
+		return err
+	}
+
+	if err := g.store.RemoveEdge(source, target); err != nil {
+		return fmt.Errorf("failed to remove edge from %v to %v: %w", source, target, err)
+	}
+
+	return nil
+}
+
+func (g *graph[K, T]) updateEdge(source, target K, options ...func(properties *EdgeProperties)) (Edge[K], error) {
+	existingEdge, err := g.store.Edge(source, target)
+	if err != nil {
+		return Edge[K]{}, err
+	}
+
+	for _, option := range options {
+		option(&existingEdge.Properties)
+	}
+
+	return existingEdge, g.store.UpdateEdge(source, target, existingEdge)
+}
+
+func (g *graph[K, T]) Traits() *Traits {
+	return g.traits
+}
+
+func (g *graph[K, T]) AddVertex(value T, options ...func(*VertexProperties)) error {
+	hash := g.hash(value)
+	properties := VertexProperties{
+		Weight:     0,
+		Attributes: make(map[string]string),
+	}
+
+	for _, option := range options {
+		option(&properties)
+	}
+
+	return g.store.AddVertex(hash, value, properties)
+
+}
+
+func (g *graph[K, T]) addVerticesFrom(other *graph[K, T]) error {
+	adjacencyMap, err := other.AdjacencyMap()
+	if err != nil {
+		return fmt.Errorf("failed to get adjacency map: %w", err)
+	}
+
+	for hash := range adjacencyMap {
+		vertex, properties, err := other.VertexWithProperties(hash)
+		if err != nil {
+			return fmt.Errorf("failed to get vertex %v: %w", hash, err)
+		}
+
+		if err = g.AddVertex(vertex, copyVertexProperties(properties)); err != nil {
+			return fmt.Errorf("failed to add vertex %v: %w", hash, err)
+		}
+	}
+
+	return nil
+}
+
+func (g *graph[K, T]) Vertex(hash K) (T, error) {
+	vertex, _, err := g.store.Vertex(hash)
+	return vertex, err
+}
+
+func (g *graph[K, T]) VertexWithProperties(hash K) (T, VertexProperties, error) {
+	vertex, properties, err := g.store.Vertex(hash)
+	if err != nil {
+		return vertex, VertexProperties{}, err
+	}
+
+	return vertex, properties, nil
+}
+
+func (g *graph[K, T]) RemoveVertex(hash K) error {
+	return g.store.RemoveVertex(hash)
+}
+
+func (g *graph[K, T]) AdjacencyMap() (map[K]map[K]Edge[K], error) {
+	vertices, err := g.store.ListVertices()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list vertices: %w", err)
+	}
+
+	edges, err := g.store.ListEdges()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list edges: %w", err)
+	}
+
+	m := make(map[K]map[K]Edge[K], len(vertices))
+
+	for _, vertex := range vertices {
+		m[vertex] = make(map[K]Edge[K])
+	}
+
+	for _, edge := range edges {
+		m[edge.Source][edge.Target] = edge
+	}
+
+	return m, nil
+}
+
+func (g *graph[K, T]) PredecessorMap() (map[K]map[K]Edge[K], error) {
+	if !g.traits.IsDirected {
+		return g.AdjacencyMap()
+	}
+
+	vertices, err := g.store.ListVertices()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list vertices: %w", err)
+	}
+
+	edges, err := g.store.ListEdges()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list edges: %w", err)
+	}
+
+	m := make(map[K]map[K]Edge[K], len(vertices))
+
+	for _, vertex := range vertices {
+		m[vertex] = make(map[K]Edge[K])
+	}
+
+	for _, edge := range edges {
+		if _, ok := m[edge.Target]; !ok {
+			m[edge.Target] = make(map[K]Edge[K])
+		}
+		m[edge.Target][edge.Source] = edge
+	}
+
+	return m, nil
+}
+
+func (g *graph[K, T]) Order() (int, error) {
+	return g.store.VertexCount()
+}
+
+func (g *graph[K, T]) Size() (int, error) {
+	edgeCount, err := g.store.EdgeCount()
+
+	if g.traits.IsDirected {
+		return edgeCount, err
+	}
+	// Divide by 2 since every add edge operation on undirected graph is counted
+	// twice.
+	return edgeCount / 2, err
+}
+
+func (g *graph[K, T]) createsCycle(source, target K) (bool, error) {
+	// If the underlying store implements CreatesCycle, use that fast path.
+	if cc, ok := g.store.(interface {
+		CreatesCycle(source, target K) (bool, error)
+	}); ok {
+		return cc.CreatesCycle(source, target)
+	}
+
+	// Slow path.
+	return CreatesCycle[K, T](fromGraph(g), source, target)
+}
+
+func (g *graph[K, T]) edgesAreEqual(a, b Edge[T]) bool {
+	aSourceHash := g.hash(a.Source)
+	aTargetHash := g.hash(a.Target)
+	bSourceHash := g.hash(b.Source)
+	bTargetHash := g.hash(b.Target)
+
+	if aSourceHash == bSourceHash && aTargetHash == bTargetHash {
+		return true
+	}
+
+	if !g.traits.IsDirected {
+		return aSourceHash == bTargetHash && aTargetHash == bSourceHash
+	}
+
+	return false
+}
+
+// copyEdge returns an argument list suitable for the Graph.AddEdge method. This
+// argument list is derived from the given edge, hence the name copyEdge.
+//
+// The last argument is a custom functional option that sets the edge properties
+// to the properties of the original edge.
+func copyEdge[K comparable](edge Edge[K]) (K, K, func(properties *EdgeProperties)) {
+	copyProperties := func(p *EdgeProperties) {
+		for k, v := range edge.Properties.Attributes {
+			p.Attributes[k] = v
+		}
+		p.Weight = edge.Properties.Weight
+		p.Data = edge.Properties.Data
+	}
+
+	return edge.Source, edge.Target, copyProperties
+}
+
+// tograph converts a Graph interface to a graph instance.
+func tograph[K comparable, T any](g Graph[K, T]) graph[K, T] {
+	var other graph[K, T]
+	if g.Traits().IsDirected {
+		other = g.(*directed[K, T]).graph
+	} else {
+		other = g.(*undirected[K, T]).graph
+	}
+	return other
+}
+
+// fromGraph converts a graph instance to a Graph interface.
+func fromGraph[K comparable, T any](g *graph[K, T]) Graph[K, T] {
+	var gr Graph[K, T]
+	if g.Traits().IsDirected {
+		gr = &directed[K, T]{graph: *g}
+	} else {
+		gr = &undirected[K, T]{graph: *g}
+	}
+	return gr
 }

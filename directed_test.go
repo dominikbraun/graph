@@ -10,10 +10,6 @@ func TestDirected_Traits(t *testing.T) {
 		traits   *Traits
 		expected *Traits
 	}{
-		"default traits": {
-			traits:   &Traits{},
-			expected: &Traits{},
-		},
 		"directed": {
 			traits:   &Traits{IsDirected: true},
 			expected: &Traits{IsDirected: true},
